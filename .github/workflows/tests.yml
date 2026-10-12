@@ -48,8 +48,8 @@ jobs:
             -   name: Copy .env file
                 run: cp .env.example .env
 
-            -   name: Generate app key
-                run: php artisan key:generate
+            -   name: Setup Application
+                run: composer setup
 
             -   name: Run migrations
                 run: php artisan migrate --force
