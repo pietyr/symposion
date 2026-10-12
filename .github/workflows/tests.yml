@@ -45,23 +45,8 @@ jobs:
                 with:
                     node-version: '22'
 
-            -   name: Copy .env file
-                run: cp .env.example .env
-
             -   name: Setup Application
                 run: composer setup
-
-            -   name: Run migrations
-                run: php artisan migrate --force
-                env:
-                    DB_HOST: 127.0.0.1
-                    DB_PORT: 3306
-                    DB_DATABASE: symposion_test
-                    DB_USERNAME: root
-                    DB_PASSWORD: root
-
-            -   name: Seed database
-                run: php artisan db:seed
                 env:
                     DB_HOST: 127.0.0.1
                     DB_PORT: 3306
