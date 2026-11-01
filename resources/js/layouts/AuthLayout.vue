@@ -8,7 +8,7 @@ const { title = '', description = '' } = defineProps<{
 </script>
 
 <template>
-    <AuthLayout :title="title" :description="description">
+    <AuthLayout :title="$t(title)" :description="$t(description)">
         <slot />
     </AuthLayout>
 </template>
