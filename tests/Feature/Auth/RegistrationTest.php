@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Enums\UserRole;
+use App\Models\User;
 use Laravel\Fortify\Features;
 
 beforeEach(function () {
@@ -24,4 +26,27 @@ test('new users can register', function () {
 
     $this->assertAuthenticated();
     $response->assertRedirect(route('dashboard', absolute: false));
+});
+
+test('new users are registered with the user role', function () {
+    $this->post(route('register.store'), [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
+
+    expect(User::query()->sole()->role)->toBe(UserRole::User);
+});
+
+test('the role cannot be set during registration', function () {
+    $this->post(route('register.store'), [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'role' => UserRole::Admin->value,
+    ]);
+
+    expect(User::query()->sole()->role)->toBe(UserRole::User);
 });
