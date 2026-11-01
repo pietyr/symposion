@@ -17,6 +17,6 @@ return [
     'sent' => 'Wysłaliśmy link do resetu hasła na twój email.',
     'throttled' => 'Zbyt wiele prób. Poczekaj zanim spróbujesz ponownie',
     'token' => 'Token resetu hasła jest nieprawidłowy.',
-    'user' => "Nie znaleziono użytkownika o takim adresie email.",
+    'user' => 'Nie znaleziono użytkownika o takim adresie email.',
 
 ];
