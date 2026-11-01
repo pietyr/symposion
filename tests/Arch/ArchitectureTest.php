@@ -20,3 +20,8 @@ arch('application classes are final')
     ->classes()
     ->toBeFinal()
     ->ignoring(Controller::class);
+
+arch('actions expose a single handle method')
+    ->expect('App\\Actions')
+    ->toHaveMethod('handle')
+    ->ignoring('App\\Actions\\Fortify');
