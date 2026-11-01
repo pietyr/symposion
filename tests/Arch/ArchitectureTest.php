@@ -7,4 +7,16 @@ use App\Http\Controllers\Controller;
 arch()->preset()->php();
 arch()->preset()->security();
 arch()->preset()->laravel();
-arch()->preset()->strict()->ignoring(Controller::class);
+
+// The strict preset also forbids protected methods, which clashes with
+// framework conventions such as Model::casts(), so its rules are picked here.
+arch('application code uses strict types')
+    ->expect('App')
+    ->toUseStrictTypes()
+    ->toUseStrictEquality();
+
+arch('application classes are final')
+    ->expect('App')
+    ->classes()
+    ->toBeFinal()
+    ->ignoring(Controller::class);

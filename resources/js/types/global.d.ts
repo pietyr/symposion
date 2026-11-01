@@ -10,7 +10,6 @@ declare module 'vite/client' {
 
     interface ImportMeta {
         readonly env: ImportMetaEnv;
-        readonly glob: <T>(pattern: string) => Record<string, () => Promise<T>>;
     }
 }
 
@@ -18,6 +17,7 @@ declare module '@inertiajs/core' {
     export interface InertiaConfig {
         sharedPageProps: {
             name: string;
+            locale: string;
             auth: Auth;
             sidebarOpen: boolean;
             [key: string]: unknown;

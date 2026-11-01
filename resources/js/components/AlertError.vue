@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { AlertCircle } from '@lucide/vue';
+import { trans } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -9,7 +10,7 @@ type Props = {
 };
 
 const props = withDefaults(defineProps<Props>(), {
-    title: 'Something went wrong.',
+    title: () => trans('Something went wrong.'),
 });
 
 const uniqueErrors = computed(() => Array.from(new Set(props.errors)));
