@@ -56,5 +56,16 @@ jobs:
             -   name: Setup Application
                 run: composer setup
 
+            -   name: Install Playwright Browsers
+                run: npx playwright install --with-deps chromium
+
             -   name: Run CI Checks
                 run: composer ci:check
+
+            -   name: Upload Browser Test Screenshots
+                if: failure()
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+                with:
+                    name: browser-tests
+                    path: tests/Browser/Screenshots
+                    if-no-files-found: ignore
