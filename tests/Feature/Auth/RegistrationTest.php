@@ -25,7 +25,7 @@ test('new users can register', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect(route('account.dashboard', absolute: false));
 });
 
 test('new users are registered with the user role', function () {

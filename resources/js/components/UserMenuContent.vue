@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
-import { LogOut, Settings } from '@lucide/vue';
+import { LogOut, Settings, Shield, UserRound } from '@lucide/vue';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -9,7 +9,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import UserInfo from '@/components/UserInfo.vue';
 import { logout } from '@/routes';
-import { edit } from '@/routes/profile';
+import { dashboard as accountDashboard } from '@/routes/account';
+import { edit } from '@/routes/account/profile';
+import { dashboard as adminDashboard } from '@/routes/admin';
 import type { User } from '@/types';
 
 type Props = {
@@ -31,6 +33,26 @@ defineProps<Props>();
     </DropdownMenuLabel>
     <DropdownMenuSeparator />
     <DropdownMenuGroup>
+        <DropdownMenuItem :as-child="true">
+            <Link
+                class="block w-full cursor-pointer"
+                :href="accountDashboard()"
+                prefetch
+            >
+                <UserRound class="mr-2 h-4 w-4" />
+                {{ $t('My account') }}
+            </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem v-if="user.is_admin" :as-child="true">
+            <Link
+                class="block w-full cursor-pointer"
+                :href="adminDashboard()"
+                prefetch
+            >
+                <Shield class="mr-2 h-4 w-4" />
+                {{ $t('Admin panel') }}
+            </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem :as-child="true">
             <Link class="block w-full cursor-pointer" :href="edit()" prefetch>
                 <Settings class="mr-2 h-4 w-4" />

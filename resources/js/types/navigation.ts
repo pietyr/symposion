@@ -10,5 +10,13 @@ export type NavItem = {
     title: string;
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon;
-    isActive?: boolean;
+    /** Highlight only on this exact URL, not on nested pages (area home pages). */
+    exact?: boolean;
+};
+
+export type SidebarNavigation = {
+    label: string;
+    homeHref: NonNullable<InertiaLinkProps['href']>;
+    items: NavItem[];
+    footerItems: NavItem[];
 };
