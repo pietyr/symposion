@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Globe, LayoutGrid, Settings } from '@lucide/vue';
 import { trans } from 'laravel-vue-i18n';
+import { computed } from 'vue';
 import AppSidebarLayout from '@/layouts/app/AppSidebarLayout.vue';
 import { home } from '@/routes';
 import { dashboard, settings } from '@/routes/account';
@@ -10,7 +11,8 @@ const { breadcrumbs = [] } = defineProps<{
     breadcrumbs?: BreadcrumbItem[];
 }>();
 
-const navigation: SidebarNavigation = {
+// Computed, because translations finish loading after this persistent layout is set up.
+const navigation = computed<SidebarNavigation>(() => ({
     label: trans('Account'),
     homeHref: dashboard(),
     items: [
@@ -33,7 +35,7 @@ const navigation: SidebarNavigation = {
             icon: Globe,
         },
     ],
-};
+}));
 </script>
 
 <template>
