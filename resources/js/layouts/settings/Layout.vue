@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans } from 'laravel-vue-i18n';
+import { computed } from 'vue';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -11,7 +12,8 @@ import { edit as editProfile } from '@/routes/account/profile';
 import { edit as editSecurity } from '@/routes/account/security';
 import type { NavItem } from '@/types';
 
-const sidebarNavItems: NavItem[] = [
+// Computed, because translations finish loading after this persistent layout is set up.
+const sidebarNavItems = computed<NavItem[]>(() => [
     {
         title: trans('Profile'),
         href: editProfile(),
@@ -24,7 +26,7 @@ const sidebarNavItems: NavItem[] = [
         title: trans('Appearance'),
         href: editAppearance(),
     },
-];
+]);
 
 const { isCurrentOrParentUrl } = useCurrentUrl();
 </script>

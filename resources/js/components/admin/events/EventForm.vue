@@ -1,0 +1,161 @@
+<script setup lang="ts">
+import { Form } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import type { EventFormat, EventResource, SelectOption } from '@/types';
+import type { RouteFormDefinition } from '@/wayfinder';
+
+const props = defineProps<{
+    action: RouteFormDefinition<'post'>;
+    formats: SelectOption[];
+    voivodeships: SelectOption[];
+    submitLabel: string;
+    event?: EventResource;
+}>();
+
+const format = ref<EventFormat>(props.event?.format ?? 'in_person');
+const hasVenue = computed(() => format.value !== 'online');
+
+// ISO strings from the server carry the application's offset, so the first
+// 16 characters are already the local "YYYY-MM-DDTHH:mm" the input expects.
+const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
+</script>
+
+<template>
+    <Form
+        v-bind="action"
+        class="max-w-2xl space-y-6"
+        v-slot="{ errors, processing }"
+    >
+        <div class="grid gap-2">
+            <Label for="title">{{ $t('Title') }}</Label>
+            <Input
+                id="title"
+                name="title"
+                :default-value="event?.title"
+                required
+            />
+            <InputError :message="errors.title" />
+        </div>
+
+        <div class="grid gap-2">
+            <Label for="format">{{ $t('Format') }}</Label>
+            <Select v-model="format" name="format">
+                <SelectTrigger id="format" class="w-full">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem
+                        v-for="option in formats"
+                        :key="option.value"
+                        :value="option.value"
+                    >
+                        {{ option.label }}
+                    </SelectItem>
+                </SelectContent>
+            </Select>
+            <InputError :message="errors.format" />
+        </div>
+
+        <template v-if="hasVenue">
+            <div class="grid gap-2">
+                <Label for="voivodeship">{{ $t('Voivodeship') }}</Label>
+                <Select
+                    name="voivodeship"
+                    :default-value="event?.voivodeship ?? undefined"
+                >
+                    <SelectTrigger id="voivodeship" class="w-full">
+                        <SelectValue :placeholder="$t('Select voivodeship')" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem
+                            v-for="option in voivodeships"
+                            :key="option.value"
+                            :value="option.value"
+                        >
+                            {{ option.label }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+                <InputError :message="errors.voivodeship" />
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div class="grid gap-2">
+                    <Label for="city">{{ $t('City') }}</Label>
+                    <Input
+                        id="city"
+                        name="city"
+                        :default-value="event?.city ?? undefined"
+                    />
+                    <InputError :message="errors.city" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="venue">{{ $t('Venue') }}</Label>
+                    <Input
+                        id="venue"
+                        name="venue"
+                        :default-value="event?.venue ?? undefined"
+                        :placeholder="$t('Venue name and address')"
+                    />
+                    <InputError :message="errors.venue" />
+                </div>
+            </div>
+        </template>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+            <div class="grid gap-2">
+                <Label for="starts_at">{{ $t('Starts at') }}</Label>
+                <Input
+                    id="starts_at"
+                    name="starts_at"
+                    type="datetime-local"
+                    :default-value="toDateTimeLocal(event?.starts_at)"
+                    required
+                />
+                <InputError :message="errors.starts_at" />
+            </div>
+
+            <div class="grid gap-2">
+                <Label for="ends_at">{{ $t('Ends at') }}</Label>
+                <Input
+                    id="ends_at"
+                    name="ends_at"
+                    type="datetime-local"
+                    :default-value="toDateTimeLocal(event?.ends_at)"
+                    required
+                />
+                <InputError :message="errors.ends_at" />
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <Checkbox
+                id="is_published"
+                name="is_published"
+                value="1"
+                :default-value="event?.is_published ?? false"
+            />
+            <Label for="is_published">{{
+                $t('Published on the website')
+            }}</Label>
+        </div>
+        <InputError :message="errors.is_published" />
+
+        <Button :disabled="processing" data-test="save-event-button">
+            {{ submitLabel }}
+        </Button>
+    </Form>
+</template>

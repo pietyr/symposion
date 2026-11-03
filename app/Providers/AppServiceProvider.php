@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -37,6 +38,9 @@ final class AppServiceProvider extends ServiceProvider
         Date::use(CarbonImmutable::class);
 
         Model::preventLazyLoading(! app()->isProduction());
+
+        // Resources are passed straight to Inertia pages, which expect the bare attributes.
+        JsonResource::withoutWrapping();
 
         DB::prohibitDestructiveCommands(
             app()->isProduction(),

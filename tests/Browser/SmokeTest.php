@@ -25,6 +25,7 @@ test('an administrator signs in and opens the admin panel from the user menu', f
         ->click('@sidebar-menu-button')
         ->click('Panel administratora')
         ->assertPathIs(route('admin.dashboard', absolute: false))
+        ->assertSee('Administracja')
         ->assertNoJavaScriptErrors();
 
     $this->assertAuthenticated();
