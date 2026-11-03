@@ -1,16 +1,19 @@
 <script setup lang="ts">
-import { Globe, LayoutGrid } from '@lucide/vue';
+import { CalendarDays, Globe, LayoutGrid } from '@lucide/vue';
 import { trans } from 'laravel-vue-i18n';
+import { computed } from 'vue';
 import AppSidebarLayout from '@/layouts/app/AppSidebarLayout.vue';
 import { home } from '@/routes';
 import { dashboard } from '@/routes/admin';
+import { index as events } from '@/routes/admin/events';
 import type { BreadcrumbItem, SidebarNavigation } from '@/types';
 
 const { breadcrumbs = [] } = defineProps<{
     breadcrumbs?: BreadcrumbItem[];
 }>();
 
-const navigation: SidebarNavigation = {
+// Computed, because translations finish loading after this persistent layout is set up.
+const navigation = computed<SidebarNavigation>(() => ({
     label: trans('Administration'),
     homeHref: dashboard(),
     items: [
@@ -20,6 +23,11 @@ const navigation: SidebarNavigation = {
             icon: LayoutGrid,
             exact: true,
         },
+        {
+            title: trans('Events'),
+            href: events(),
+            icon: CalendarDays,
+        },
     ],
     footerItems: [
         {
@@ -28,7 +36,7 @@ const navigation: SidebarNavigation = {
             icon: Globe,
         },
     ],
-};
+}));
 </script>
 
 <template>
