@@ -22,7 +22,7 @@ import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { getInitials } from '@/composables/useInitials';
 import { home, login, register } from '@/routes';
 import { dashboard } from '@/routes/account';
-import { index as upcomingEvents } from '@/routes/events';
+import { index as upcomingEvents, past as pastEvents } from '@/routes/events';
 import type { NavItem } from '@/types';
 
 const page = usePage();
@@ -34,6 +34,10 @@ const navItems = computed<NavItem[]>(() => [
     {
         title: trans('Upcoming events'),
         href: upcomingEvents(),
+    },
+    {
+        title: trans('Past events'),
+        href: pastEvents(),
     },
 ]);
 </script>

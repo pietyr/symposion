@@ -90,6 +90,15 @@ final class Event extends Model
      * @param  Builder<self>  $query
      */
     #[Scope]
+    protected function past(Builder $query): void
+    {
+        $query->where('ends_at', '<', now());
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
     protected function titleContains(Builder $query, string $term): void
     {
         $query->whereLike('title', '%'.addcslashes($term, '%_\\').'%');
