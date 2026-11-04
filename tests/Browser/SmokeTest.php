@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\Event;
 use App\Models\User;
 
 test('public pages render without javascript errors or console output', function () {
@@ -12,6 +13,16 @@ test('public pages render without javascript errors or console output', function
         route('login', absolute: false),
         route('register', absolute: false),
     ])->assertNoSmoke();
+});
+
+test('a visitor opens an event from the home page', function () {
+    $event = Event::factory()->published()->create();
+
+    visit(route('home', absolute: false))
+        ->click('@event-card')
+        ->assertPathIs(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false))
+        ->assertSee($event->title)
+        ->assertNoSmoke();
 });
 
 test('an administrator signs in and opens the admin panel from the user menu', function () {
