@@ -70,6 +70,35 @@ final class Event extends Model
      * @param  Builder<self>  $query
      */
     #[Scope]
+    protected function published(Builder $query): void
+    {
+        $query->where('is_published', true);
+    }
+
+    /**
+     * Events still in progress count as upcoming until they end.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function upcoming(Builder $query): void
+    {
+        $query->where('ends_at', '>=', now());
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function past(Builder $query): void
+    {
+        $query->where('ends_at', '<', now());
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
     protected function titleContains(Builder $query, string $term): void
     {
         $query->whereLike('title', '%'.addcslashes($term, '%_\\').'%');

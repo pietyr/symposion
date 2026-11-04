@@ -3,7 +3,7 @@ import { Form, Head, Link } from '@inertiajs/vue3';
 import { Plus, RotateCcw, Search } from '@lucide/vue';
 import EventController from '@/actions/App/Http/Controllers/Admin/EventController';
 import RestoreEventController from '@/actions/App/Http/Controllers/Admin/RestoreEventController';
-import AdminPagination from '@/components/admin/AdminPagination.vue';
+import PaginationControls from '@/components/PaginationControls.vue';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -161,6 +161,6 @@ const { formatDateTimeRange } = useDateTimeFormat();
             </TableBody>
         </Table>
 
-        <AdminPagination :paginator="events" />
+        <PaginationControls :paginator="events" />
     </div>
 </template>

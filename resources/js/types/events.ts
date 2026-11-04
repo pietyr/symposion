@@ -14,3 +14,14 @@ export type EventResource = {
     is_published: boolean;
     deleted_at: string | null;
 };
+
+export type PublicEventResource = {
+    id: number;
+    title: string;
+    slug: string;
+    format_label: string;
+    city: string | null;
+    venue: string | null;
+    starts_at: string;
+    ends_at: string;
+};
