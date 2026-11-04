@@ -7,6 +7,7 @@ use App\Models\User;
 test('public pages render without javascript errors or console output', function () {
     visit([
         route('home', absolute: false),
+        route('events.index', absolute: false),
         route('login', absolute: false),
         route('register', absolute: false),
     ])->assertNoSmoke();

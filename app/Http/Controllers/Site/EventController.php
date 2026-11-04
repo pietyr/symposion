@@ -15,6 +15,22 @@ use Inertia\Response;
 final class EventController extends Controller
 {
     /**
+     * List upcoming events, nearest first.
+     */
+    public function index(): Response
+    {
+        $events = Event::query()
+            ->published()
+            ->upcoming()
+            ->oldest('starts_at')
+            ->paginate(12);
+
+        return Inertia::render('site/events/Index', [
+            'events' => PublicEventResource::collection($events),
+        ]);
+    }
+
+    /**
      * Show an event; the id identifies it, so an outdated slug redirects to the current address.
      */
     public function show(Event $event, ?string $slug = null): Response|RedirectResponse
