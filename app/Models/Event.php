@@ -131,19 +131,20 @@ final class Event extends Model
     }
 
     /**
-     * Match every word of the term anywhere in the title. The collation already ignores case
-     * and most Polish diacritics, but treats "ł" as a separate letter, so it is folded here.
+     * Match every word of the term anywhere in the title or the city. The collation already ignores
+     * case and most Polish diacritics, but treats "ł" as a separate letter, so it is folded here.
      *
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function titleContains(Builder $query, string $term): void
+    protected function matchingSearch(Builder $query, string $term): void
     {
         foreach (Str::of($term)->squish()->explode(' ') as $word) {
-            $query->whereRaw(
-                "REPLACE(REPLACE(title, 'ł', 'l'), 'Ł', 'l') LIKE ?",
-                ['%'.addcslashes(str_replace(['ł', 'Ł'], 'l', $word), '%_\\').'%'],
-            );
+            $pattern = '%'.addcslashes(str_replace(['ł', 'Ł'], 'l', $word), '%_\\').'%';
+
+            $query->where(fn (Builder $wordQuery) => $wordQuery
+                ->whereRaw("REPLACE(REPLACE(title, 'ł', 'l'), 'Ł', 'l') LIKE ?", [$pattern])
+                ->orWhereRaw("REPLACE(REPLACE(city, 'ł', 'l'), 'Ł', 'l') LIKE ?", [$pattern]));
         }
     }
 }

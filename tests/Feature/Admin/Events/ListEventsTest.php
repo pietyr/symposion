@@ -135,6 +135,18 @@ test('search matches every word, in any order and as fragments', function () {
         );
 });
 
+test('search also looks in the city, ignoring Polish characters', function (string $term) {
+    $match = Event::factory()->create(['title' => 'Forum Onkologiczne', 'city' => 'Łódź']);
+    Event::factory()->create(['title' => 'Forum Onkologiczne', 'city' => 'Gdańsk']);
+    Event::factory()->online()->create(['title' => 'Forum Onkologiczne']);
+
+    $this->get(route('admin.events.index', ['search' => $term]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('events.data', 1)
+            ->where('events.data.0.id', $match->id),
+        );
+})->with(['lodz', 'Łódź', 'forum lodz', 'lodz onkolog']);
+
 test('search terms are matched literally', function () {
     Event::factory()->create(['title' => 'Kongres Kardiologii 2027']);
 

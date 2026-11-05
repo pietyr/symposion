@@ -140,8 +140,8 @@ watch(
                     v-model="search"
                     type="search"
                     class="w-full max-w-sm lg:w-80"
-                    :placeholder="$t('Search by title')"
-                    :aria-label="$t('Search by title')"
+                    :placeholder="$t('Search by title or city')"
+                    :aria-label="$t('Search by title or city')"
                     data-test="event-search"
                 />
             </div>

@@ -45,7 +45,7 @@ final class EventController extends Controller
             'events' => $isOverview ? null : EventResource::collection(
                 Event::query()
                     ->when($trashed, fn ($query) => $query->onlyTrashed())
-                    ->when($search !== '', fn ($query) => $query->titleContains($search))
+                    ->when($search !== '', fn ($query) => $query->matchingSearch($search))
                     ->sortedBy($sort)
                     ->paginate(15)
                     ->withQueryString(),
