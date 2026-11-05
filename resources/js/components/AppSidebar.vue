@@ -35,7 +35,12 @@ defineProps<{
         </SidebarHeader>
 
         <SidebarContent>
-            <NavMain :label="navigation.label" :items="navigation.items" />
+            <NavMain
+                v-for="group in navigation.groups"
+                :key="group.label"
+                :label="group.label"
+                :items="group.items"
+            />
         </SidebarContent>
 
         <SidebarFooter>

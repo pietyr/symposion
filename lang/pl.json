@@ -172,6 +172,7 @@
     "This is a secure area of the application. Please confirm your password before continuing.": "To jest chroniona część aplikacji. Potwierdź hasło, aby kontynuować.",
     "Title": "Tytuł",
     "To finish enabling two-factor authentication, scan the QR code or enter the setup key in your authenticator app": "Aby dokończyć włączanie uwierzytelniania dwuskładnikowego, zeskanuj kod QR lub wpisz klucz konfiguracyjny w aplikacji uwierzytelniającej",
+    "Tools": "Narzędzia",
     "Two-factor authentication": "Uwierzytelnianie dwuskładnikowe",
     "Two-factor authentication enabled": "Uwierzytelnianie dwuskładnikowe włączone",
     "Two-factor authentication is now enabled. Scan the QR code or enter the setup key in your authenticator app.": "Uwierzytelnianie dwuskładnikowe jest włączone. Zeskanuj kod QR lub wpisz klucz konfiguracyjny w aplikacji uwierzytelniającej.",

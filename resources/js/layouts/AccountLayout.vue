@@ -18,19 +18,23 @@ const page = usePage();
 // Computed, because translations finish loading after this persistent layout is set up.
 const navigation = computed<SidebarNavigation>(() => ({
     title: trans('User panel'),
-    label: trans('Account'),
     homeHref: dashboard(),
-    items: [
+    groups: [
         {
-            title: trans('Overview'),
-            href: dashboard(),
-            icon: LayoutGrid,
-            exact: true,
-        },
-        {
-            title: trans('Settings'),
-            href: settings(),
-            icon: Settings,
+            label: trans('Account'),
+            items: [
+                {
+                    title: trans('Overview'),
+                    href: dashboard(),
+                    icon: LayoutGrid,
+                    exact: true,
+                },
+                {
+                    title: trans('Settings'),
+                    href: settings(),
+                    icon: Settings,
+                },
+            ],
         },
     ],
     footerItems: [
