@@ -37,10 +37,29 @@ test('an administrator signs in and opens the admin panel from the user menu', f
         ->assertPathIs(route('account.dashboard', absolute: false))
         ->assertSee('Panel użytkownika')
         ->click('@sidebar-menu-button')
-        ->click('Panel admina')
+        ->click('[role="menuitem"]:has-text("Panel admina")')
         ->assertPathIs(route('admin.dashboard', absolute: false))
         ->assertSee('Administracja')
         ->assertNoJavaScriptErrors();
 
     $this->assertAuthenticated();
+});
+
+test('an administrator switches between panels from the sidebar', function () {
+    $this->actingAs(User::factory()->admin()->create());
+
+    visit(route('account.dashboard', absolute: false))
+        ->click('Panel admina')
+        ->assertPathIs(route('admin.dashboard', absolute: false))
+        ->click('Panel użytkownika')
+        ->assertPathIs(route('account.dashboard', absolute: false))
+        ->assertNoJavaScriptErrors();
+});
+
+test('other users do not get a link to the admin panel', function () {
+    $this->actingAs(User::factory()->create());
+
+    visit(route('account.dashboard', absolute: false))
+        ->assertSee('Panel użytkownika')
+        ->assertDontSee('Panel admina');
 });
