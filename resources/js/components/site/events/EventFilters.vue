@@ -2,15 +2,9 @@
 import { router } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
+import FilterSelect from '@/components/FilterSelect.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import type { EventFilterOptions, EventFilters } from '@/types';
 
 const props = defineProps<{
@@ -18,9 +12,6 @@ const props = defineProps<{
     filters: EventFilters;
     options: EventFilterOptions;
 }>();
-
-// A select item cannot have an empty value, so "no filter" needs its own.
-const noFilter = 'all';
 
 const search = ref(props.filters.search);
 
@@ -42,10 +33,6 @@ const apply = (changes: Partial<EventFilters>): void => {
         },
         { preserveState: true, preserveScroll: true, replace: true },
     );
-};
-
-const select = (field: keyof EventFilters, value: unknown): void => {
-    apply({ [field]: value === noFilter ? '' : String(value) });
 };
 
 const clear = (): void => {
@@ -105,32 +92,15 @@ const fields = computed(() => [
             data-test="event-filter-search"
         />
 
-        <Select
+        <FilterSelect
             v-for="field in fields"
             :key="field.name"
-            :model-value="filters[field.name] || noFilter"
-            @update:model-value="select(field.name, $event)"
-        >
-            <SelectTrigger
-                class="w-full"
-                :aria-label="$t(field.placeholder)"
-                :data-test="`event-filter-${field.name}`"
-            >
-                <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-                <SelectItem :value="noFilter">
-                    {{ $t(field.placeholder) }}
-                </SelectItem>
-                <SelectItem
-                    v-for="item in field.items"
-                    :key="item.value"
-                    :value="item.value"
-                >
-                    {{ item.label }}
-                </SelectItem>
-            </SelectContent>
-        </Select>
+            :model-value="filters[field.name]"
+            :placeholder="$t(field.placeholder)"
+            :items="field.items"
+            :test-id="`event-filter-${field.name}`"
+            @update:model-value="apply({ [field.name]: $event })"
+        />
 
         <Button
             v-if="hasFilters"

@@ -12,13 +12,13 @@ use App\Enums\EventSort;
 use App\Enums\Profession;
 use App\Enums\Voivodeship;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Events\ListEventsRequest;
 use App\Http\Requests\Admin\Events\StoreEventRequest;
 use App\Http\Requests\Admin\Events\UpdateEventRequest;
 use App\Http\Resources\EventResource;
 use App\Models\Event;
 use App\Models\Specialization;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -27,17 +27,13 @@ final class EventController extends Controller
 {
     /**
      * Show the nearest and the most recently finished events; choosing an order,
-     * searching or opening the deleted events switches to a full paginated list.
+     * filtering or opening the deleted events switches to a full paginated list.
      */
-    public function index(Request $request): Response
+    public function index(ListEventsRequest $request): Response
     {
         Gate::authorize('viewAny', Event::class);
 
-        $search = $request->string('search')->trim()->value();
-        $trashed = $request->boolean('trashed');
-        $sort = $request->enum('sort', EventSort::class) ?? EventSort::UpcomingThenPast;
-
-        $isOverview = $sort === EventSort::UpcomingThenPast && $search === '' && ! $trashed;
+        $isOverview = $request->wantsOverview();
 
         return Inertia::render('admin/events/Index', [
             'overview' => $isOverview ? [
@@ -46,17 +42,14 @@ final class EventController extends Controller
             ] : null,
             'events' => $isOverview ? null : EventResource::collection(
                 Event::query()
-                    ->when($trashed, fn ($query) => $query->onlyTrashed())
-                    ->when($search !== '', fn ($query) => $query->matchingSearch($search))
-                    ->sortedBy($sort)
+                    ->when($request->showsDeleted(), fn ($query) => $query->onlyTrashed())
+                    ->filteredBy(...$request->eventFilters())
+                    ->sortedBy($request->sort())
                     ->paginate(15)
                     ->withQueryString(),
             ),
-            'filters' => [
-                'search' => $search,
-                'trashed' => $trashed,
-                'sort' => $sort->value,
-            ],
+            'filters' => $request->selectedFilters(),
+            'filterOptions' => $request->filterOptions(),
             'sorts' => EventSort::options(),
         ]);
     }

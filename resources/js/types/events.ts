@@ -53,3 +53,13 @@ export type EventFilterOptions = {
     voivodeships: SelectOption[];
     prices: SelectOption[];
 };
+
+export type AdminEventFilters = EventFilters & {
+    visibility: string;
+    trashed: boolean;
+    sort: string;
+};
+
+export type AdminEventFilterOptions = EventFilterOptions & {
+    visibilities: SelectOption[];
+};

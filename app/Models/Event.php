@@ -208,6 +208,7 @@ final class Event extends Model
         ?Profession $profession = null,
         ?Voivodeship $voivodeship = null,
         ?EventPriceFilter $price = null,
+        ?bool $isVisible = null,
         string $search = '',
     ): void {
         $query
@@ -224,6 +225,7 @@ final class Event extends Model
             ->when($price === EventPriceFilter::Paid, fn (Builder $query) => $query->where(
                 fn (Builder $prices) => $prices->where('price_online', '>', 0)->orWhere('price_in_person', '>', 0),
             ))
+            ->when($isVisible !== null, fn (Builder $query) => $query->where('is_visible', $isVisible))
             ->when($search !== '', fn (Builder $query) => $query->matchingSearch($search));
     }
 
