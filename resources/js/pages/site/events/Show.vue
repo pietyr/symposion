@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import { Calendar, MapPin } from '@lucide/vue';
+import { Banknote, Calendar, MapPin } from '@lucide/vue';
 import { Badge } from '@/components/ui/badge';
 import { useDateTimeFormat } from '@/composables/useDateTimeFormat';
+import { usePriceFormat } from '@/composables/usePriceFormat';
 import type { PublicEventResource } from '@/types';
 
 defineProps<{
@@ -10,6 +11,7 @@ defineProps<{
 }>();
 
 const { formatDateTimeRange } = useDateTimeFormat();
+const { formatPrice } = usePriceFormat();
 </script>
 
 <template>
@@ -39,6 +41,58 @@ const { formatDateTimeRange } = useDateTimeFormat();
                 </dt>
                 <dd>{{ event.city }}, {{ event.venue }}</dd>
             </div>
+            <div
+                v-if="event.price_online !== null"
+                class="flex items-center gap-2"
+            >
+                <dt>
+                    <Banknote class="size-4" />
+                    <span class="sr-only">{{ $t('Online price') }}</span>
+                </dt>
+                <dd>
+                    {{ $t('Online') }}: {{ formatPrice(event.price_online) }}
+                </dd>
+            </div>
+            <div
+                v-if="event.price_in_person !== null"
+                class="flex items-center gap-2"
+            >
+                <dt>
+                    <Banknote class="size-4" />
+                    <span class="sr-only">{{ $t('In-person price') }}</span>
+                </dt>
+                <dd>
+                    {{ $t('In person') }}:
+                    {{ formatPrice(event.price_in_person) }}
+                </dd>
+            </div>
         </dl>
+
+        <section
+            v-if="event.professions?.length"
+            class="flex flex-col gap-2 pt-2"
+        >
+            <h2 class="text-sm font-medium">{{ $t('For professions') }}</h2>
+            <ul class="flex flex-wrap gap-2">
+                <li v-for="profession in event.professions" :key="profession">
+                    <Badge variant="outline">{{ profession }}</Badge>
+                </li>
+            </ul>
+        </section>
+
+        <section
+            v-if="event.specializations?.length"
+            class="flex flex-col gap-2"
+        >
+            <h2 class="text-sm font-medium">{{ $t('Specializations') }}</h2>
+            <ul class="flex flex-wrap gap-2">
+                <li
+                    v-for="specialization in event.specializations"
+                    :key="specialization"
+                >
+                    <Badge variant="outline">{{ specialization }}</Badge>
+                </li>
+            </ul>
+        </section>
     </article>
 </template>

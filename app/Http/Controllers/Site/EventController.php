@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Site\Events\ListEventsRequest;
 use App\Http\Resources\PublicEventResource;
 use App\Models\Event;
 use Illuminate\Http\Request;
@@ -17,16 +18,20 @@ final class EventController extends Controller
     /**
      * List upcoming events, nearest first.
      */
-    public function index(): Response
+    public function index(ListEventsRequest $request): Response
     {
         $events = Event::query()
             ->visible()
             ->upcoming()
+            ->filteredBy(...$request->eventFilters())
             ->oldest('starts_at')
-            ->paginate(12);
+            ->paginate(12)
+            ->withQueryString();
 
         return Inertia::render('site/events/Index', [
             'events' => PublicEventResource::collection($events),
+            'filters' => $request->selectedFilters(),
+            'filterOptions' => $request->filterOptions(),
         ]);
     }
 
@@ -43,7 +48,10 @@ final class EventController extends Controller
         }
 
         $response = Inertia::render('site/events/Show', [
-            'event' => PublicEventResource::make($event),
+            'event' => PublicEventResource::make($event->load([
+                'professionEntries',
+                'specializations' => fn ($query) => $query->orderBy('name'),
+            ])),
         ])->toResponse($request);
 
         if (! $event->is_visible) {

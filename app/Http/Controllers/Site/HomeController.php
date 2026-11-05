@@ -13,7 +13,7 @@ use Inertia\Response;
 final class HomeController extends Controller
 {
     /**
-     * Show the home page with the nearest upcoming events.
+     * Show the home page with promoted and the nearest upcoming events.
      */
     public function __invoke(): Response
     {
@@ -25,6 +25,9 @@ final class HomeController extends Controller
             ->get();
 
         return Inertia::render('site/Home', [
+            'promoted' => PublicEventResource::collection(
+                Event::query()->visible()->promoted()->upcoming()->oldest('starts_at')->limit(9)->get(),
+            ),
             'events' => PublicEventResource::collection($events),
         ]);
     }

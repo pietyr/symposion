@@ -6,6 +6,7 @@ import { computed, ref, watch } from 'vue';
 import EventController from '@/actions/App/Http/Controllers/Admin/EventController';
 import EventTable from '@/components/admin/events/EventTable.vue';
 import PaginationControls from '@/components/PaginationControls.vue';
+import FilterSelect from '@/components/FilterSelect.vue';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +18,13 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { index } from '@/routes/admin/events';
-import type { EventResource, Paginated, SelectOption } from '@/types';
+import type {
+    AdminEventFilterOptions,
+    AdminEventFilters,
+    EventResource,
+    Paginated,
+    SelectOption,
+} from '@/types';
 
 defineOptions({
     layout: {
@@ -36,11 +43,8 @@ const props = defineProps<{
         past: EventResource[];
     } | null;
     events: Paginated<EventResource> | null;
-    filters: {
-        search: string;
-        trashed: boolean;
-        sort: string;
-    };
+    filters: AdminEventFilters;
+    filterOptions: AdminEventFilterOptions;
     sorts: SelectOption[];
 }>();
 
@@ -52,25 +56,84 @@ const sortQuery = computed(() =>
 
 const search = ref(props.filters.search);
 
-const applyFilters = (sort: string): void => {
+const hasFilters = computed(
+    () =>
+        props.filters.format !== '' ||
+        props.filters.profession !== '' ||
+        props.filters.voivodeship !== '' ||
+        props.filters.price !== '' ||
+        props.filters.visibility !== '' ||
+        props.filters.search !== '',
+);
+
+const apply = (changes: Partial<AdminEventFilters>): void => {
+    const filters = { ...props.filters, search: search.value, ...changes };
+
     router.get(
-        index.url({
-            query: {
-                ...(search.value && { search: search.value }),
-                ...(props.filters.trashed && { trashed: 1 }),
-                ...(sort !== defaultSort && { sort }),
-            },
-        }),
-        {},
+        index.url(),
+        {
+            ...(filters.search && { search: filters.search }),
+            ...(filters.trashed && { trashed: 1 }),
+            ...(filters.sort !== defaultSort && { sort: filters.sort }),
+            ...(filters.format && { format: filters.format }),
+            ...(filters.profession && { profession: filters.profession }),
+            ...(filters.voivodeship && { voivodeship: filters.voivodeship }),
+            ...(filters.price && { price: filters.price }),
+            ...(filters.visibility && { visibility: filters.visibility }),
+        },
         { preserveState: true, preserveScroll: true, replace: true },
     );
+};
+
+const clearFilters = (): void => {
+    search.value = '';
+    apply({
+        search: '',
+        format: '',
+        profession: '',
+        voivodeship: '',
+        price: '',
+        visibility: '',
+    });
 };
 
 // Waits for a pause in typing, so a word sends one request instead of one per letter.
 watch(
     search,
-    useDebounceFn(() => applyFilters(props.filters.sort), 300),
+    useDebounceFn(() => {
+        if (search.value !== props.filters.search) {
+            apply({});
+        }
+    }, 300),
 );
+
+const filterFields = computed(() => [
+    {
+        name: 'format' as const,
+        placeholder: 'All formats',
+        items: props.filterOptions.formats,
+    },
+    {
+        name: 'profession' as const,
+        placeholder: 'All professions',
+        items: props.filterOptions.professions,
+    },
+    {
+        name: 'voivodeship' as const,
+        placeholder: 'All voivodeships',
+        items: props.filterOptions.voivodeships,
+    },
+    {
+        name: 'price' as const,
+        placeholder: 'Any price',
+        items: props.filterOptions.prices,
+    },
+    {
+        name: 'visibility' as const,
+        placeholder: 'Visible and hidden',
+        items: props.filterOptions.visibilities,
+    },
+]);
 </script>
 
 <template>
@@ -116,7 +179,7 @@ watch(
             >
                 <Select
                     :model-value="filters.sort"
-                    @update:model-value="applyFilters(String($event))"
+                    @update:model-value="apply({ sort: String($event) })"
                 >
                     <SelectTrigger
                         class="w-60"
@@ -144,6 +207,30 @@ watch(
                     :aria-label="$t('Search by title or city')"
                     data-test="event-search"
                 />
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-3">
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                <FilterSelect
+                    v-for="field in filterFields"
+                    :key="field.name"
+                    :model-value="filters[field.name]"
+                    :placeholder="$t(field.placeholder)"
+                    :items="field.items"
+                    :test-id="`admin-filter-${field.name}`"
+                    @update:model-value="apply({ [field.name]: $event })"
+                />
+            </div>
+            <div v-if="hasFilters">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    data-test="admin-filter-clear"
+                    @click="clearFilters"
+                >
+                    {{ $t('Clear filters') }}
+                </Button>
             </div>
         </div>
 
