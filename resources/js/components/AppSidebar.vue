@@ -27,7 +27,7 @@ defineProps<{
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
                         <Link :href="navigation.homeHref">
-                            <AppLogo />
+                            <AppLogo :title="navigation.title" />
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

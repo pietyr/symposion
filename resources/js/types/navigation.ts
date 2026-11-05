@@ -15,6 +15,7 @@ export type NavItem = {
 };
 
 export type SidebarNavigation = {
+    title: string;
     label: string;
     homeHref: NonNullable<InertiaLinkProps['href']>;
     items: NavItem[];
