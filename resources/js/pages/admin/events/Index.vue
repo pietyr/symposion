@@ -107,7 +107,6 @@ const { formatDateRange } = useDateTimeFormat();
                     <TableHead>{{ $t('Title') }}</TableHead>
                     <TableHead>{{ $t('Date') }}</TableHead>
                     <TableHead>{{ $t('Format') }}</TableHead>
-                    <TableHead>{{ $t('City') }}</TableHead>
                     <TableHead class="text-right">
                         <span class="sr-only">{{ $t('Actions') }}</span>
                     </TableHead>
@@ -115,21 +114,30 @@ const { formatDateRange } = useDateTimeFormat();
             </TableHeader>
             <TableBody>
                 <TableRow v-for="event in events.data" :key="event.id">
-                    <TableCell class="font-medium">
-                        <Link
-                            v-if="!event.deleted_at"
-                            :href="EventController.edit(event.id)"
-                            class="hover:underline"
-                        >
-                            {{ event.title }}
-                        </Link>
-                        <template v-else>{{ event.title }}</template>
+                    <TableCell>
+                        <div class="flex items-baseline justify-between gap-4">
+                            <Link
+                                v-if="!event.deleted_at"
+                                :href="EventController.edit(event.id)"
+                                class="font-medium hover:underline"
+                            >
+                                {{ event.title }}
+                            </Link>
+                            <span v-else class="font-medium">
+                                {{ event.title }}
+                            </span>
+                            <span
+                                v-if="event.city"
+                                class="text-xs text-muted-foreground"
+                            >
+                                {{ event.city }}
+                            </span>
+                        </div>
                     </TableCell>
                     <TableCell class="whitespace-nowrap">
                         {{ formatDateRange(event.starts_at, event.ends_at) }}
                     </TableCell>
                     <TableCell>{{ event.format_label }}</TableCell>
-                    <TableCell>{{ event.city ?? '—' }}</TableCell>
                     <TableCell class="text-right">
                         <Form
                             v-if="event.deleted_at"
@@ -153,7 +161,7 @@ const { formatDateRange } = useDateTimeFormat();
                         </Button>
                     </TableCell>
                 </TableRow>
-                <TableEmpty v-if="events.data.length === 0" :colspan="5">
+                <TableEmpty v-if="events.data.length === 0" :colspan="4">
                     {{ $t('No events found.') }}
                 </TableEmpty>
             </TableBody>
