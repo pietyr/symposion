@@ -89,6 +89,7 @@ final class EventFactory extends Factory
             'starts_at' => $startsAt,
             'ends_at' => $startsAt->addDays(fake()->numberBetween(0, 2))->setTime(17, 0),
             'is_visible' => false,
+            'is_promoted' => false,
         ];
     }
 
@@ -99,6 +100,16 @@ final class EventFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'is_visible' => true,
+        ]);
+    }
+
+    /**
+     * Indicate that the event is featured on the home page.
+     */
+    public function promoted(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_promoted' => true,
         ]);
     }
 

@@ -28,11 +28,12 @@ use Illuminate\Support\Str;
  * @property CarbonImmutable $starts_at
  * @property CarbonImmutable $ends_at
  * @property bool $is_visible
+ * @property bool $is_promoted
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property CarbonImmutable|null $deleted_at
  */
-#[Fillable(['title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'is_visible'])]
+#[Fillable(['title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'is_visible', 'is_promoted'])]
 final class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
@@ -51,6 +52,7 @@ final class Event extends Model
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'is_visible' => 'boolean',
+            'is_promoted' => 'boolean',
         ];
     }
 

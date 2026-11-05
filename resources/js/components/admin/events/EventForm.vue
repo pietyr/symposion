@@ -151,6 +151,18 @@ const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
             <Label for="is_hidden">{{ $t('Hidden on the event list') }}</Label>
         </div>
 
+        <div class="flex items-center gap-3">
+            <Checkbox
+                id="is_promoted"
+                name="is_promoted"
+                value="1"
+                :default-value="event?.is_promoted ?? false"
+            />
+            <Label for="is_promoted">{{
+                $t('Promoted on the home page')
+            }}</Label>
+        </div>
+
         <Button :disabled="processing" data-test="save-event-button">
             {{ submitLabel }}
         </Button>

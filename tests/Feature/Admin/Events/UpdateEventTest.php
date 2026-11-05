@@ -72,6 +72,14 @@ test('an event can be hidden on the lists', function () {
     expect($this->event->fresh()->is_visible)->toBeFalse();
 });
 
+test('promotion can be switched off', function () {
+    $this->event->forceFill(['is_promoted' => true])->save();
+
+    $this->put(route('admin.events.update', $this->event), $this->payload);
+
+    expect($this->event->fresh()->is_promoted)->toBeFalse();
+});
+
 test('switching an event to online removes its venue', function () {
     $this->put(route('admin.events.update', $this->event), [...$this->payload, 'format' => EventFormat::Online->value]);
 

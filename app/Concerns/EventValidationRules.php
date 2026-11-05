@@ -29,6 +29,7 @@ trait EventValidationRules
             'starts_at' => ['required', 'date'],
             'ends_at' => ['required', 'date', 'after_or_equal:starts_at'],
             'is_visible' => ['required', 'boolean'],
+            'is_promoted' => ['required', 'boolean'],
         ];
     }
 
@@ -38,6 +39,9 @@ trait EventValidationRules
      */
     protected function prepareForValidation(): void
     {
-        $this->merge(['is_visible' => ! $this->boolean('is_hidden')]);
+        $this->merge([
+            'is_visible' => ! $this->boolean('is_hidden'),
+            'is_promoted' => $this->boolean('is_promoted'),
+        ]);
     }
 }

@@ -54,6 +54,15 @@ test('a checked hidden box creates an event outside the lists', function () {
     expect(Event::sole()->is_visible)->toBeFalse();
 });
 
+test('an event can be promoted', function (?string $checkbox, bool $promoted) {
+    $this->post(route('admin.events.store'), [...$this->payload, 'is_promoted' => $checkbox]);
+
+    expect(Event::sole()->is_promoted)->toBe($promoted);
+})->with([
+    'checked' => ['1', true],
+    'unchecked' => [null, false],
+]);
+
 test('online events are stored without a venue', function () {
     $this->post(route('admin.events.store'), [...$this->payload, 'format' => EventFormat::Online->value])
         ->assertSessionHasNoErrors();

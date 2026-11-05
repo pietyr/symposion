@@ -32,6 +32,7 @@ final class EventResource extends JsonResource
             'starts_at' => $this->starts_at->toIso8601String(),
             'ends_at' => $this->ends_at->toIso8601String(),
             'is_visible' => $this->is_visible,
+            'is_promoted' => $this->is_promoted,
             'is_past' => $this->ends_at->isPast(),
             'deleted_at' => $this->deleted_at?->toIso8601String(),
         ];
