@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import EventGrid from '@/components/site/events/EventGrid.vue';
+import PromotedCarousel from '@/components/site/events/PromotedCarousel.vue';
 import { Button } from '@/components/ui/button';
 import { index } from '@/routes/events';
 import type { PublicEventResource } from '@/types';
 
 defineProps<{
+    promoted: PublicEventResource[];
     events: PublicEventResource[];
 }>();
 </script>
@@ -13,20 +15,24 @@ defineProps<{
 <template>
     <Head :title="$t('Medical conferences')" />
 
-    <section class="flex flex-col gap-6">
-        <h1 class="text-3xl font-semibold tracking-tight">
-            {{ $t('Upcoming events') }}
-        </h1>
+    <div class="flex flex-col gap-10">
+        <PromotedCarousel v-if="promoted.length > 0" :events="promoted" />
 
-        <EventGrid
-            :events="events"
-            :empty-message="$t('No upcoming events.')"
-        />
+        <section class="flex flex-col gap-6">
+            <h1 class="text-3xl font-semibold tracking-tight">
+                {{ $t('Upcoming events') }}
+            </h1>
 
-        <div v-if="events.length > 0">
-            <Button variant="outline" as-child>
-                <Link :href="index()">{{ $t('All upcoming events') }}</Link>
-            </Button>
-        </div>
-    </section>
+            <EventGrid
+                :events="events"
+                :empty-message="$t('No upcoming events.')"
+            />
+
+            <div v-if="events.length > 0">
+                <Button variant="outline" as-child>
+                    <Link :href="index()">{{ $t('All upcoming events') }}</Link>
+                </Button>
+            </div>
+        </section>
+    </div>
 </template>

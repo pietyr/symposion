@@ -134,6 +134,15 @@ final class Event extends Model
     }
 
     /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function promoted(Builder $query): void
+    {
+        $query->where('is_promoted', true);
+    }
+
+    /**
      * Events still in progress count as upcoming until they end.
      *
      * @param  Builder<self>  $query

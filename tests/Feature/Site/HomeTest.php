@@ -27,3 +27,19 @@ test('the home page shows at most six events', function () {
     $this->get(route('home'))
         ->assertInertia(fn (Assert $page) => $page->has('events', 6));
 });
+
+test('the home page promotes visible upcoming events, nearest first', function () {
+    $later = Event::factory()->visible()->promoted()->create(['starts_at' => now()->addDays(20), 'ends_at' => now()->addDays(20)]);
+    $sooner = Event::factory()->visible()->promoted()->create(['starts_at' => now()->addDays(10), 'ends_at' => now()->addDays(10)]);
+    Event::factory()->visible()->create();
+    Event::factory()->promoted()->create();
+    Event::factory()->visible()->promoted()->past()->create();
+    Event::factory()->visible()->promoted()->create()->delete();
+
+    $this->get(route('home'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('promoted', 2)
+            ->where('promoted.0.id', $sooner->id)
+            ->where('promoted.1.id', $later->id),
+        );
+});

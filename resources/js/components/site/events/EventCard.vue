@@ -18,7 +18,7 @@ const { formatPriceRange } = usePriceFormat();
 <template>
     <Link
         :href="show({ event: event.id, slug: event.slug })"
-        class="block rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        class="block h-full rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         data-test="event-card"
     >
         <Card class="h-full transition-colors hover:bg-accent/50">
