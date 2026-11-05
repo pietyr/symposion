@@ -31,4 +31,6 @@ export type PublicEventResource = {
     venue: string | null;
     starts_at: string;
     ends_at: string;
+    price_online: number | null;
+    price_in_person: number | null;
 };

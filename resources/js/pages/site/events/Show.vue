@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import { Calendar, MapPin } from '@lucide/vue';
+import { Banknote, Calendar, MapPin } from '@lucide/vue';
 import { Badge } from '@/components/ui/badge';
 import { useDateTimeFormat } from '@/composables/useDateTimeFormat';
+import { usePriceFormat } from '@/composables/usePriceFormat';
 import type { PublicEventResource } from '@/types';
 
 defineProps<{
@@ -10,6 +11,7 @@ defineProps<{
 }>();
 
 const { formatDateTimeRange } = useDateTimeFormat();
+const { formatPrice } = usePriceFormat();
 </script>
 
 <template>
@@ -38,6 +40,31 @@ const { formatDateTimeRange } = useDateTimeFormat();
                     <span class="sr-only">{{ $t('Venue') }}</span>
                 </dt>
                 <dd>{{ event.city }}, {{ event.venue }}</dd>
+            </div>
+            <div
+                v-if="event.price_online !== null"
+                class="flex items-center gap-2"
+            >
+                <dt>
+                    <Banknote class="size-4" />
+                    <span class="sr-only">{{ $t('Online price') }}</span>
+                </dt>
+                <dd>
+                    {{ $t('Online') }}: {{ formatPrice(event.price_online) }}
+                </dd>
+            </div>
+            <div
+                v-if="event.price_in_person !== null"
+                class="flex items-center gap-2"
+            >
+                <dt>
+                    <Banknote class="size-4" />
+                    <span class="sr-only">{{ $t('In-person price') }}</span>
+                </dt>
+                <dd>
+                    {{ $t('In person') }}:
+                    {{ formatPrice(event.price_in_person) }}
+                </dd>
             </div>
         </dl>
     </article>

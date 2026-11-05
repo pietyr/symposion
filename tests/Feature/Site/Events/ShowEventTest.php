@@ -13,6 +13,8 @@ test('a published event is shown without administrative fields', function () {
             ->component('site/events/Show')
             ->where('event.id', $event->id)
             ->where('event.title', $event->title)
+            ->where('event.price_in_person', $event->price_in_person)
+            ->where('event.price_online', null)
             ->missing('event.voivodeship')
             ->missing('event.is_visible')
             ->missing('event.deleted_at'),
