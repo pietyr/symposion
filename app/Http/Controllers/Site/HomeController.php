@@ -18,7 +18,7 @@ final class HomeController extends Controller
     public function __invoke(): Response
     {
         $events = Event::query()
-            ->published()
+            ->visible()
             ->upcoming()
             ->oldest('starts_at')
             ->limit(6)

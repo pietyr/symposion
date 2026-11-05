@@ -19,7 +19,7 @@ beforeEach(function () {
         'venue' => 'Hotel Marriott, Al. Jerozolimskie 65/79',
         'starts_at' => '2027-03-12T09:00',
         'ends_at' => '2027-03-13T17:00',
-        'is_published' => '1',
+        'is_visible' => '1',
     ];
 });
 
@@ -45,14 +45,14 @@ test('an event can be created', function () {
         ->format->toBe(EventFormat::InPerson)
         ->voivodeship->toBe(Voivodeship::Masovian)
         ->city->toBe('Warszawa')
-        ->is_published->toBeTrue()
+        ->is_visible->toBeTrue()
         ->and($event->starts_at->format('Y-m-d H:i'))->toBe('2027-03-12 09:00');
 });
 
 test('an unchecked publish box creates a hidden event', function () {
-    $this->post(route('admin.events.store'), [...$this->payload, 'is_published' => null]);
+    $this->post(route('admin.events.store'), [...$this->payload, 'is_visible' => null]);
 
-    expect(Event::sole()->is_published)->toBeFalse();
+    expect(Event::sole()->is_visible)->toBeFalse();
 });
 
 test('online events are stored without a venue', function () {

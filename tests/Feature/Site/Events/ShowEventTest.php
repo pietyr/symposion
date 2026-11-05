@@ -6,7 +6,7 @@ use App\Models\Event;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('a published event is shown without administrative fields', function () {
-    $event = Event::factory()->published()->create();
+    $event = Event::factory()->visible()->create();
 
     $this->get(route('events.show', ['event' => $event, 'slug' => $event->slug]))
         ->assertInertia(fn (Assert $page) => $page
@@ -14,13 +14,13 @@ test('a published event is shown without administrative fields', function () {
             ->where('event.id', $event->id)
             ->where('event.title', $event->title)
             ->missing('event.voivodeship')
-            ->missing('event.is_published')
+            ->missing('event.is_visible')
             ->missing('event.deleted_at'),
         );
 });
 
 test('an outdated or missing slug redirects to the current address', function (array $slug) {
-    $event = Event::factory()->published()->create(['slug' => 'kongres-kardiologii-krakow']);
+    $event = Event::factory()->visible()->create(['slug' => 'kongres-kardiologii-krakow']);
 
     $this->get(route('events.show', ['event' => $event, ...$slug]))
         ->assertRedirect(route('events.show', ['event' => $event, 'slug' => 'kongres-kardiologii-krakow']))
@@ -42,7 +42,7 @@ test('hidden events open through a direct link but stay out of search engines', 
 });
 
 test('published events can be indexed by search engines', function () {
-    $event = Event::factory()->published()->create();
+    $event = Event::factory()->visible()->create();
 
     $this->get(route('events.show', ['event' => $event, 'slug' => $event->slug]))
         ->assertOk()
@@ -50,7 +50,7 @@ test('published events can be indexed by search engines', function () {
 });
 
 test('deleted events do not exist for visitors', function () {
-    $event = Event::factory()->published()->create();
+    $event = Event::factory()->visible()->create();
     $event->delete();
 
     $this->get(route('events.show', ['event' => $event, 'slug' => $event->slug]))->assertNotFound();

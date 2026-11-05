@@ -11,7 +11,7 @@ export type EventResource = {
     venue: string | null;
     starts_at: string;
     ends_at: string;
-    is_published: boolean;
+    is_visible: boolean;
     deleted_at: string | null;
 };
 

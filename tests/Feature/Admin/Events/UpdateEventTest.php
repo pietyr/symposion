@@ -24,7 +24,7 @@ beforeEach(function () {
         'venue' => $this->event->venue,
         'starts_at' => $this->event->starts_at->format('Y-m-d\TH:i'),
         'ends_at' => $this->event->ends_at->format('Y-m-d\TH:i'),
-        'is_published' => '1',
+        'is_visible' => '1',
     ];
 });
 
@@ -53,7 +53,7 @@ test('an event can be updated', function () {
     expect($this->event->fresh())
         ->venue->toBe('ICE Kraków')
         ->slug->toBe('kongres-kardiologii-krakow')
-        ->is_published->toBeTrue();
+        ->is_visible->toBeTrue();
 });
 
 test('a new title or city gives the event a new slug', function (array $overrides, string $slug) {

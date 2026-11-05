@@ -25,12 +25,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $venue
  * @property CarbonImmutable $starts_at
  * @property CarbonImmutable $ends_at
- * @property bool $is_published
+ * @property bool $is_visible
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property CarbonImmutable|null $deleted_at
  */
-#[Fillable(['title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'is_published'])]
+#[Fillable(['title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'is_visible'])]
 final class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
@@ -48,7 +48,7 @@ final class Event extends Model
             'voivodeship' => Voivodeship::class,
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
-            'is_published' => 'boolean',
+            'is_visible' => 'boolean',
         ];
     }
 
@@ -70,9 +70,9 @@ final class Event extends Model
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function published(Builder $query): void
+    protected function visible(Builder $query): void
     {
-        $query->where('is_published', true);
+        $query->where('is_visible', true);
     }
 
     /**

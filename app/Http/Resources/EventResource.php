@@ -31,7 +31,7 @@ final class EventResource extends JsonResource
             'venue' => $this->venue,
             'starts_at' => $this->starts_at->toIso8601String(),
             'ends_at' => $this->ends_at->toIso8601String(),
-            'is_published' => $this->is_published,
+            'is_visible' => $this->is_visible,
             'deleted_at' => $this->deleted_at?->toIso8601String(),
         ];
     }

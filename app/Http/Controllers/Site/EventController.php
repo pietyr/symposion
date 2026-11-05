@@ -20,7 +20,7 @@ final class EventController extends Controller
     public function index(): Response
     {
         $events = Event::query()
-            ->published()
+            ->visible()
             ->upcoming()
             ->oldest('starts_at')
             ->paginate(12);
@@ -46,7 +46,7 @@ final class EventController extends Controller
             'event' => PublicEventResource::make($event),
         ])->toResponse($request);
 
-        if (! $event->is_published) {
+        if (! $event->is_visible) {
             $response->headers->set('X-Robots-Tag', 'noindex');
         }
 

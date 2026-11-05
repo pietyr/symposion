@@ -28,7 +28,7 @@ trait EventValidationRules
             'venue' => [Rule::requiredIf($hasVenue), 'nullable', 'string', 'max:255'],
             'starts_at' => ['required', 'date'],
             'ends_at' => ['required', 'date', 'after_or_equal:starts_at'],
-            'is_published' => ['required', 'boolean'],
+            'is_visible' => ['required', 'boolean'],
         ];
     }
 
@@ -37,6 +37,6 @@ trait EventValidationRules
      */
     protected function prepareForValidation(): void
     {
-        $this->merge(['is_published' => $this->boolean('is_published')]);
+        $this->merge(['is_visible' => $this->boolean('is_visible')]);
     }
 }

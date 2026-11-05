@@ -143,16 +143,14 @@ const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
 
         <div class="flex items-center gap-3">
             <Checkbox
-                id="is_published"
-                name="is_published"
+                id="is_visible"
+                name="is_visible"
                 value="1"
-                :default-value="event?.is_published ?? false"
+                :default-value="event?.is_visible ?? false"
             />
-            <Label for="is_published">{{
-                $t('Published on the website')
-            }}</Label>
+            <Label for="is_visible">{{ $t('Published on the website') }}</Label>
         </div>
-        <InputError :message="errors.is_published" />
+        <InputError :message="errors.is_visible" />
 
         <Button :disabled="processing" data-test="save-event-button">
             {{ submitLabel }}
