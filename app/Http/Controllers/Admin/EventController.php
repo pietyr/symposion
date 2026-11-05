@@ -9,6 +9,7 @@ use App\Actions\Events\DeleteEvent;
 use App\Actions\Events\UpdateEvent;
 use App\Enums\EventFormat;
 use App\Enums\EventSort;
+use App\Enums\Profession;
 use App\Enums\Voivodeship;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Events\StoreEventRequest;
@@ -76,7 +77,7 @@ final class EventController extends Controller
     {
         Gate::authorize('create', Event::class);
 
-        $createEvent->handle($request->eventAttributes());
+        $createEvent->handle($request->eventAttributes(), $request->eventProfessions());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Event created.')]);
 
@@ -91,7 +92,7 @@ final class EventController extends Controller
         Gate::authorize('update', $event);
 
         return Inertia::render('admin/events/Edit', [
-            'event' => EventResource::make($event),
+            'event' => EventResource::make($event->load('professionEntries')),
             ...$this->formOptions(),
         ]);
     }
@@ -103,7 +104,7 @@ final class EventController extends Controller
     {
         Gate::authorize('update', $event);
 
-        $updateEvent->handle($event, $request->eventAttributes());
+        $updateEvent->handle($event, $request->eventAttributes(), $request->eventProfessions());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Event updated.')]);
 
@@ -125,13 +126,14 @@ final class EventController extends Controller
     }
 
     /**
-     * @return array{formats: list<array{value: string, label: string}>, voivodeships: list<array{value: string, label: string}>}
+     * @return array{formats: list<array{value: string, label: string}>, voivodeships: list<array{value: string, label: string}>, professions: list<array{value: string, label: string}>}
      */
     private function formOptions(): array
     {
         return [
             'formats' => EventFormat::options(),
             'voivodeships' => Voivodeship::options(),
+            'professions' => Profession::options(),
         ];
     }
 }

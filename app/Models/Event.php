@@ -6,14 +6,18 @@ namespace App\Models;
 
 use App\Enums\EventFormat;
 use App\Enums\EventSort;
+use App\Enums\Profession;
 use App\Enums\Voivodeship;
 use Carbon\CarbonImmutable;
 use Database\Factories\EventFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -35,6 +39,8 @@ use Illuminate\Support\Str;
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property CarbonImmutable|null $deleted_at
+ * @property-read Collection<int, EventProfession> $professionEntries
+ * @property-read list<Profession> $professions
  */
 #[Fillable(['title', 'invoice_title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'price_online', 'price_in_person', 'is_visible', 'is_promoted'])]
 final class Event extends Model
@@ -59,6 +65,36 @@ final class Event extends Model
             'is_visible' => 'boolean',
             'is_promoted' => 'boolean',
         ];
+    }
+
+    /**
+     * @return HasMany<EventProfession, $this>
+     */
+    public function professionEntries(): HasMany
+    {
+        return $this->hasMany(EventProfession::class);
+    }
+
+    /**
+     * Professions the event is open to; values the enum no longer knows are skipped.
+     *
+     * @return Attribute<list<Profession>, never>
+     */
+    protected function professions(): Attribute
+    {
+        return Attribute::get(function (): array {
+            $professions = [];
+
+            foreach ($this->professionEntries as $entry) {
+                $profession = Profession::tryFrom($entry->profession);
+
+                if ($profession !== null) {
+                    $professions[] = $profession;
+                }
+            }
+
+            return $professions;
+        });
     }
 
     /**

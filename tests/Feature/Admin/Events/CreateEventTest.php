@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\EventFormat;
+use App\Enums\Profession;
 use App\Enums\Voivodeship;
 use App\Models\Event;
 use App\Models\User;
@@ -20,6 +21,7 @@ beforeEach(function () {
         'starts_at' => '2027-03-12T09:00',
         'ends_at' => '2027-03-13T17:00',
         'price_in_person' => '150',
+        'professions' => [Profession::Doctor->value, Profession::Student->value],
     ];
 });
 
@@ -28,7 +30,8 @@ test('the create form lists formats and voivodeships', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('admin/events/Create')
             ->has('formats', count(EventFormat::cases()))
-            ->has('voivodeships', count(Voivodeship::cases())),
+            ->has('voivodeships', count(Voivodeship::cases()))
+            ->has('professions', count(Profession::cases())),
         );
 });
 
@@ -149,6 +152,8 @@ test('invalid event data is rejected', function (array $overrides, string $field
     'negative price' => [['price_in_person' => '-1'], 'price_in_person'],
     'too many decimals' => [['price_in_person' => '1,999'], 'price_in_person'],
     'not a number' => [['price_in_person' => 'dużo'], 'price_in_person'],
+    'no professions' => [['professions' => []], 'professions'],
+    'unknown profession' => [['professions' => ['astronaut']], 'professions.0'],
     'end before start' => [['ends_at' => '2027-03-11T09:00'], 'ends_at'],
     'invalid start date' => [['starts_at' => 'jutro'], 'starts_at'],
 ]);

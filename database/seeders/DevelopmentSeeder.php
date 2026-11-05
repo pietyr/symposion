@@ -28,14 +28,14 @@ final class DevelopmentSeeder extends Seeder
             'email' => 'user@example.com',
         ]);
 
-        Event::factory()->visible()->count(8)->create();
-        Event::factory()->visible()->promoted()->count(4)->create();
-        Event::factory()->visible()->online()->count(5)->create();
-        Event::factory()->visible()->hybrid()->count(5)->create();
-        Event::factory()->visible()->past()->count(12)->create();
-        Event::factory()->visible()->past()->online()->count(4)->create();
-        Event::factory()->visible()->past()->hybrid()->count(4)->create();
-        Event::factory()->count(3)->create();
-        Event::factory()->visible()->count(2)->create()->each->delete();
+        Event::factory()->withProfessions()->visible()->count(8)->create();
+        Event::factory()->withProfessions()->visible()->promoted()->count(4)->create();
+        Event::factory()->withProfessions()->visible()->online()->count(5)->create();
+        Event::factory()->withProfessions()->visible()->hybrid()->count(5)->create();
+        Event::factory()->withProfessions()->visible()->past()->count(12)->create();
+        Event::factory()->withProfessions()->visible()->past()->online()->count(4)->create();
+        Event::factory()->withProfessions()->visible()->past()->hybrid()->count(4)->create();
+        Event::factory()->withProfessions()->count(3)->create();
+        Event::factory()->withProfessions()->visible()->count(2)->create()->each->delete();
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Enums\Profession;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -34,6 +35,10 @@ final class EventResource extends JsonResource
             'ends_at' => $this->ends_at->toIso8601String(),
             'price_online' => $this->price_online,
             'price_in_person' => $this->price_in_person,
+            'professions' => $this->whenLoaded('professionEntries', fn (): array => array_map(
+                fn (Profession $profession): string => $profession->value,
+                $this->professions,
+            )),
             'is_visible' => $this->is_visible,
             'is_promoted' => $this->is_promoted,
             'is_past' => $this->ends_at->isPast(),

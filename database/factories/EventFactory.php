@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Enums\EventFormat;
+use App\Enums\Profession;
 use App\Enums\Voivodeship;
 use App\Models\Event;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -113,6 +114,21 @@ final class EventFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'is_promoted' => true,
         ]);
+    }
+
+    /**
+     * Open the event to a random selection of professions.
+     */
+    public function withProfessions(): static
+    {
+        return $this->afterCreating(function (Event $event): void {
+            $professions = fake()->randomElements(Profession::cases(), fake()->numberBetween(1, count(Profession::cases())));
+
+            $event->professionEntries()->createMany(array_map(
+                fn (Profession $profession): array => ['profession' => $profession->value],
+                $professions,
+            ));
+        });
     }
 
     /**

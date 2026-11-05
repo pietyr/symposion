@@ -20,6 +20,7 @@ const props = defineProps<{
     action: RouteFormDefinition<'post'>;
     formats: SelectOption[];
     voivodeships: SelectOption[];
+    professions: SelectOption[];
     submitLabel: string;
     event?: EventResource;
 }>();
@@ -27,6 +28,10 @@ const props = defineProps<{
 const format = ref<EventFormat>(props.event?.format ?? 'in_person');
 const hasVenue = computed(() => format.value !== 'online');
 const hasOnlineAttendance = computed(() => format.value !== 'in_person');
+
+// A new event is open to everyone until the admin narrows it down.
+const isProfessionChecked = (profession: string): boolean =>
+    props.event?.professions?.includes(profession) ?? true;
 
 const groszeToZlotys = (grosze?: number | null): string | undefined =>
     grosze === null || grosze === undefined
@@ -184,6 +189,30 @@ const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
             />
             <InputError :message="errors.invoice_title" />
         </div>
+
+        <fieldset class="grid gap-3">
+            <legend class="mb-2 text-sm leading-none font-medium">
+                {{ $t('Professions') }}
+            </legend>
+            <div class="grid gap-2 sm:grid-cols-2">
+                <div
+                    v-for="profession in professions"
+                    :key="profession.value"
+                    class="flex items-center gap-3"
+                >
+                    <Checkbox
+                        :id="`profession_${profession.value}`"
+                        name="professions[]"
+                        :value="profession.value"
+                        :default-value="isProfessionChecked(profession.value)"
+                    />
+                    <Label :for="`profession_${profession.value}`">
+                        {{ profession.label }}
+                    </Label>
+                </div>
+            </div>
+            <InputError :message="errors.professions" />
+        </fieldset>
 
         <div class="flex items-center gap-3">
             <Checkbox

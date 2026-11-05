@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\EventFormat;
+use App\Enums\Profession;
 use App\Models\Event;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -25,6 +26,7 @@ beforeEach(function () {
         'starts_at' => $this->event->starts_at->format('Y-m-d\TH:i'),
         'ends_at' => $this->event->ends_at->format('Y-m-d\TH:i'),
         'price_in_person' => '100,00',
+        'professions' => [Profession::Doctor->value],
     ];
 });
 
