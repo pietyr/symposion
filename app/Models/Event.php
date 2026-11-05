@@ -96,6 +96,22 @@ final class Event extends Model
     }
 
     /**
+     * Upcoming events first, nearest on top, then past events, most recent on top.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function upcomingThenPast(Builder $query): void
+    {
+        $now = now();
+
+        $query
+            ->orderByRaw('ends_at < ?', [$now])
+            ->orderByRaw('CASE WHEN ends_at >= ? THEN starts_at END ASC', [$now])
+            ->orderByRaw('CASE WHEN ends_at < ? THEN starts_at END DESC', [$now]);
+    }
+
+    /**
      * @param  Builder<self>  $query
      */
     #[Scope]

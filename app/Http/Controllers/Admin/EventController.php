@@ -23,7 +23,7 @@ use Inertia\Response;
 final class EventController extends Controller
 {
     /**
-     * List events, newest start date first; deleted ones are shown on request.
+     * List events, upcoming before past; deleted ones are shown on request.
      */
     public function index(Request $request): Response
     {
@@ -35,7 +35,7 @@ final class EventController extends Controller
         $events = Event::query()
             ->when($trashed, fn ($query) => $query->onlyTrashed())
             ->when($search !== '', fn ($query) => $query->titleContains($search))
-            ->orderByDesc('starts_at')
+            ->upcomingThenPast()
             ->paginate(15)
             ->withQueryString();
 

@@ -10,18 +10,36 @@ beforeEach(function () {
     $this->actingAs(User::factory()->admin()->create());
 });
 
-test('the list shows active events with the latest start date first', function () {
-    $earlier = Event::factory()->create(['starts_at' => now()->addDays(10), 'ends_at' => now()->addDays(10)]);
+test('the list shows active events, upcoming from the nearest, then past from the most recent', function () {
+    $older = Event::factory()->create(['starts_at' => now()->subDays(20), 'ends_at' => now()->subDays(20)]);
     $later = Event::factory()->create(['starts_at' => now()->addDays(20), 'ends_at' => now()->addDays(20)]);
+    $recent = Event::factory()->create(['starts_at' => now()->subDays(10), 'ends_at' => now()->subDays(10)]);
+    $sooner = Event::factory()->create(['starts_at' => now()->addDays(10), 'ends_at' => now()->addDays(10)]);
     Event::factory()->create()->delete();
 
     $this->get(route('admin.events.index'))
         ->assertInertia(fn (Assert $page) => $page
             ->component('admin/events/Index')
-            ->has('events.data', 2)
-            ->where('events.data.0.id', $later->id)
-            ->where('events.data.1.id', $earlier->id)
+            ->has('events.data', 4)
+            ->where('events.data.0.id', $sooner->id)
+            ->where('events.data.0.is_past', false)
+            ->where('events.data.1.id', $later->id)
+            ->where('events.data.2.id', $recent->id)
+            ->where('events.data.2.is_past', true)
+            ->where('events.data.3.id', $older->id)
             ->where('filters.trashed', false),
+        );
+});
+
+test('an event in progress is listed with the upcoming ones', function () {
+    $inProgress = Event::factory()->create(['starts_at' => now()->subDay(), 'ends_at' => now()->addDay()]);
+    Event::factory()->create(['starts_at' => now()->addDays(10), 'ends_at' => now()->addDays(10)]);
+    Event::factory()->past()->create();
+
+    $this->get(route('admin.events.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('events.data.0.id', $inProgress->id)
+            ->where('events.data.0.is_past', false),
         );
 });
 

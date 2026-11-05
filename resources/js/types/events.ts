@@ -12,6 +12,7 @@ export type EventResource = {
     starts_at: string;
     ends_at: string;
     is_visible: boolean;
+    is_past: boolean;
     deleted_at: string | null;
 };
 
