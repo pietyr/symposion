@@ -16,6 +16,55 @@ use Illuminate\Support\Str;
 final class EventFactory extends Factory
 {
     /**
+     * Adjective stems of the voivodeships with their capitals, so a city always matches its region.
+     *
+     * @var array<string, array{string, non-empty-list<string>}>
+     */
+    private const array REGIONS = [
+        'dolnoslaskie' => ['Dolnośląsk', ['Wrocław']],
+        'kujawsko-pomorskie' => ['Kujawsko-Pomorsk', ['Bydgoszcz', 'Toruń']],
+        'lubelskie' => ['Lubelsk', ['Lublin']],
+        'lubuskie' => ['Lubusk', ['Gorzów Wielkopolski', 'Zielona Góra']],
+        'lodzkie' => ['Łódzk', ['Łódź']],
+        'malopolskie' => ['Małopolsk', ['Kraków']],
+        'mazowieckie' => ['Mazowieck', ['Warszawa']],
+        'opolskie' => ['Opolsk', ['Opole']],
+        'podkarpackie' => ['Podkarpack', ['Rzeszów']],
+        'podlaskie' => ['Podlask', ['Białystok']],
+        'pomorskie' => ['Pomorsk', ['Gdańsk']],
+        'slaskie' => ['Śląsk', ['Katowice']],
+        'swietokrzyskie' => ['Świętokrzysk', ['Kielce']],
+        'warminsko-mazurskie' => ['Warmińsko-Mazursk', ['Olsztyn']],
+        'wielkopolskie' => ['Wielkopolsk', ['Poznań']],
+        'zachodniopomorskie' => ['Zachodniopomorsk', ['Szczecin']],
+    ];
+
+    /**
+     * Event kinds with the grammatical gender their adjectives must agree with.
+     *
+     * @var non-empty-list<array{string, string}>
+     */
+    private const array KINDS = [
+        ['Kongres', 'masculine'],
+        ['Zjazd', 'masculine'],
+        ['Konferencja', 'feminine'],
+        ['Akademia', 'feminine'],
+        ['Sympozjum', 'neuter'],
+        ['Spotkanie', 'neuter'],
+        ['Forum', 'neuter'],
+        ['Warsztaty', 'neuter'],
+    ];
+
+    /**
+     * @var non-empty-list<string>
+     */
+    private const array SPECIALTIES = [
+        'Anestezjologiczn', 'Chirurgiczn', 'Dermatologiczn', 'Diabetologiczn', 'Geriatryczn',
+        'Ginekologiczn', 'Hematologiczn', 'Internistyczn', 'Kardiologiczn', 'Neurologiczn',
+        'Okulistyczn', 'Onkologiczn', 'Ortopedyczn', 'Pediatryczn', 'Psychiatryczn',
+    ];
+
+    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
@@ -26,20 +75,17 @@ final class EventFactory extends Factory
             ->addDays(fake()->numberBetween(7, 180))
             ->setTime(9, 0);
 
-        $kinds = ['Konferencja', 'Kongres', 'Sympozjum', 'Warsztaty'];
-        $fields = ['Kardiologii', 'Pediatrii', 'Onkologii', 'Neurologii', 'Diabetologii', 'Medycyny Rodzinnej', 'Psychiatrii', 'Pielęgniarstwa'];
-        $title = $kinds[fake()->numberBetween(0, count($kinds) - 1)]
-            .' '.$fields[fake()->numberBetween(0, count($fields) - 1)]
-            .' '.$startsAt->year;
+        $voivodeship = $this->pick(Voivodeship::cases());
 
         return [
-            'title' => $title,
-            // Resolved last, so states that drop the city (online) get a title-only slug.
+            // Resolved after the states, so online events are not named after a region.
+            'title' => fn (array $attributes): string => $this->titleFor($attributes['voivodeship']),
             'slug' => fn (array $attributes): string => Str::slug(trim($attributes['title'].' '.$attributes['city'])),
             'format' => EventFormat::InPerson,
-            'voivodeship' => fake()->randomElement(Voivodeship::cases()),
-            'city' => fake()->city(),
-            'venue' => fake()->company().', '.fake()->streetAddress(),
+            'voivodeship' => $voivodeship,
+            'city' => $this->pick(self::REGIONS[$voivodeship->value][1]),
+            'venue' => $this->pick(['Centrum Kongresowe', 'Centrum Konferencyjne', 'Hotel Novotel', 'Hotel Mercure', 'Collegium Medicum', 'Uniwersytet Medyczny'])
+                .', ul. '.fake()->streetName().' '.fake()->numberBetween(1, 120),
             'starts_at' => $startsAt,
             'ends_at' => $startsAt->addDays(fake()->numberBetween(0, 2))->setTime(17, 0),
             'is_visible' => false,
@@ -94,5 +140,44 @@ final class EventFactory extends Factory
                 'ends_at' => $startsAt->addDays(fake()->numberBetween(0, 2))->setTime(17, 0),
             ];
         });
+    }
+
+    /**
+     * Compose a title such as "IV Małopolskie Warsztaty Onkologiczne".
+     */
+    private function titleFor(?Voivodeship $voivodeship): string
+    {
+        [$kind, $gender] = $this->pick(self::KINDS);
+
+        $regionEnding = ['masculine' => 'i', 'feminine' => 'a', 'neuter' => 'ie'][$gender];
+        $specialtyEnding = ['masculine' => 'y', 'feminine' => 'a', 'neuter' => 'e'][$gender];
+
+        $region = match (true) {
+            $voivodeship === null => 'Ogólnopolsk'.$regionEnding,
+            fake()->boolean(70) => self::REGIONS[$voivodeship->value][0].$regionEnding,
+            default => null,
+        };
+
+        $edition = fake()->boolean(35)
+            ? $this->pick(['II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XV'])
+            : null;
+
+        return implode(' ', array_filter([
+            $edition,
+            $region,
+            $kind,
+            $this->pick(self::SPECIALTIES).$specialtyEnding,
+        ]));
+    }
+
+    /**
+     * @template TItem
+     *
+     * @param  non-empty-list<TItem>  $items
+     * @return TItem
+     */
+    private function pick(array $items): mixed
+    {
+        return $items[fake()->numberBetween(0, count($items) - 1)];
     }
 }

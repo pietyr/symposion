@@ -1,24 +1,23 @@
 <script setup lang="ts">
-import { Form, Head, Link } from '@inertiajs/vue3';
-import { Plus, RotateCcw, Search } from '@lucide/vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { Plus } from '@lucide/vue';
+import { useDebounceFn } from '@vueuse/core';
+import { computed, ref, watch } from 'vue';
 import EventController from '@/actions/App/Http/Controllers/Admin/EventController';
-import RestoreEventController from '@/actions/App/Http/Controllers/Admin/RestoreEventController';
+import EventTable from '@/components/admin/events/EventTable.vue';
 import PaginationControls from '@/components/PaginationControls.vue';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableEmpty,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import { useDateTimeFormat } from '@/composables/useDateTimeFormat';
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { index } from '@/routes/admin/events';
-import type { EventResource, Paginated } from '@/types';
+import type { EventResource, Paginated, SelectOption } from '@/types';
 
 defineOptions({
     layout: {
@@ -31,15 +30,47 @@ defineOptions({
     },
 });
 
-defineProps<{
-    events: Paginated<EventResource>;
+const props = defineProps<{
+    overview: {
+        upcoming: EventResource[];
+        past: EventResource[];
+    } | null;
+    events: Paginated<EventResource> | null;
     filters: {
         search: string;
         trashed: boolean;
+        sort: string;
     };
+    sorts: SelectOption[];
 }>();
 
-const { formatDateTimeRange } = useDateTimeFormat();
+const defaultSort = 'upcoming_then_past';
+
+const sortQuery = computed(() =>
+    props.filters.sort === defaultSort ? {} : { sort: props.filters.sort },
+);
+
+const search = ref(props.filters.search);
+
+const applyFilters = (sort: string): void => {
+    router.get(
+        index.url({
+            query: {
+                ...(search.value && { search: search.value }),
+                ...(props.filters.trashed && { trashed: 1 }),
+                ...(sort !== defaultSort && { sort }),
+            },
+        }),
+        {},
+        { preserveState: true, preserveScroll: true, replace: true },
+    );
+};
+
+// Waits for a pause in typing, so a word sends one request instead of one per letter.
+watch(
+    search,
+    useDebounceFn(() => applyFilters(props.filters.sort), 300),
+);
 </script>
 
 <template>
@@ -63,104 +94,97 @@ const { formatDateTimeRange } = useDateTimeFormat();
                     size="sm"
                     as-child
                 >
-                    <Link :href="index()">{{ $t('Active') }}</Link>
+                    <Link :href="index({ query: sortQuery })">{{
+                        $t('Active')
+                    }}</Link>
                 </Button>
                 <Button
                     :variant="filters.trashed ? 'secondary' : 'ghost'"
                     size="sm"
                     as-child
                 >
-                    <Link :href="index({ query: { trashed: 1 } })">
+                    <Link
+                        :href="index({ query: { ...sortQuery, trashed: 1 } })"
+                    >
                         {{ $t('Deleted') }}
                     </Link>
                 </Button>
             </nav>
 
-            <Form
-                v-bind="index.form()"
-                class="flex w-full max-w-sm gap-2"
-                :options="{ preserveState: true }"
+            <div
+                class="flex w-full flex-wrap items-center justify-end gap-2 lg:w-auto lg:flex-nowrap"
             >
-                <input
-                    v-if="filters.trashed"
-                    type="hidden"
-                    name="trashed"
-                    value="1"
-                />
+                <Select
+                    :model-value="filters.sort"
+                    @update:model-value="applyFilters(String($event))"
+                >
+                    <SelectTrigger
+                        class="w-60"
+                        :aria-label="$t('Sort by')"
+                        data-test="event-sort"
+                    >
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem
+                            v-for="option in sorts"
+                            :key="option.value"
+                            :value="option.value"
+                        >
+                            {{ option.label }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+
                 <Input
-                    name="search"
+                    v-model="search"
                     type="search"
-                    :default-value="filters.search"
-                    :placeholder="$t('Search by title')"
-                    :aria-label="$t('Search by title')"
+                    class="w-full max-w-sm lg:w-80"
+                    :placeholder="$t('Search by title or city')"
+                    :aria-label="$t('Search by title or city')"
+                    data-test="event-search"
                 />
-                <Button type="submit" variant="outline" size="icon">
-                    <Search class="size-4" />
-                    <span class="sr-only">{{ $t('Search') }}</span>
-                </Button>
-            </Form>
+            </div>
         </div>
 
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>{{ $t('Title') }}</TableHead>
-                    <TableHead>{{ $t('Date') }}</TableHead>
-                    <TableHead>{{ $t('Format') }}</TableHead>
-                    <TableHead>{{ $t('City') }}</TableHead>
-                    <TableHead class="text-right">
-                        <span class="sr-only">{{ $t('Actions') }}</span>
-                    </TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                <TableRow v-for="event in events.data" :key="event.id">
-                    <TableCell class="font-medium">
+        <template v-if="overview">
+            <section class="flex flex-col gap-3">
+                <Heading variant="small" :title="$t('Upcoming events')" />
+                <EventTable :events="overview.upcoming" />
+                <div v-if="overview.upcoming.length > 0">
+                    <Button variant="outline" size="sm" as-child>
                         <Link
-                            v-if="!event.deleted_at"
-                            :href="EventController.edit(event.id)"
-                            class="hover:underline"
+                            :href="index({ query: { sort: 'upcoming' } })"
+                            data-test="more-upcoming-events"
                         >
-                            {{ event.title }}
+                            {{ $t('See more') }}
                         </Link>
-                        <template v-else>{{ event.title }}</template>
-                    </TableCell>
-                    <TableCell class="whitespace-nowrap">
-                        {{
-                            formatDateTimeRange(event.starts_at, event.ends_at)
-                        }}
-                    </TableCell>
-                    <TableCell>{{ event.format_label }}</TableCell>
-                    <TableCell>{{ event.city ?? '—' }}</TableCell>
-                    <TableCell class="text-right">
-                        <Form
-                            v-if="event.deleted_at"
-                            v-bind="RestoreEventController.form(event.id)"
-                            v-slot="{ processing }"
-                        >
-                            <Button
-                                type="submit"
-                                variant="outline"
-                                size="sm"
-                                :disabled="processing"
-                            >
-                                <RotateCcw class="size-4" />
-                                {{ $t('Restore') }}
-                            </Button>
-                        </Form>
-                        <Button v-else variant="ghost" size="sm" as-child>
-                            <Link :href="EventController.edit(event.id)">
-                                {{ $t('Edit') }}
-                            </Link>
-                        </Button>
-                    </TableCell>
-                </TableRow>
-                <TableEmpty v-if="events.data.length === 0" :colspan="5">
-                    {{ $t('No events found.') }}
-                </TableEmpty>
-            </TableBody>
-        </Table>
+                    </Button>
+                </div>
+            </section>
 
-        <PaginationControls :paginator="events" />
+            <section class="flex flex-col gap-3">
+                <Heading variant="small" :title="$t('Past events')" />
+                <EventTable :events="overview.past" />
+                <div v-if="overview.past.length > 0">
+                    <Button variant="outline" size="sm" as-child>
+                        <Link
+                            :href="index({ query: { sort: 'past' } })"
+                            data-test="more-past-events"
+                        >
+                            {{ $t('See more') }}
+                        </Link>
+                    </Button>
+                </div>
+            </section>
+        </template>
+
+        <template v-if="events">
+            <EventTable
+                :events="events.data"
+                :with-sections="filters.sort === defaultSort"
+            />
+            <PaginationControls :paginator="events" />
+        </template>
     </div>
 </template>

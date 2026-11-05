@@ -8,6 +8,7 @@ use App\Actions\Events\CreateEvent;
 use App\Actions\Events\DeleteEvent;
 use App\Actions\Events\UpdateEvent;
 use App\Enums\EventFormat;
+use App\Enums\EventSort;
 use App\Enums\Voivodeship;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Events\StoreEventRequest;
@@ -23,7 +24,8 @@ use Inertia\Response;
 final class EventController extends Controller
 {
     /**
-     * List events, newest start date first; deleted ones are shown on request.
+     * Show the nearest and the most recently finished events; choosing an order,
+     * searching or opening the deleted events switches to a full paginated list.
      */
     public function index(Request $request): Response
     {
@@ -31,20 +33,29 @@ final class EventController extends Controller
 
         $search = $request->string('search')->trim()->value();
         $trashed = $request->boolean('trashed');
+        $sort = $request->enum('sort', EventSort::class) ?? EventSort::UpcomingThenPast;
 
-        $events = Event::query()
-            ->when($trashed, fn ($query) => $query->onlyTrashed())
-            ->when($search !== '', fn ($query) => $query->titleContains($search))
-            ->orderByDesc('starts_at')
-            ->paginate(15)
-            ->withQueryString();
+        $isOverview = $sort === EventSort::UpcomingThenPast && $search === '' && ! $trashed;
 
         return Inertia::render('admin/events/Index', [
-            'events' => EventResource::collection($events),
+            'overview' => $isOverview ? [
+                'upcoming' => EventResource::collection(Event::query()->sortedBy(EventSort::Upcoming)->limit(5)->get()),
+                'past' => EventResource::collection(Event::query()->sortedBy(EventSort::Past)->limit(5)->get()),
+            ] : null,
+            'events' => $isOverview ? null : EventResource::collection(
+                Event::query()
+                    ->when($trashed, fn ($query) => $query->onlyTrashed())
+                    ->when($search !== '', fn ($query) => $query->matchingSearch($search))
+                    ->sortedBy($sort)
+                    ->paginate(15)
+                    ->withQueryString(),
+            ),
             'filters' => [
                 'search' => $search,
                 'trashed' => $trashed,
+                'sort' => $sort->value,
             ],
+            'sorts' => EventSort::options(),
         ]);
     }
 

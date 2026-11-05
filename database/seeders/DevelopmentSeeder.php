@@ -28,11 +28,13 @@ final class DevelopmentSeeder extends Seeder
             'email' => 'user@example.com',
         ]);
 
-        Event::factory()->visible()->count(6)->create();
-        Event::factory()->visible()->online()->count(3)->create();
-        Event::factory()->visible()->hybrid()->count(3)->create();
-        Event::factory()->visible()->past()->count(4)->create();
-        Event::factory()->count(2)->create();
-        Event::factory()->visible()->create()->delete();
+        Event::factory()->visible()->count(12)->create();
+        Event::factory()->visible()->online()->count(5)->create();
+        Event::factory()->visible()->hybrid()->count(5)->create();
+        Event::factory()->visible()->past()->count(12)->create();
+        Event::factory()->visible()->past()->online()->count(4)->create();
+        Event::factory()->visible()->past()->hybrid()->count(4)->create();
+        Event::factory()->count(3)->create();
+        Event::factory()->visible()->count(2)->create()->each->delete();
     }
 }
