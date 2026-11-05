@@ -26,14 +26,8 @@ final class EventFactory extends Factory
             ->addDays(fake()->numberBetween(7, 180))
             ->setTime(9, 0);
 
-        $kinds = ['Konferencja', 'Kongres', 'Sympozjum', 'Warsztaty'];
-        $fields = ['Kardiologii', 'Pediatrii', 'Onkologii', 'Neurologii', 'Diabetologii', 'Medycyny Rodzinnej', 'Psychiatrii', 'Pielęgniarstwa'];
-        $title = $kinds[fake()->numberBetween(0, count($kinds) - 1)]
-            .' '.$fields[fake()->numberBetween(0, count($fields) - 1)]
-            .' '.$startsAt->year;
-
         return [
-            'title' => $title,
+            'title' => $this->titleForYear($startsAt->year),
             // Resolved last, so states that drop the city (online) get a title-only slug.
             'slug' => fn (array $attributes): string => Str::slug(trim($attributes['title'].' '.$attributes['city'])),
             'format' => EventFormat::InPerson,
@@ -90,9 +84,20 @@ final class EventFactory extends Factory
                 ->setTime(9, 0);
 
             return [
+                'title' => $this->titleForYear($startsAt->year),
                 'starts_at' => $startsAt,
                 'ends_at' => $startsAt->addDays(fake()->numberBetween(0, 2))->setTime(17, 0),
             ];
         });
+    }
+
+    private function titleForYear(int $year): string
+    {
+        $kinds = ['Konferencja', 'Kongres', 'Sympozjum', 'Warsztaty'];
+        $fields = ['Kardiologii', 'Pediatrii', 'Onkologii', 'Neurologii', 'Diabetologii', 'Medycyny Rodzinnej', 'Psychiatrii', 'Pielęgniarstwa'];
+
+        return $kinds[fake()->numberBetween(0, count($kinds) - 1)]
+            .' '.$fields[fake()->numberBetween(0, count($fields) - 1)]
+            .' '.$year;
     }
 }

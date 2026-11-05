@@ -31,7 +31,7 @@ final class DevelopmentSeeder extends Seeder
         Event::factory()->visible()->count(6)->create();
         Event::factory()->visible()->online()->count(3)->create();
         Event::factory()->visible()->hybrid()->count(3)->create();
-        Event::factory()->visible()->past()->count(4)->create();
+        Event::factory()->visible()->past()->count(12)->create();
         Event::factory()->count(2)->create();
         Event::factory()->visible()->create()->delete();
     }
