@@ -104,6 +104,8 @@ final class Event extends Model
     {
         match ($sort) {
             EventSort::UpcomingThenPast => $query->upcomingThenPast(),
+            EventSort::Upcoming => $query->upcoming()->oldest('starts_at'),
+            EventSort::Past => $query->past()->latest('starts_at'),
             // Closest to today in either direction, so an event from last week beats one next year.
             EventSort::Nearest => $query->orderByRaw('ABS(TIMESTAMPDIFF(SECOND, starts_at, ?))', [now()]),
             EventSort::Latest => $query->orderByDesc('starts_at'),

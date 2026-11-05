@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Form, Head, Link, router } from '@inertiajs/vue3';
-import { Plus, RotateCcw, Search } from '@lucide/vue';
+import { Plus, Search } from '@lucide/vue';
 import { computed } from 'vue';
 import EventController from '@/actions/App/Http/Controllers/Admin/EventController';
-import RestoreEventController from '@/actions/App/Http/Controllers/Admin/RestoreEventController';
+import EventTable from '@/components/admin/events/EventTable.vue';
 import PaginationControls from '@/components/PaginationControls.vue';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
@@ -15,16 +15,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableEmpty,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import { useDateTimeFormat } from '@/composables/useDateTimeFormat';
 import { index } from '@/routes/admin/events';
 import type { EventResource, Paginated, SelectOption } from '@/types';
 
@@ -40,7 +30,11 @@ defineOptions({
 });
 
 const props = defineProps<{
-    events: Paginated<EventResource>;
+    overview: {
+        upcoming: EventResource[];
+        past: EventResource[];
+    } | null;
+    events: Paginated<EventResource> | null;
     filters: {
         search: string;
         trashed: boolean;
@@ -48,8 +42,6 @@ const props = defineProps<{
     };
     sorts: SelectOption[];
 }>();
-
-const { formatDateRange } = useDateTimeFormat();
 
 const defaultSort = 'upcoming_then_past';
 
@@ -70,13 +62,6 @@ const applySort = (sort: unknown): void => {
         { preserveState: true, preserveScroll: true },
     );
 };
-
-// Section headers only make sense in the order that keeps the two parts together.
-const startsSection = (index: number): boolean =>
-    props.filters.sort === defaultSort &&
-    (index === 0 ||
-        props.events.data[index - 1].is_past !==
-            props.events.data[index].is_past);
 </script>
 
 <template>
@@ -174,96 +159,44 @@ const startsSection = (index: number): boolean =>
             </div>
         </div>
 
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>{{ $t('Title') }}</TableHead>
-                    <TableHead>{{ $t('Date') }}</TableHead>
-                    <TableHead>{{ $t('Format') }}</TableHead>
-                    <TableHead class="text-right">
-                        <span class="sr-only">{{ $t('Actions') }}</span>
-                    </TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                <template
-                    v-for="(event, rowIndex) in events.data"
-                    :key="event.id"
-                >
-                    <TableRow
-                        v-if="startsSection(rowIndex)"
-                        class="bg-muted/50 hover:bg-muted/50"
-                    >
-                        <TableCell
-                            :colspan="4"
-                            class="font-medium text-muted-foreground"
+        <template v-if="overview">
+            <section class="flex flex-col gap-3">
+                <Heading variant="small" :title="$t('Upcoming events')" />
+                <EventTable :events="overview.upcoming" />
+                <div v-if="overview.upcoming.length > 0">
+                    <Button variant="outline" size="sm" as-child>
+                        <Link
+                            :href="index({ query: { sort: 'upcoming' } })"
+                            data-test="more-upcoming-events"
                         >
-                            {{
-                                event.is_past
-                                    ? $t('Past events')
-                                    : $t('Upcoming events')
-                            }}
-                        </TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell>
-                            <div
-                                class="flex items-baseline justify-between gap-4"
-                            >
-                                <Link
-                                    v-if="!event.deleted_at"
-                                    :href="EventController.edit(event.id)"
-                                    class="font-medium hover:underline"
-                                >
-                                    {{ event.title }}
-                                </Link>
-                                <span v-else class="font-medium">
-                                    {{ event.title }}
-                                </span>
-                                <span
-                                    v-if="event.city"
-                                    class="text-xs text-muted-foreground"
-                                >
-                                    {{ event.city }}
-                                </span>
-                            </div>
-                        </TableCell>
-                        <TableCell class="whitespace-nowrap">
-                            {{
-                                formatDateRange(event.starts_at, event.ends_at)
-                            }}
-                        </TableCell>
-                        <TableCell>{{ event.format_label }}</TableCell>
-                        <TableCell class="text-right">
-                            <Form
-                                v-if="event.deleted_at"
-                                v-bind="RestoreEventController.form(event.id)"
-                                v-slot="{ processing }"
-                            >
-                                <Button
-                                    type="submit"
-                                    variant="outline"
-                                    size="sm"
-                                    :disabled="processing"
-                                >
-                                    <RotateCcw class="size-4" />
-                                    {{ $t('Restore') }}
-                                </Button>
-                            </Form>
-                            <Button v-else variant="ghost" size="sm" as-child>
-                                <Link :href="EventController.edit(event.id)">
-                                    {{ $t('Edit') }}
-                                </Link>
-                            </Button>
-                        </TableCell>
-                    </TableRow>
-                </template>
-                <TableEmpty v-if="events.data.length === 0" :colspan="4">
-                    {{ $t('No events found.') }}
-                </TableEmpty>
-            </TableBody>
-        </Table>
+                            {{ $t('See more') }}
+                        </Link>
+                    </Button>
+                </div>
+            </section>
 
-        <PaginationControls :paginator="events" />
+            <section class="flex flex-col gap-3">
+                <Heading variant="small" :title="$t('Past events')" />
+                <EventTable :events="overview.past" />
+                <div v-if="overview.past.length > 0">
+                    <Button variant="outline" size="sm" as-child>
+                        <Link
+                            :href="index({ query: { sort: 'past' } })"
+                            data-test="more-past-events"
+                        >
+                            {{ $t('See more') }}
+                        </Link>
+                    </Button>
+                </div>
+            </section>
+        </template>
+
+        <template v-if="events">
+            <EventTable
+                :events="events.data"
+                :with-sections="filters.sort === defaultSort"
+            />
+            <PaginationControls :paginator="events" />
+        </template>
     </div>
 </template>

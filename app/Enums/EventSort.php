@@ -7,6 +7,8 @@ namespace App\Enums;
 enum EventSort: string
 {
     case UpcomingThenPast = 'upcoming_then_past';
+    case Upcoming = 'upcoming';
+    case Past = 'past';
     case Nearest = 'nearest';
     case Latest = 'latest';
     case RecentlyAdded = 'recently_added';
@@ -15,6 +17,8 @@ enum EventSort: string
     {
         return match ($this) {
             self::UpcomingThenPast => __('Upcoming and past'),
+            self::Upcoming => __('Upcoming events'),
+            self::Past => __('Past events'),
             self::Nearest => __('Nearest first'),
             self::Latest => __('Latest first'),
             self::RecentlyAdded => __('Recently added'),

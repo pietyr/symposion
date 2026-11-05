@@ -10,7 +10,7 @@ beforeEach(function () {
     $this->actingAs(User::factory()->admin()->create());
 });
 
-test('the list shows active events, upcoming from the nearest, then past from the most recent', function () {
+test('the overview shows the nearest upcoming and the most recently finished events', function () {
     $older = Event::factory()->create(['starts_at' => now()->subDays(20), 'ends_at' => now()->subDays(20)]);
     $later = Event::factory()->create(['starts_at' => now()->addDays(20), 'ends_at' => now()->addDays(20)]);
     $recent = Event::factory()->create(['starts_at' => now()->subDays(10), 'ends_at' => now()->subDays(10)]);
@@ -20,14 +20,25 @@ test('the list shows active events, upcoming from the nearest, then past from th
     $this->get(route('admin.events.index'))
         ->assertInertia(fn (Assert $page) => $page
             ->component('admin/events/Index')
-            ->has('events.data', 4)
-            ->where('events.data.0.id', $sooner->id)
-            ->where('events.data.0.is_past', false)
-            ->where('events.data.1.id', $later->id)
-            ->where('events.data.2.id', $recent->id)
-            ->where('events.data.2.is_past', true)
-            ->where('events.data.3.id', $older->id)
+            ->where('events', null)
+            ->has('overview.upcoming', 2)
+            ->where('overview.upcoming.0.id', $sooner->id)
+            ->where('overview.upcoming.1.id', $later->id)
+            ->has('overview.past', 2)
+            ->where('overview.past.0.id', $recent->id)
+            ->where('overview.past.1.id', $older->id)
             ->where('filters.trashed', false),
+        );
+});
+
+test('the overview is limited to five events on each side', function () {
+    Event::factory()->count(6)->create();
+    Event::factory()->past()->count(6)->create();
+
+    $this->get(route('admin.events.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('overview.upcoming', 5)
+            ->has('overview.past', 5),
         );
 });
 
@@ -38,9 +49,42 @@ test('an event in progress is listed with the upcoming ones', function () {
 
     $this->get(route('admin.events.index'))
         ->assertInertia(fn (Assert $page) => $page
-            ->where('events.data.0.id', $inProgress->id)
-            ->where('events.data.0.is_past', false),
+            ->where('overview.upcoming.0.id', $inProgress->id)
+            ->where('overview.upcoming.0.is_past', false),
         );
+});
+
+test('search results group upcoming events before past ones', function () {
+    $past = Event::factory()->past()->create(['title' => 'Kongres Kardiologii A']);
+    $upcoming = Event::factory()->create(['title' => 'Kongres Kardiologii B']);
+
+    $this->get(route('admin.events.index', ['search' => 'kongres']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('overview', null)
+            ->where('events.data.0.id', $upcoming->id)
+            ->where('events.data.1.id', $past->id),
+        );
+});
+
+test('choosing upcoming or past lists only those events, paginated', function (string $sort, array $listed, array $other) {
+    Event::factory()->state($listed)->count(16)->create();
+    Event::factory()->state($other)->count(3)->create();
+
+    $this->get(route('admin.events.index', ['sort' => $sort]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('overview', null)
+            ->has('events.data', 15)
+            ->where('events.meta.total', 16)
+            ->where('filters.sort', $sort),
+        );
+})->with(function () {
+    $upcoming = ['starts_at' => now()->addDays(10), 'ends_at' => now()->addDays(10)];
+    $past = ['starts_at' => now()->subDays(10), 'ends_at' => now()->subDays(10)];
+
+    return [
+        'upcoming' => ['upcoming', $upcoming, $past],
+        'past' => ['past', $past, $upcoming],
+    ];
 });
 
 test('deleted events are listed on request', function () {
@@ -78,7 +122,7 @@ test('search terms are matched literally', function () {
 test('the list is paginated', function () {
     Event::factory()->count(16)->create();
 
-    $this->get(route('admin.events.index', ['page' => 2]))
+    $this->get(route('admin.events.index', ['sort' => 'latest', 'page' => 2]))
         ->assertInertia(fn (Assert $page) => $page
             ->has('events.data', 1)
             ->where('events.meta.total', 16)
@@ -101,7 +145,6 @@ test('events can be sorted', function (string $sort, array $expectedOrder) {
             ->where('events.data.2.id', $events[$expectedOrder[2]]->id),
         );
 })->with([
-    'upcoming then past' => ['upcoming_then_past', ['tomorrow', 'nextYear', 'lastWeek']],
     'nearest' => ['nearest', ['tomorrow', 'lastWeek', 'nextYear']],
     'latest' => ['latest', ['nextYear', 'tomorrow', 'lastWeek']],
     'recently added' => ['recently_added', ['lastWeek', 'nextYear', 'tomorrow']],
@@ -111,7 +154,7 @@ test('an unknown sort falls back to the default order', function () {
     $this->get(route('admin.events.index', ['sort' => 'nonsense']))
         ->assertInertia(fn (Assert $page) => $page
             ->where('filters.sort', 'upcoming_then_past')
-            ->has('sorts', 4),
+            ->has('sorts', 6),
         );
 });
 
