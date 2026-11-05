@@ -14,6 +14,7 @@ const { breadcrumbs = [] } = defineProps<{
 
 // Computed, because translations finish loading after this persistent layout is set up.
 const navigation = computed<SidebarNavigation>(() => ({
+    title: trans('Admin panel'),
     label: trans('Administration'),
     homeHref: dashboard(),
     items: [

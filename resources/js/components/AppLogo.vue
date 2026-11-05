@@ -2,6 +2,10 @@
 import { usePage } from '@inertiajs/vue3';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 
+defineProps<{
+    title?: string;
+}>();
+
 const name = usePage().props.name;
 </script>
 
@@ -13,7 +17,7 @@ const name = usePage().props.name;
     </div>
     <div class="ml-1 grid flex-1 text-left text-sm">
         <span class="mb-0.5 truncate leading-tight font-semibold">{{
-            name
+            title ?? name
         }}</span>
     </div>
 </template>
