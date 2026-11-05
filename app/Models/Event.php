@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\EventFormat;
+use App\Enums\EventPriceFilter;
 use App\Enums\EventSort;
 use App\Enums\Profession;
 use App\Enums\Voivodeship;
@@ -193,6 +194,37 @@ final class Event extends Model
             ->orderByRaw('ends_at < ?', [$now])
             ->orderByRaw('CASE WHEN ends_at >= ? THEN starts_at END ASC', [$now])
             ->orderByRaw('CASE WHEN ends_at < ? THEN starts_at END DESC', [$now]);
+    }
+
+    /**
+     * Narrow the query down by whichever filters are set.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function filteredBy(
+        Builder $query,
+        ?EventFormat $format = null,
+        ?Profession $profession = null,
+        ?Voivodeship $voivodeship = null,
+        ?EventPriceFilter $price = null,
+        string $search = '',
+    ): void {
+        $query
+            ->when($format, fn (Builder $query, EventFormat $format) => $query->where('format', $format))
+            ->when($voivodeship, fn (Builder $query, Voivodeship $voivodeship) => $query->where('voivodeship', $voivodeship))
+            ->when($profession, fn (Builder $query, Profession $profession) => $query->whereHas(
+                'professionEntries',
+                fn (Builder $entries) => $entries->where('profession', $profession->value),
+            ))
+            // A hybrid event can be both: free online and paid in person.
+            ->when($price === EventPriceFilter::Free, fn (Builder $query) => $query->where(
+                fn (Builder $prices) => $prices->where('price_online', 0)->orWhere('price_in_person', 0),
+            ))
+            ->when($price === EventPriceFilter::Paid, fn (Builder $query) => $query->where(
+                fn (Builder $prices) => $prices->where('price_online', '>', 0)->orWhere('price_in_person', '>', 0),
+            ))
+            ->when($search !== '', fn (Builder $query) => $query->matchingSearch($search));
     }
 
     /**
