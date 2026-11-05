@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\EventFormat;
+use App\Enums\Profession;
 use App\Models\Event;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -24,6 +25,8 @@ beforeEach(function () {
         'venue' => $this->event->venue,
         'starts_at' => $this->event->starts_at->format('Y-m-d\TH:i'),
         'ends_at' => $this->event->ends_at->format('Y-m-d\TH:i'),
+        'price_in_person' => '100,00',
+        'professions' => [Profession::Doctor->value],
     ];
 });
 
@@ -72,12 +75,22 @@ test('an event can be hidden on the lists', function () {
     expect($this->event->fresh()->is_visible)->toBeFalse();
 });
 
+test('promotion can be switched off', function () {
+    $this->event->forceFill(['is_promoted' => true])->save();
+
+    $this->put(route('admin.events.update', $this->event), $this->payload);
+
+    expect($this->event->fresh()->is_promoted)->toBeFalse();
+});
+
 test('switching an event to online removes its venue', function () {
-    $this->put(route('admin.events.update', $this->event), [...$this->payload, 'format' => EventFormat::Online->value]);
+    $this->put(route('admin.events.update', $this->event), [...$this->payload, 'format' => EventFormat::Online->value, 'price_online' => '50']);
 
     expect($this->event->fresh())
         ->format->toBe(EventFormat::Online)
         ->city->toBeNull()
         ->venue->toBeNull()
-        ->slug->toBe('kongres-kardiologii');
+        ->slug->toBe('kongres-kardiologii')
+        ->price_online->toBe(5000)
+        ->price_in_person->toBeNull();
 });

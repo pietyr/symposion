@@ -40,6 +40,7 @@ test('an administrator signs in and opens the admin panel from the user menu', f
         ->click('[role="menuitem"]:has-text("Panel admina")')
         ->assertPathIs(route('admin.dashboard', absolute: false))
         ->assertSee('Administracja')
+        ->assertSee('Narzędzia')
         ->assertNoJavaScriptErrors();
 
     $this->assertAuthenticated();

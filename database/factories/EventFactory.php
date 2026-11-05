@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Enums\EventFormat;
+use App\Enums\Profession;
 use App\Enums\Voivodeship;
 use App\Models\Event;
+use App\Models\Specialization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -88,7 +90,10 @@ final class EventFactory extends Factory
                 .', ul. '.fake()->streetName().' '.fake()->numberBetween(1, 120),
             'starts_at' => $startsAt,
             'ends_at' => $startsAt->addDays(fake()->numberBetween(0, 2))->setTime(17, 0),
+            'price_online' => null,
+            'price_in_person' => $this->randomPrice(),
             'is_visible' => false,
+            'is_promoted' => false,
         ];
     }
 
@@ -103,6 +108,43 @@ final class EventFactory extends Factory
     }
 
     /**
+     * Indicate that the event is featured on the home page.
+     */
+    public function promoted(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_promoted' => true,
+        ]);
+    }
+
+    /**
+     * Open the event to a random selection of professions.
+     */
+    public function withProfessions(): static
+    {
+        return $this->afterCreating(function (Event $event): void {
+            $professions = fake()->randomElements(Profession::cases(), fake()->numberBetween(1, count(Profession::cases())));
+
+            $event->professionEntries()->createMany(array_map(
+                fn (Profession $profession): array => ['profession' => $profession->value],
+                $professions,
+            ));
+        });
+    }
+
+    /**
+     * Target the event at a few of the existing specializations.
+     */
+    public function withSpecializations(): static
+    {
+        return $this->afterCreating(function (Event $event): void {
+            $event->specializations()->attach(
+                Specialization::query()->inRandomOrder()->limit(fake()->numberBetween(1, 3))->pluck('id'),
+            );
+        });
+    }
+
+    /**
      * Indicate that the event takes place online only.
      */
     public function online(): static
@@ -112,6 +154,8 @@ final class EventFactory extends Factory
             'voivodeship' => null,
             'city' => null,
             'venue' => null,
+            'price_online' => $this->randomPrice(),
+            'price_in_person' => null,
         ]);
     }
 
@@ -122,6 +166,7 @@ final class EventFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'format' => EventFormat::Hybrid,
+            'price_online' => $this->randomPrice(),
         ]);
     }
 
@@ -168,6 +213,14 @@ final class EventFactory extends Factory
             $kind,
             $this->pick(self::SPECIALTIES).$specialtyEnding,
         ]));
+    }
+
+    /**
+     * Gross price in grosze; some events are free.
+     */
+    private function randomPrice(): int
+    {
+        return $this->pick([0, 0, 15000, 25000, 39900, 49900, 79900, 120000]);
     }
 
     /**

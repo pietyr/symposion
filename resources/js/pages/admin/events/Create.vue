@@ -24,6 +24,8 @@ defineOptions({
 defineProps<{
     formats: SelectOption[];
     voivodeships: SelectOption[];
+    professions: SelectOption[];
+    specializations: SelectOption[];
 }>();
 </script>
 
@@ -37,6 +39,8 @@ defineProps<{
             :action="EventController.store.form()"
             :formats="formats"
             :voivodeships="voivodeships"
+            :professions="professions"
+            :specializations="specializations"
             :submit-label="$t('Create event')"
         />
     </div>

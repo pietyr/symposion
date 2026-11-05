@@ -30,6 +30,8 @@ defineProps<{
     event: EventResource;
     formats: SelectOption[];
     voivodeships: SelectOption[];
+    professions: SelectOption[];
+    specializations: SelectOption[];
 }>();
 </script>
 
@@ -58,6 +60,8 @@ defineProps<{
             :event="event"
             :formats="formats"
             :voivodeships="voivodeships"
+            :professions="professions"
+            :specializations="specializations"
             :submit-label="$t('Save')"
         />
 

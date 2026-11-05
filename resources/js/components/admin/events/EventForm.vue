@@ -20,12 +20,27 @@ const props = defineProps<{
     action: RouteFormDefinition<'post'>;
     formats: SelectOption[];
     voivodeships: SelectOption[];
+    professions: SelectOption[];
+    specializations: SelectOption[];
     submitLabel: string;
     event?: EventResource;
 }>();
 
 const format = ref<EventFormat>(props.event?.format ?? 'in_person');
 const hasVenue = computed(() => format.value !== 'online');
+const hasOnlineAttendance = computed(() => format.value !== 'in_person');
+
+// A new event is open to everyone until the admin narrows it down.
+const isProfessionChecked = (profession: string): boolean =>
+    props.event?.professions?.includes(profession) ?? true;
+
+const isSpecializationChecked = (specialization: string): boolean =>
+    props.event?.specializations?.includes(specialization) ?? false;
+
+const groszeToZlotys = (grosze?: number | null): string | undefined =>
+    grosze === null || grosze === undefined
+        ? undefined
+        : (grosze / 100).toFixed(2).replace('.', ',');
 
 // ISO strings from the server carry the application's offset, so the first
 // 16 characters are already the local "YYYY-MM-DDTHH:mm" the input expects.
@@ -141,6 +156,96 @@ const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
             </div>
         </div>
 
+        <div class="grid gap-4 sm:grid-cols-2">
+            <div v-if="hasOnlineAttendance" class="grid gap-2">
+                <Label for="price_online">{{ $t('Online price (PLN)') }}</Label>
+                <Input
+                    id="price_online"
+                    name="price_online"
+                    inputmode="decimal"
+                    :default-value="groszeToZlotys(event?.price_online)"
+                    required
+                />
+                <InputError :message="errors.price_online" />
+            </div>
+
+            <div v-if="hasVenue" class="grid gap-2">
+                <Label for="price_in_person">{{
+                    $t('In-person price (PLN)')
+                }}</Label>
+                <Input
+                    id="price_in_person"
+                    name="price_in_person"
+                    inputmode="decimal"
+                    :default-value="groszeToZlotys(event?.price_in_person)"
+                    required
+                />
+                <InputError :message="errors.price_in_person" />
+            </div>
+        </div>
+
+        <div class="grid gap-2">
+            <Label for="invoice_title">{{ $t('Invoice title') }}</Label>
+            <Input
+                id="invoice_title"
+                name="invoice_title"
+                :default-value="event?.invoice_title ?? undefined"
+            />
+            <InputError :message="errors.invoice_title" />
+        </div>
+
+        <fieldset class="grid gap-3">
+            <legend class="mb-2 text-sm leading-none font-medium">
+                {{ $t('Professions') }}
+            </legend>
+            <div class="grid gap-2 sm:grid-cols-2">
+                <div
+                    v-for="profession in professions"
+                    :key="profession.value"
+                    class="flex items-center gap-3"
+                >
+                    <Checkbox
+                        :id="`profession_${profession.value}`"
+                        name="professions[]"
+                        :value="profession.value"
+                        :default-value="isProfessionChecked(profession.value)"
+                    />
+                    <Label :for="`profession_${profession.value}`">
+                        {{ profession.label }}
+                    </Label>
+                </div>
+            </div>
+            <InputError :message="errors.professions" />
+        </fieldset>
+
+        <fieldset class="grid gap-3">
+            <legend class="mb-2 text-sm leading-none font-medium">
+                {{ $t('Specializations') }}
+            </legend>
+            <div
+                class="grid max-h-64 gap-2 overflow-y-auto rounded-md border p-3 sm:grid-cols-2"
+            >
+                <div
+                    v-for="specialization in specializations"
+                    :key="specialization.value"
+                    class="flex items-center gap-3"
+                >
+                    <Checkbox
+                        :id="`specialization_${specialization.value}`"
+                        name="specializations[]"
+                        :value="specialization.value"
+                        :default-value="
+                            isSpecializationChecked(specialization.value)
+                        "
+                    />
+                    <Label :for="`specialization_${specialization.value}`">
+                        {{ specialization.label }}
+                    </Label>
+                </div>
+            </div>
+            <InputError :message="errors.specializations" />
+        </fieldset>
+
         <div class="flex items-center gap-3">
             <Checkbox
                 id="is_hidden"
@@ -149,6 +254,18 @@ const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
                 :default-value="!(event?.is_visible ?? false)"
             />
             <Label for="is_hidden">{{ $t('Hidden on the event list') }}</Label>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <Checkbox
+                id="is_promoted"
+                name="is_promoted"
+                value="1"
+                :default-value="event?.is_promoted ?? false"
+            />
+            <Label for="is_promoted">{{
+                $t('Promoted on the home page')
+            }}</Label>
         </div>
 
         <Button :disabled="processing" data-test="save-event-button">

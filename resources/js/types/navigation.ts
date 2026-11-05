@@ -14,10 +14,14 @@ export type NavItem = {
     exact?: boolean;
 };
 
+export type NavGroup = {
+    label: string;
+    items: NavItem[];
+};
+
 export type SidebarNavigation = {
     title: string;
-    label: string;
     homeHref: NonNullable<InertiaLinkProps['href']>;
-    items: NavItem[];
+    groups: NavGroup[];
     footerItems: NavItem[];
 };

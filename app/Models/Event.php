@@ -6,20 +6,26 @@ namespace App\Models;
 
 use App\Enums\EventFormat;
 use App\Enums\EventSort;
+use App\Enums\Profession;
 use App\Enums\Voivodeship;
 use Carbon\CarbonImmutable;
 use Database\Factories\EventFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 /**
  * @property int $id
  * @property string $title
+ * @property string|null $invoice_title
  * @property string $slug
  * @property EventFormat $format
  * @property Voivodeship|null $voivodeship
@@ -27,12 +33,18 @@ use Illuminate\Support\Str;
  * @property string|null $venue
  * @property CarbonImmutable $starts_at
  * @property CarbonImmutable $ends_at
+ * @property int|null $price_online gross amount in grosze; 0 means free
+ * @property int|null $price_in_person gross amount in grosze; 0 means free
  * @property bool $is_visible
+ * @property bool $is_promoted
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property CarbonImmutable|null $deleted_at
+ * @property-read Collection<int, EventProfession> $professionEntries
+ * @property-read list<Profession> $professions
+ * @property-read Collection<int, Specialization> $specializations
  */
-#[Fillable(['title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'is_visible'])]
+#[Fillable(['title', 'invoice_title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'price_online', 'price_in_person', 'is_visible', 'is_promoted'])]
 final class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
@@ -50,22 +62,66 @@ final class Event extends Model
             'voivodeship' => Voivodeship::class,
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
+            'price_online' => 'integer',
+            'price_in_person' => 'integer',
             'is_visible' => 'boolean',
+            'is_promoted' => 'boolean',
         ];
     }
 
     /**
-     * Online events take place nowhere, so any location left in the form is dropped.
+     * @return HasMany<EventProfession, $this>
      */
-    public function forgetVenueIfOnline(): void
+    public function professionEntries(): HasMany
     {
-        if ($this->format->hasVenue()) {
-            return;
+        return $this->hasMany(EventProfession::class);
+    }
+
+    /**
+     * @return BelongsToMany<Specialization, $this>
+     */
+    public function specializations(): BelongsToMany
+    {
+        return $this->belongsToMany(Specialization::class);
+    }
+
+    /**
+     * Professions the event is open to; values the enum no longer knows are skipped.
+     *
+     * @return Attribute<list<Profession>, never>
+     */
+    protected function professions(): Attribute
+    {
+        return Attribute::get(function (): array {
+            $professions = [];
+
+            foreach ($this->professionEntries as $entry) {
+                $profession = Profession::tryFrom($entry->profession);
+
+                if ($profession !== null) {
+                    $professions[] = $profession;
+                }
+            }
+
+            return $professions;
+        });
+    }
+
+    /**
+     * Drop what the format does not use, such as a venue left in the form of an online event.
+     */
+    public function forgetFieldsOutsideFormat(): void
+    {
+        if (! $this->format->hasVenue()) {
+            $this->voivodeship = null;
+            $this->city = null;
+            $this->venue = null;
+            $this->price_in_person = null;
         }
 
-        $this->voivodeship = null;
-        $this->city = null;
-        $this->venue = null;
+        if (! $this->format->hasOnlineAttendance()) {
+            $this->price_online = null;
+        }
     }
 
     /**
