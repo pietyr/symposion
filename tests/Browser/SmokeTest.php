@@ -16,7 +16,7 @@ test('public pages render without javascript errors or console output', function
 });
 
 test('a visitor opens an event from the home page', function () {
-    $event = Event::factory()->published()->create();
+    $event = Event::factory()->visible()->create();
 
     visit(route('home', absolute: false))
         ->click('@event-card')

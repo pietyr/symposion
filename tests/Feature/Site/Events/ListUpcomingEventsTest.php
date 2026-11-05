@@ -6,11 +6,11 @@ use App\Models\Event;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('only published upcoming events are listed, nearest first', function () {
-    $later = Event::factory()->published()->create(['starts_at' => now()->addDays(20), 'ends_at' => now()->addDays(20)]);
-    $sooner = Event::factory()->published()->create(['starts_at' => now()->addDays(10), 'ends_at' => now()->addDays(10)]);
+    $later = Event::factory()->visible()->create(['starts_at' => now()->addDays(20), 'ends_at' => now()->addDays(20)]);
+    $sooner = Event::factory()->visible()->create(['starts_at' => now()->addDays(10), 'ends_at' => now()->addDays(10)]);
     Event::factory()->create();
-    Event::factory()->published()->past()->create();
-    Event::factory()->published()->create()->delete();
+    Event::factory()->visible()->past()->create();
+    Event::factory()->visible()->create()->delete();
 
     $this->get(route('events.index'))
         ->assertInertia(fn (Assert $page) => $page
@@ -22,7 +22,7 @@ test('only published upcoming events are listed, nearest first', function () {
 });
 
 test('an event in progress is still upcoming', function () {
-    $event = Event::factory()->published()->create(['starts_at' => now()->subDay(), 'ends_at' => now()->addDay()]);
+    $event = Event::factory()->visible()->create(['starts_at' => now()->subDay(), 'ends_at' => now()->addDay()]);
 
     $this->get(route('events.index'))
         ->assertInertia(fn (Assert $page) => $page
@@ -32,7 +32,7 @@ test('an event in progress is still upcoming', function () {
 });
 
 test('the list is paginated', function () {
-    Event::factory()->published()->count(13)->create();
+    Event::factory()->visible()->count(13)->create();
 
     $this->get(route('events.index', ['page' => 2]))
         ->assertInertia(fn (Assert $page) => $page

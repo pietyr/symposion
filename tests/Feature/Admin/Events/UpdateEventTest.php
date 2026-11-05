@@ -24,7 +24,6 @@ beforeEach(function () {
         'venue' => $this->event->venue,
         'starts_at' => $this->event->starts_at->format('Y-m-d\TH:i'),
         'ends_at' => $this->event->ends_at->format('Y-m-d\TH:i'),
-        'is_published' => '1',
     ];
 });
 
@@ -53,7 +52,7 @@ test('an event can be updated', function () {
     expect($this->event->fresh())
         ->venue->toBe('ICE Kraków')
         ->slug->toBe('kongres-kardiologii-krakow')
-        ->is_published->toBeTrue();
+        ->is_visible->toBeTrue();
 });
 
 test('a new title or city gives the event a new slug', function (array $overrides, string $slug) {
@@ -64,6 +63,14 @@ test('a new title or city gives the event a new slug', function (array $override
     'title' => [['title' => 'Kongres Pediatrii'], 'kongres-pediatrii-krakow'],
     'city' => [['city' => 'Gdańsk'], 'kongres-kardiologii-gdansk'],
 ]);
+
+test('an event can be hidden on the lists', function () {
+    $this->event->forceFill(['is_visible' => true])->save();
+
+    $this->put(route('admin.events.update', $this->event), [...$this->payload, 'is_hidden' => '1']);
+
+    expect($this->event->fresh()->is_visible)->toBeFalse();
+});
 
 test('switching an event to online removes its venue', function () {
     $this->put(route('admin.events.update', $this->event), [...$this->payload, 'format' => EventFormat::Online->value]);

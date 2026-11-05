@@ -42,17 +42,17 @@ final class EventFactory extends Factory
             'venue' => fake()->company().', '.fake()->streetAddress(),
             'starts_at' => $startsAt,
             'ends_at' => $startsAt->addDays(fake()->numberBetween(0, 2))->setTime(17, 0),
-            'is_published' => false,
+            'is_visible' => false,
         ];
     }
 
     /**
-     * Indicate that the event is visible on the public site.
+     * Indicate that the event appears on the public event lists.
      */
-    public function published(): static
+    public function visible(): static
     {
         return $this->state(fn (array $attributes) => [
-            'is_published' => true,
+            'is_visible' => true,
         ]);
     }
 

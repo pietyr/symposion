@@ -28,15 +28,16 @@ trait EventValidationRules
             'venue' => [Rule::requiredIf($hasVenue), 'nullable', 'string', 'max:255'],
             'starts_at' => ['required', 'date'],
             'ends_at' => ['required', 'date', 'after_or_equal:starts_at'],
-            'is_published' => ['required', 'boolean'],
+            'is_visible' => ['required', 'boolean'],
         ];
     }
 
     /**
-     * An unchecked checkbox is not submitted at all, so treat a missing flag as "hidden".
+     * The form asks whether the event is hidden, the database stores whether it is visible;
+     * an unchecked checkbox is not submitted at all, so a missing flag means visible.
      */
     protected function prepareForValidation(): void
     {
-        $this->merge(['is_published' => $this->boolean('is_published')]);
+        $this->merge(['is_visible' => ! $this->boolean('is_hidden')]);
     }
 }

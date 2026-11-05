@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
+import { ExternalLink } from '@lucide/vue';
 import EventController from '@/actions/App/Http/Controllers/Admin/EventController';
 import DeleteEventDialog from '@/components/admin/events/DeleteEventDialog.vue';
 import EventForm from '@/components/admin/events/EventForm.vue';
 import Heading from '@/components/Heading.vue';
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { index } from '@/routes/admin/events';
+import { show } from '@/routes/events';
 import type { EventResource, SelectOption } from '@/types';
 
 defineOptions({
@@ -34,7 +37,20 @@ defineProps<{
     <Head :title="event.title" />
 
     <div class="p-4">
-        <Heading :title="event.title" :description="$t('Edit event')" />
+        <div class="flex flex-wrap items-start justify-between gap-4">
+            <Heading :title="event.title" :description="$t('Edit event')" />
+            <Button variant="outline" as-child>
+                <a
+                    :href="show.url({ event: event.id, slug: event.slug })"
+                    target="_blank"
+                    rel="noopener"
+                    data-test="view-event-link"
+                >
+                    <ExternalLink class="size-4" />
+                    {{ $t('View on website') }}
+                </a>
+            </Button>
+        </div>
 
         <EventForm
             :key="event.id"

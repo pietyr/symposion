@@ -18,7 +18,7 @@ final class PastEventController extends Controller
     public function __invoke(): Response
     {
         $events = Event::query()
-            ->published()
+            ->visible()
             ->past()
             ->latest('starts_at')
             ->paginate(12);

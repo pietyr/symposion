@@ -10,7 +10,7 @@ beforeEach(function () {
 });
 
 test('deleting an event moves it to the trash', function () {
-    $event = Event::factory()->published()->create();
+    $event = Event::factory()->visible()->create();
 
     $this->delete(route('admin.events.destroy', $event))
         ->assertRedirect(route('admin.events.index'));
