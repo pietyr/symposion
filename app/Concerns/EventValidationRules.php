@@ -33,10 +33,11 @@ trait EventValidationRules
     }
 
     /**
-     * An unchecked checkbox is not submitted at all, so treat a missing flag as "hidden".
+     * The form asks whether the event is hidden, the database stores whether it is visible;
+     * an unchecked checkbox is not submitted at all, so a missing flag means visible.
      */
     protected function prepareForValidation(): void
     {
-        $this->merge(['is_visible' => $this->boolean('is_visible')]);
+        $this->merge(['is_visible' => ! $this->boolean('is_hidden')]);
     }
 }

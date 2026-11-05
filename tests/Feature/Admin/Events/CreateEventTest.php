@@ -19,7 +19,6 @@ beforeEach(function () {
         'venue' => 'Hotel Marriott, Al. Jerozolimskie 65/79',
         'starts_at' => '2027-03-12T09:00',
         'ends_at' => '2027-03-13T17:00',
-        'is_visible' => '1',
     ];
 });
 
@@ -49,8 +48,8 @@ test('an event can be created', function () {
         ->and($event->starts_at->format('Y-m-d H:i'))->toBe('2027-03-12 09:00');
 });
 
-test('an unchecked publish box creates a hidden event', function () {
-    $this->post(route('admin.events.store'), [...$this->payload, 'is_visible' => null]);
+test('a checked hidden box creates an event outside the lists', function () {
+    $this->post(route('admin.events.store'), [...$this->payload, 'is_hidden' => '1']);
 
     expect(Event::sole()->is_visible)->toBeFalse();
 });
