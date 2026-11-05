@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
@@ -130,11 +131,19 @@ final class Event extends Model
     }
 
     /**
+     * Match every word of the term anywhere in the title. The collation already ignores case
+     * and most Polish diacritics, but treats "ł" as a separate letter, so it is folded here.
+     *
      * @param  Builder<self>  $query
      */
     #[Scope]
     protected function titleContains(Builder $query, string $term): void
     {
-        $query->whereLike('title', '%'.addcslashes($term, '%_\\').'%');
+        foreach (Str::of($term)->squish()->explode(' ') as $word) {
+            $query->whereRaw(
+                "REPLACE(REPLACE(title, 'ł', 'l'), 'Ł', 'l') LIKE ?",
+                ['%'.addcslashes(str_replace(['ł', 'Ł'], 'l', $word), '%_\\').'%'],
+            );
+        }
     }
 }

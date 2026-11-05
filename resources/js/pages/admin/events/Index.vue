@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Form, Head, Link, router } from '@inertiajs/vue3';
-import { Plus, Search } from '@lucide/vue';
-import { computed } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { Plus } from '@lucide/vue';
+import { useDebounceFn } from '@vueuse/core';
+import { computed, ref, watch } from 'vue';
 import EventController from '@/actions/App/Http/Controllers/Admin/EventController';
 import EventTable from '@/components/admin/events/EventTable.vue';
 import PaginationControls from '@/components/PaginationControls.vue';
@@ -49,19 +50,27 @@ const sortQuery = computed(() =>
     props.filters.sort === defaultSort ? {} : { sort: props.filters.sort },
 );
 
-const applySort = (sort: unknown): void => {
+const search = ref(props.filters.search);
+
+const applyFilters = (sort: string): void => {
     router.get(
         index.url({
             query: {
-                ...(props.filters.search && { search: props.filters.search }),
+                ...(search.value && { search: search.value }),
                 ...(props.filters.trashed && { trashed: 1 }),
-                ...(sort !== defaultSort && { sort: String(sort) }),
+                ...(sort !== defaultSort && { sort }),
             },
         }),
         {},
-        { preserveState: true, preserveScroll: true },
+        { preserveState: true, preserveScroll: true, replace: true },
     );
 };
+
+// Waits for a pause in typing, so a word sends one request instead of one per letter.
+watch(
+    search,
+    useDebounceFn(() => applyFilters(props.filters.sort), 300),
+);
 </script>
 
 <template>
@@ -107,7 +116,7 @@ const applySort = (sort: unknown): void => {
             >
                 <Select
                     :model-value="filters.sort"
-                    @update:model-value="applySort"
+                    @update:model-value="applyFilters(String($event))"
                 >
                     <SelectTrigger
                         class="w-60"
@@ -127,35 +136,14 @@ const applySort = (sort: unknown): void => {
                     </SelectContent>
                 </Select>
 
-                <Form
-                    v-bind="index.form()"
-                    class="flex w-full max-w-sm gap-2 lg:w-80"
-                    :options="{ preserveState: true }"
-                >
-                    <input
-                        v-if="filters.sort !== defaultSort"
-                        type="hidden"
-                        name="sort"
-                        :value="filters.sort"
-                    />
-                    <input
-                        v-if="filters.trashed"
-                        type="hidden"
-                        name="trashed"
-                        value="1"
-                    />
-                    <Input
-                        name="search"
-                        type="search"
-                        :default-value="filters.search"
-                        :placeholder="$t('Search by title')"
-                        :aria-label="$t('Search by title')"
-                    />
-                    <Button type="submit" variant="outline" size="icon">
-                        <Search class="size-4" />
-                        <span class="sr-only">{{ $t('Search') }}</span>
-                    </Button>
-                </Form>
+                <Input
+                    v-model="search"
+                    type="search"
+                    class="w-full max-w-sm lg:w-80"
+                    :placeholder="$t('Search by title')"
+                    :aria-label="$t('Search by title')"
+                    data-test="event-search"
+                />
             </div>
         </div>
 

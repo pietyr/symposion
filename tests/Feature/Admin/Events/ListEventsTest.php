@@ -112,6 +112,29 @@ test('events can be searched by title', function () {
         );
 });
 
+test('search ignores case and Polish characters', function (string $term) {
+    $match = Event::factory()->create(['title' => 'Świętokrzyskie Spotkanie Łódzkich Żółtych Ról']);
+    Event::factory()->create(['title' => 'Warsztaty Pediatryczne']);
+
+    $this->get(route('admin.events.index', ['search' => $term]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('events.data', 1)
+            ->where('events.data.0.id', $match->id),
+        );
+})->with(['swietokrzyskie', 'ŚWIĘTOKRZYSKIE', 'lodzkich', 'Łódzkich', 'ŁÓDZKICH', 'zoltych', 'rol']);
+
+test('search matches every word, in any order and as fragments', function () {
+    $match = Event::factory()->create(['title' => 'IV Małopolski Kongres Kardiologiczny']);
+    Event::factory()->create(['title' => 'Małopolskie Warsztaty Onkologiczne']);
+    Event::factory()->create(['title' => 'Pomorski Kongres Kardiologiczny']);
+
+    $this->get(route('admin.events.index', ['search' => '  kard  malop ']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('events.data', 1)
+            ->where('events.data.0.id', $match->id),
+        );
+});
+
 test('search terms are matched literally', function () {
     Event::factory()->create(['title' => 'Kongres Kardiologii 2027']);
 
