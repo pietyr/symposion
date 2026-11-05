@@ -39,7 +39,7 @@ defineProps<{
     };
 }>();
 
-const { formatDateTimeRange } = useDateTimeFormat();
+const { formatDateRange } = useDateTimeFormat();
 </script>
 
 <template>
@@ -126,9 +126,7 @@ const { formatDateTimeRange } = useDateTimeFormat();
                         <template v-else>{{ event.title }}</template>
                     </TableCell>
                     <TableCell class="whitespace-nowrap">
-                        {{
-                            formatDateTimeRange(event.starts_at, event.ends_at)
-                        }}
+                        {{ formatDateRange(event.starts_at, event.ends_at) }}
                     </TableCell>
                     <TableCell>{{ event.format_label }}</TableCell>
                     <TableCell>{{ event.city ?? '—' }}</TableCell>
