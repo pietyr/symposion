@@ -88,6 +88,8 @@ final class EventFactory extends Factory
                 .', ul. '.fake()->streetName().' '.fake()->numberBetween(1, 120),
             'starts_at' => $startsAt,
             'ends_at' => $startsAt->addDays(fake()->numberBetween(0, 2))->setTime(17, 0),
+            'price_online' => null,
+            'price_in_person' => $this->randomPrice(),
             'is_visible' => false,
             'is_promoted' => false,
         ];
@@ -123,6 +125,8 @@ final class EventFactory extends Factory
             'voivodeship' => null,
             'city' => null,
             'venue' => null,
+            'price_online' => $this->randomPrice(),
+            'price_in_person' => null,
         ]);
     }
 
@@ -133,6 +137,7 @@ final class EventFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'format' => EventFormat::Hybrid,
+            'price_online' => $this->randomPrice(),
         ]);
     }
 
@@ -179,6 +184,14 @@ final class EventFactory extends Factory
             $kind,
             $this->pick(self::SPECIALTIES).$specialtyEnding,
         ]));
+    }
+
+    /**
+     * Gross price in grosze; some events are free.
+     */
+    private function randomPrice(): int
+    {
+        return $this->pick([0, 0, 15000, 25000, 39900, 49900, 79900, 120000]);
     }
 
     /**

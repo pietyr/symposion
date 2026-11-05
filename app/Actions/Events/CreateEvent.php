@@ -18,7 +18,7 @@ final class CreateEvent
     public function handle(array $attributes): Event
     {
         $event = new Event($attributes);
-        $event->forgetVenueIfOnline();
+        $event->forgetFieldsOutsideFormat();
         $event->slug = $this->generateEventSlug->handle($event);
         $event->save();
 

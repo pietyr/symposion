@@ -19,7 +19,7 @@ final class UpdateEvent
     public function handle(Event $event, array $attributes): Event
     {
         $event->fill($attributes);
-        $event->forgetVenueIfOnline();
+        $event->forgetFieldsOutsideFormat();
 
         if ($event->isDirty(['title', 'city'])) {
             $event->slug = $this->generateEventSlug->handle($event);

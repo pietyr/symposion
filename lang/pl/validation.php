@@ -199,6 +199,9 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'price_online' => 'cena online',
+        'price_in_person' => 'cena stacjonarna',
+    ],
 
 ];

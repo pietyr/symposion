@@ -19,6 +19,7 @@ beforeEach(function () {
         'venue' => 'Hotel Marriott, Al. Jerozolimskie 65/79',
         'starts_at' => '2027-03-12T09:00',
         'ends_at' => '2027-03-13T17:00',
+        'price_in_person' => '150',
     ];
 });
 
@@ -73,8 +74,39 @@ test('the invoice title is optional', function (?string $invoiceTitle) {
     'empty' => [null],
 ]);
 
+test('prices are stored in grosze', function (string $typed, int $grosze) {
+    $this->post(route('admin.events.store'), [...$this->payload, 'price_in_person' => $typed])
+        ->assertSessionHasNoErrors();
+
+    expect(Event::sole()->price_in_person)->toBe($grosze);
+})->with([
+    'whole' => ['150', 15000],
+    'comma' => ['150,50', 15050],
+    'dot' => ['150.5', 15050],
+    'thousands' => ['1 500,99', 150099],
+    'not distorted by floats' => ['19,99', 1999],
+    'free' => ['0', 0],
+]);
+
+test('each format keeps only its own prices', function (EventFormat $format, ?int $online, ?int $inPerson) {
+    $this->post(route('admin.events.store'), [
+        ...$this->payload,
+        'format' => $format->value,
+        'price_online' => '100',
+        'price_in_person' => '200',
+    ])->assertSessionHasNoErrors();
+
+    expect(Event::sole())
+        ->price_online->toBe($online)
+        ->price_in_person->toBe($inPerson);
+})->with([
+    'online' => [EventFormat::Online, 10000, null],
+    'in person' => [EventFormat::InPerson, null, 20000],
+    'hybrid' => [EventFormat::Hybrid, 10000, 20000],
+]);
+
 test('online events are stored without a venue', function () {
-    $this->post(route('admin.events.store'), [...$this->payload, 'format' => EventFormat::Online->value])
+    $this->post(route('admin.events.store'), [...$this->payload, 'format' => EventFormat::Online->value, 'price_online' => '0'])
         ->assertSessionHasNoErrors();
 
     expect(Event::sole())
@@ -103,6 +135,12 @@ test('invalid event data is rejected', function (array $overrides, string $field
     'hybrid without city' => [['format' => EventFormat::Hybrid->value, 'city' => ''], 'city'],
     'in person without venue' => [['venue' => ''], 'venue'],
     'unknown voivodeship' => [['voivodeship' => 'bawaria'], 'voivodeship'],
+    'in person without a price' => [['price_in_person' => ''], 'price_in_person'],
+    'online without a price' => [['format' => EventFormat::Online->value, 'price_in_person' => null], 'price_online'],
+    'hybrid without an online price' => [['format' => EventFormat::Hybrid->value], 'price_online'],
+    'negative price' => [['price_in_person' => '-1'], 'price_in_person'],
+    'too many decimals' => [['price_in_person' => '1,999'], 'price_in_person'],
+    'not a number' => [['price_in_person' => 'dużo'], 'price_in_person'],
     'end before start' => [['ends_at' => '2027-03-11T09:00'], 'ends_at'],
     'invalid start date' => [['starts_at' => 'jutro'], 'starts_at'],
 ]);

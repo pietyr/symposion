@@ -18,7 +18,10 @@ trait EventValidationRules
      */
     protected function eventRules(): array
     {
-        $hasVenue = EventFormat::tryFrom($this->string('format')->value())?->hasVenue() ?? false;
+        $format = EventFormat::tryFrom($this->string('format')->value());
+        $hasVenue = $format?->hasVenue() ?? false;
+        $hasOnlineAttendance = $format?->hasOnlineAttendance() ?? false;
+        $priceRules = ['nullable', 'decimal:0,2', 'min:0', 'max:100000'];
 
         return [
             'title' => ['required', 'string', 'max:255'],
@@ -29,6 +32,8 @@ trait EventValidationRules
             'venue' => [Rule::requiredIf($hasVenue), 'nullable', 'string', 'max:255'],
             'starts_at' => ['required', 'date'],
             'ends_at' => ['required', 'date', 'after_or_equal:starts_at'],
+            'price_online' => [Rule::requiredIf($hasOnlineAttendance), ...$priceRules],
+            'price_in_person' => [Rule::requiredIf($hasVenue), ...$priceRules],
             'is_visible' => ['required', 'boolean'],
             'is_promoted' => ['required', 'boolean'],
         ];
@@ -41,8 +46,48 @@ trait EventValidationRules
     protected function prepareForValidation(): void
     {
         $this->merge([
+            'price_online' => $this->normalizedPrice('price_online'),
+            'price_in_person' => $this->normalizedPrice('price_in_person'),
             'is_visible' => ! $this->boolean('is_hidden'),
             'is_promoted' => $this->boolean('is_promoted'),
         ]);
+    }
+
+    /**
+     * Validated form data with prices converted from zlotys to grosze.
+     *
+     * @return array<string, mixed>
+     */
+    public function eventAttributes(): array
+    {
+        return [
+            ...$this->validated(),
+            'price_online' => $this->priceInGrosze('price_online'),
+            'price_in_person' => $this->priceInGrosze('price_in_person'),
+        ];
+    }
+
+    /**
+     * Polish users type "1 500,50"; the validation rules expect "1500.50".
+     */
+    private function normalizedPrice(string $field): ?string
+    {
+        return $this->filled($field)
+            ? str_replace([' ', ','], ['', '.'], $this->string($field)->value())
+            : null;
+    }
+
+    /**
+     * Split the string instead of multiplying, because a float could lose a grosz.
+     */
+    private function priceInGrosze(string $field): ?int
+    {
+        if (! $this->filled($field)) {
+            return null;
+        }
+
+        [$zlotys, $grosze] = array_pad(explode('.', $this->string($field)->value(), 2), 2, '');
+
+        return (int) $zlotys * 100 + (int) str_pad($grosze, 2, '0');
     }
 }

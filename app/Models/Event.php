@@ -28,13 +28,15 @@ use Illuminate\Support\Str;
  * @property string|null $venue
  * @property CarbonImmutable $starts_at
  * @property CarbonImmutable $ends_at
+ * @property int|null $price_online gross amount in grosze; 0 means free
+ * @property int|null $price_in_person gross amount in grosze; 0 means free
  * @property bool $is_visible
  * @property bool $is_promoted
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property CarbonImmutable|null $deleted_at
  */
-#[Fillable(['title', 'invoice_title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'is_visible', 'is_promoted'])]
+#[Fillable(['title', 'invoice_title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'price_online', 'price_in_person', 'is_visible', 'is_promoted'])]
 final class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
@@ -52,23 +54,28 @@ final class Event extends Model
             'voivodeship' => Voivodeship::class,
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
+            'price_online' => 'integer',
+            'price_in_person' => 'integer',
             'is_visible' => 'boolean',
             'is_promoted' => 'boolean',
         ];
     }
 
     /**
-     * Online events take place nowhere, so any location left in the form is dropped.
+     * Drop what the format does not use, such as a venue left in the form of an online event.
      */
-    public function forgetVenueIfOnline(): void
+    public function forgetFieldsOutsideFormat(): void
     {
-        if ($this->format->hasVenue()) {
-            return;
+        if (! $this->format->hasVenue()) {
+            $this->voivodeship = null;
+            $this->city = null;
+            $this->venue = null;
+            $this->price_in_person = null;
         }
 
-        $this->voivodeship = null;
-        $this->city = null;
-        $this->venue = null;
+        if (! $this->format->hasOnlineAttendance()) {
+            $this->price_online = null;
+        }
     }
 
     /**

@@ -26,6 +26,12 @@ const props = defineProps<{
 
 const format = ref<EventFormat>(props.event?.format ?? 'in_person');
 const hasVenue = computed(() => format.value !== 'online');
+const hasOnlineAttendance = computed(() => format.value !== 'in_person');
+
+const groszeToZlotys = (grosze?: number | null): string | undefined =>
+    grosze === null || grosze === undefined
+        ? undefined
+        : (grosze / 100).toFixed(2).replace('.', ',');
 
 // ISO strings from the server carry the application's offset, so the first
 // 16 characters are already the local "YYYY-MM-DDTHH:mm" the input expects.
@@ -138,6 +144,34 @@ const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
                     required
                 />
                 <InputError :message="errors.ends_at" />
+            </div>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+            <div v-if="hasOnlineAttendance" class="grid gap-2">
+                <Label for="price_online">{{ $t('Online price (PLN)') }}</Label>
+                <Input
+                    id="price_online"
+                    name="price_online"
+                    inputmode="decimal"
+                    :default-value="groszeToZlotys(event?.price_online)"
+                    required
+                />
+                <InputError :message="errors.price_online" />
+            </div>
+
+            <div v-if="hasVenue" class="grid gap-2">
+                <Label for="price_in_person">{{
+                    $t('In-person price (PLN)')
+                }}</Label>
+                <Input
+                    id="price_in_person"
+                    name="price_in_person"
+                    inputmode="decimal"
+                    :default-value="groszeToZlotys(event?.price_in_person)"
+                    required
+                />
+                <InputError :message="errors.price_in_person" />
             </div>
         </div>
 

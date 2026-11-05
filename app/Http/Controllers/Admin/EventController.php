@@ -76,7 +76,7 @@ final class EventController extends Controller
     {
         Gate::authorize('create', Event::class);
 
-        $createEvent->handle($request->validated());
+        $createEvent->handle($request->eventAttributes());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Event created.')]);
 
@@ -103,7 +103,7 @@ final class EventController extends Controller
     {
         Gate::authorize('update', $event);
 
-        $updateEvent->handle($event, $request->validated());
+        $updateEvent->handle($event, $request->eventAttributes());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Event updated.')]);
 

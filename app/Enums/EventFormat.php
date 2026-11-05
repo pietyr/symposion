@@ -28,6 +28,14 @@ enum EventFormat: string
     }
 
     /**
+     * Whether participants can attend remotely.
+     */
+    public function hasOnlineAttendance(): bool
+    {
+        return $this !== self::InPerson;
+    }
+
+    /**
      * @return list<array{value: string, label: string}>
      */
     public static function options(): array

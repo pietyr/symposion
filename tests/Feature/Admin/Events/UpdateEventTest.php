@@ -24,6 +24,7 @@ beforeEach(function () {
         'venue' => $this->event->venue,
         'starts_at' => $this->event->starts_at->format('Y-m-d\TH:i'),
         'ends_at' => $this->event->ends_at->format('Y-m-d\TH:i'),
+        'price_in_person' => '100,00',
     ];
 });
 
@@ -81,11 +82,13 @@ test('promotion can be switched off', function () {
 });
 
 test('switching an event to online removes its venue', function () {
-    $this->put(route('admin.events.update', $this->event), [...$this->payload, 'format' => EventFormat::Online->value]);
+    $this->put(route('admin.events.update', $this->event), [...$this->payload, 'format' => EventFormat::Online->value, 'price_online' => '50']);
 
     expect($this->event->fresh())
         ->format->toBe(EventFormat::Online)
         ->city->toBeNull()
         ->venue->toBeNull()
-        ->slug->toBe('kongres-kardiologii');
+        ->slug->toBe('kongres-kardiologii')
+        ->price_online->toBe(5000)
+        ->price_in_person->toBeNull();
 });
