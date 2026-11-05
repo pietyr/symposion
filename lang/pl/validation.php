@@ -210,6 +210,7 @@ return [
         'password' => 'hasło',
         'password_confirmation' => 'potwierdzenie hasła',
         'professions' => 'zawody',
+        'specializations' => 'specjalizacje',
         'price_in_person' => 'cena stacjonarna',
         'price_online' => 'cena online',
         'starts_at' => 'rozpoczęcie',

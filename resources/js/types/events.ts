@@ -15,6 +15,7 @@ export type EventResource = {
     price_online: number | null;
     price_in_person: number | null;
     professions?: string[];
+    specializations?: string[];
     is_visible: boolean;
     is_promoted: boolean;
     is_past: boolean;

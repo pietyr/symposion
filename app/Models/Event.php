@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
@@ -41,6 +42,7 @@ use Illuminate\Support\Str;
  * @property CarbonImmutable|null $deleted_at
  * @property-read Collection<int, EventProfession> $professionEntries
  * @property-read list<Profession> $professions
+ * @property-read Collection<int, Specialization> $specializations
  */
 #[Fillable(['title', 'invoice_title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'price_online', 'price_in_person', 'is_visible', 'is_promoted'])]
 final class Event extends Model
@@ -73,6 +75,14 @@ final class Event extends Model
     public function professionEntries(): HasMany
     {
         return $this->hasMany(EventProfession::class);
+    }
+
+    /**
+     * @return BelongsToMany<Specialization, $this>
+     */
+    public function specializations(): BelongsToMany
+    {
+        return $this->belongsToMany(Specialization::class);
     }
 
     /**

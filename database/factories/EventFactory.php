@@ -8,6 +8,7 @@ use App\Enums\EventFormat;
 use App\Enums\Profession;
 use App\Enums\Voivodeship;
 use App\Models\Event;
+use App\Models\Specialization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -128,6 +129,18 @@ final class EventFactory extends Factory
                 fn (Profession $profession): array => ['profession' => $profession->value],
                 $professions,
             ));
+        });
+    }
+
+    /**
+     * Target the event at a few of the existing specializations.
+     */
+    public function withSpecializations(): static
+    {
+        return $this->afterCreating(function (Event $event): void {
+            $event->specializations()->attach(
+                Specialization::query()->inRandomOrder()->limit(fake()->numberBetween(1, 3))->pluck('id'),
+            );
         });
     }
 

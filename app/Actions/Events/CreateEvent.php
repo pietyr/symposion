@@ -19,16 +19,18 @@ final class CreateEvent
      *
      * @param  array<string, mixed>  $attributes  validated event form data
      * @param  list<string>  $professions
+     * @param  list<int>  $specializations
      */
-    public function handle(array $attributes, array $professions): Event
+    public function handle(array $attributes, array $professions, array $specializations): Event
     {
-        return DB::transaction(function () use ($attributes, $professions): Event {
+        return DB::transaction(function () use ($attributes, $professions, $specializations): Event {
             $event = new Event($attributes);
             $event->forgetFieldsOutsideFormat();
             $event->slug = $this->generateEventSlug->handle($event);
             $event->save();
 
             $this->syncEventProfessions->handle($event, $professions);
+            $event->specializations()->sync($specializations);
 
             return $event;
         });

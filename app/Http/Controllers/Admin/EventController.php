@@ -16,6 +16,7 @@ use App\Http\Requests\Admin\Events\StoreEventRequest;
 use App\Http\Requests\Admin\Events\UpdateEventRequest;
 use App\Http\Resources\EventResource;
 use App\Models\Event;
+use App\Models\Specialization;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -77,7 +78,7 @@ final class EventController extends Controller
     {
         Gate::authorize('create', Event::class);
 
-        $createEvent->handle($request->eventAttributes(), $request->eventProfessions());
+        $createEvent->handle($request->eventAttributes(), $request->eventProfessions(), $request->eventSpecializations());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Event created.')]);
 
@@ -92,7 +93,7 @@ final class EventController extends Controller
         Gate::authorize('update', $event);
 
         return Inertia::render('admin/events/Edit', [
-            'event' => EventResource::make($event->load('professionEntries')),
+            'event' => EventResource::make($event->load(['professionEntries', 'specializations'])),
             ...$this->formOptions(),
         ]);
     }
@@ -104,7 +105,7 @@ final class EventController extends Controller
     {
         Gate::authorize('update', $event);
 
-        $updateEvent->handle($event, $request->eventAttributes(), $request->eventProfessions());
+        $updateEvent->handle($event, $request->eventAttributes(), $request->eventProfessions(), $request->eventSpecializations());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Event updated.')]);
 
@@ -126,7 +127,7 @@ final class EventController extends Controller
     }
 
     /**
-     * @return array{formats: list<array{value: string, label: string}>, voivodeships: list<array{value: string, label: string}>, professions: list<array{value: string, label: string}>}
+     * @return array{formats: list<array{value: string, label: string}>, voivodeships: list<array{value: string, label: string}>, professions: list<array{value: string, label: string}>, specializations: list<array{value: string, label: string}>}
      */
     private function formOptions(): array
     {
@@ -134,6 +135,14 @@ final class EventController extends Controller
             'formats' => EventFormat::options(),
             'voivodeships' => Voivodeship::options(),
             'professions' => Profession::options(),
+            'specializations' => array_values(Specialization::query()
+                ->orderBy('name')
+                ->get()
+                ->map(fn (Specialization $specialization): array => [
+                    'value' => (string) $specialization->id,
+                    'label' => $specialization->name,
+                ])
+                ->all()),
         ];
     }
 }

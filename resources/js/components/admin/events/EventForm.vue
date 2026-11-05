@@ -21,6 +21,7 @@ const props = defineProps<{
     formats: SelectOption[];
     voivodeships: SelectOption[];
     professions: SelectOption[];
+    specializations: SelectOption[];
     submitLabel: string;
     event?: EventResource;
 }>();
@@ -32,6 +33,9 @@ const hasOnlineAttendance = computed(() => format.value !== 'in_person');
 // A new event is open to everyone until the admin narrows it down.
 const isProfessionChecked = (profession: string): boolean =>
     props.event?.professions?.includes(profession) ?? true;
+
+const isSpecializationChecked = (specialization: string): boolean =>
+    props.event?.specializations?.includes(specialization) ?? false;
 
 const groszeToZlotys = (grosze?: number | null): string | undefined =>
     grosze === null || grosze === undefined
@@ -212,6 +216,34 @@ const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
                 </div>
             </div>
             <InputError :message="errors.professions" />
+        </fieldset>
+
+        <fieldset class="grid gap-3">
+            <legend class="mb-2 text-sm leading-none font-medium">
+                {{ $t('Specializations') }}
+            </legend>
+            <div
+                class="grid max-h-64 gap-2 overflow-y-auto rounded-md border p-3 sm:grid-cols-2"
+            >
+                <div
+                    v-for="specialization in specializations"
+                    :key="specialization.value"
+                    class="flex items-center gap-3"
+                >
+                    <Checkbox
+                        :id="`specialization_${specialization.value}`"
+                        name="specializations[]"
+                        :value="specialization.value"
+                        :default-value="
+                            isSpecializationChecked(specialization.value)
+                        "
+                    />
+                    <Label :for="`specialization_${specialization.value}`">
+                        {{ specialization.label }}
+                    </Label>
+                </div>
+            </div>
+            <InputError :message="errors.specializations" />
         </fieldset>
 
         <div class="flex items-center gap-3">

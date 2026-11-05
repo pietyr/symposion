@@ -6,6 +6,7 @@ namespace App\Http\Resources;
 
 use App\Enums\Profession;
 use App\Models\Event;
+use App\Models\Specialization;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -39,6 +40,10 @@ final class EventResource extends JsonResource
                 fn (Profession $profession): string => $profession->value,
                 $this->professions,
             )),
+            'specializations' => $this->whenLoaded('specializations', fn (): array => $this->specializations
+                ->map(fn (Specialization $specialization): string => (string) $specialization->id)
+                ->values()
+                ->all()),
             'is_visible' => $this->is_visible,
             'is_promoted' => $this->is_promoted,
             'is_past' => $this->ends_at->isPast(),

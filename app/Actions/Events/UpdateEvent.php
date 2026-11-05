@@ -20,10 +20,11 @@ final class UpdateEvent
      *
      * @param  array<string, mixed>  $attributes  validated event form data
      * @param  list<string>  $professions
+     * @param  list<int>  $specializations
      */
-    public function handle(Event $event, array $attributes, array $professions): Event
+    public function handle(Event $event, array $attributes, array $professions, array $specializations): Event
     {
-        return DB::transaction(function () use ($event, $attributes, $professions): Event {
+        return DB::transaction(function () use ($event, $attributes, $professions, $specializations): Event {
             $event->fill($attributes);
             $event->forgetFieldsOutsideFormat();
 
@@ -34,6 +35,7 @@ final class UpdateEvent
             $event->save();
 
             $this->syncEventProfessions->handle($event, $professions);
+            $event->specializations()->sync($specializations);
 
             return $event;
         });

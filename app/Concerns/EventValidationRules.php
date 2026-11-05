@@ -7,6 +7,7 @@ namespace App\Concerns;
 use App\Enums\EventFormat;
 use App\Enums\Profession;
 use App\Enums\Voivodeship;
+use App\Models\Specialization;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 
@@ -37,6 +38,8 @@ trait EventValidationRules
             'price_in_person' => [Rule::requiredIf($hasVenue), ...$priceRules],
             'professions' => ['required', 'array'],
             'professions.*' => ['distinct', Rule::enum(Profession::class)],
+            'specializations' => ['nullable', 'array'],
+            'specializations.*' => ['integer', 'distinct', Rule::exists(Specialization::class, 'id')],
             'is_visible' => ['required', 'boolean'],
             'is_promoted' => ['required', 'boolean'],
         ];
@@ -64,7 +67,7 @@ trait EventValidationRules
     public function eventAttributes(): array
     {
         return [
-            ...$this->safe()->except('professions'),
+            ...$this->safe()->except(['professions', 'specializations']),
             'price_online' => $this->priceInGrosze('price_online'),
             'price_in_person' => $this->priceInGrosze('price_in_person'),
         ];
@@ -76,6 +79,14 @@ trait EventValidationRules
     public function eventProfessions(): array
     {
         return array_values($this->array('professions'));
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function eventSpecializations(): array
+    {
+        return array_map(intval(...), array_values($this->array('specializations')));
     }
 
     /**
