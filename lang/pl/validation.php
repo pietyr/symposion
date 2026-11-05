@@ -200,8 +200,21 @@ return [
     */
 
     'attributes' => [
-        'price_online' => 'cena online',
+        'city' => 'miasto',
+        'current_password' => 'obecne hasło',
+        'email' => 'adres e-mail',
+        'ends_at' => 'zakończenie',
+        'format' => 'forma udziału',
+        'invoice_title' => 'tytuł na fakturze',
+        'name' => 'imię i nazwisko',
+        'password' => 'hasło',
+        'password_confirmation' => 'potwierdzenie hasła',
         'price_in_person' => 'cena stacjonarna',
+        'price_online' => 'cena online',
+        'starts_at' => 'rozpoczęcie',
+        'title' => 'tytuł',
+        'venue' => 'miejsce',
+        'voivodeship' => 'województwo',
     ],
 
 ];

@@ -122,6 +122,14 @@ test('a submitted slug is ignored', function () {
     expect(Event::sole()->slug)->toBe('ogolnopolski-kongres-kardiologii-warszawa');
 });
 
+test('validation messages use Polish field names', function () {
+    $this->post(route('admin.events.store'), [...$this->payload, 'starts_at' => '', 'ends_at' => '2027-03-11T09:00', 'title' => ''])
+        ->assertSessionHasErrors([
+            'title' => 'Pole tytuł jest wymagane.',
+            'starts_at' => 'Pole rozpoczęcie jest wymagane.',
+        ]);
+});
+
 test('invalid event data is rejected', function (array $overrides, string $field) {
     $this->post(route('admin.events.store'), [...$this->payload, ...$overrides])
         ->assertSessionHasErrors($field);
