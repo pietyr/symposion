@@ -67,5 +67,32 @@ const { formatPrice } = usePriceFormat();
                 </dd>
             </div>
         </dl>
+
+        <section
+            v-if="event.professions?.length"
+            class="flex flex-col gap-2 pt-2"
+        >
+            <h2 class="text-sm font-medium">{{ $t('For professions') }}</h2>
+            <ul class="flex flex-wrap gap-2">
+                <li v-for="profession in event.professions" :key="profession">
+                    <Badge variant="outline">{{ profession }}</Badge>
+                </li>
+            </ul>
+        </section>
+
+        <section
+            v-if="event.specializations?.length"
+            class="flex flex-col gap-2"
+        >
+            <h2 class="text-sm font-medium">{{ $t('Specializations') }}</h2>
+            <ul class="flex flex-wrap gap-2">
+                <li
+                    v-for="specialization in event.specializations"
+                    :key="specialization"
+                >
+                    <Badge variant="outline">{{ specialization }}</Badge>
+                </li>
+            </ul>
+        </section>
     </article>
 </template>

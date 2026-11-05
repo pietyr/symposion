@@ -43,7 +43,10 @@ final class EventController extends Controller
         }
 
         $response = Inertia::render('site/events/Show', [
-            'event' => PublicEventResource::make($event),
+            'event' => PublicEventResource::make($event->load([
+                'professionEntries',
+                'specializations' => fn ($query) => $query->orderBy('name'),
+            ])),
         ])->toResponse($request);
 
         if (! $event->is_visible) {

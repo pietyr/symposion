@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Event;
+use App\Models\Specialization;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('a published event is shown without administrative fields', function () {
@@ -60,4 +61,19 @@ test('deleted events do not exist for visitors', function () {
 
 test('a non-numeric id is not found', function () {
     $this->get('/wydarzenie/kongres/kongres')->assertNotFound();
+});
+
+test('the event page lists its professions and specializations', function () {
+    $event = Event::factory()->visible()->create();
+    $event->professionEntries()->createMany([['profession' => 'doctor'], ['profession' => 'retired_profession']]);
+    $event->specializations()->attach([
+        Specialization::factory()->create(['name' => 'Urologia'])->id,
+        Specialization::factory()->create(['name' => 'Alergologia'])->id,
+    ]);
+
+    $this->get(route('events.show', ['event' => $event, 'slug' => $event->slug]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('event.professions', ['Lekarz'])
+            ->where('event.specializations', ['Alergologia', 'Urologia']),
+        );
 });

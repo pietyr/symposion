@@ -33,4 +33,6 @@ export type PublicEventResource = {
     ends_at: string;
     price_online: number | null;
     price_in_person: number | null;
+    professions?: string[];
+    specializations?: string[];
 };
