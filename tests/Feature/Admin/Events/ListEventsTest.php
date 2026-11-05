@@ -85,3 +85,41 @@ test('the list is paginated', function () {
             ->where('events.meta.current_page', 2),
         );
 });
+
+test('events can be sorted', function (string $sort, array $expectedOrder) {
+    $lastWeek = Event::factory()->create(['starts_at' => now()->subDays(7), 'ends_at' => now()->subDays(7), 'created_at' => now()->subDays(1)]);
+    $tomorrow = Event::factory()->create(['starts_at' => now()->addDay(), 'ends_at' => now()->addDay(), 'created_at' => now()->subDays(3)]);
+    $nextYear = Event::factory()->create(['starts_at' => now()->addYear(), 'ends_at' => now()->addYear(), 'created_at' => now()->subDays(2)]);
+
+    $events = ['lastWeek' => $lastWeek, 'tomorrow' => $tomorrow, 'nextYear' => $nextYear];
+
+    $this->get(route('admin.events.index', ['sort' => $sort]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('filters.sort', $sort)
+            ->where('events.data.0.id', $events[$expectedOrder[0]]->id)
+            ->where('events.data.1.id', $events[$expectedOrder[1]]->id)
+            ->where('events.data.2.id', $events[$expectedOrder[2]]->id),
+        );
+})->with([
+    'upcoming then past' => ['upcoming_then_past', ['tomorrow', 'nextYear', 'lastWeek']],
+    'nearest' => ['nearest', ['tomorrow', 'lastWeek', 'nextYear']],
+    'latest' => ['latest', ['nextYear', 'tomorrow', 'lastWeek']],
+    'recently added' => ['recently_added', ['lastWeek', 'nextYear', 'tomorrow']],
+]);
+
+test('an unknown sort falls back to the default order', function () {
+    $this->get(route('admin.events.index', ['sort' => 'nonsense']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('filters.sort', 'upcoming_then_past')
+            ->has('sorts', 4),
+        );
+});
+
+test('pagination links keep the chosen sort', function () {
+    Event::factory()->count(16)->create();
+
+    $this->get(route('admin.events.index', ['sort' => 'latest']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('events.links.next', fn (string $url) => str_contains($url, 'sort=latest')),
+        );
+});

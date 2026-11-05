@@ -8,6 +8,7 @@ use App\Actions\Events\CreateEvent;
 use App\Actions\Events\DeleteEvent;
 use App\Actions\Events\UpdateEvent;
 use App\Enums\EventFormat;
+use App\Enums\EventSort;
 use App\Enums\Voivodeship;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Events\StoreEventRequest;
@@ -23,7 +24,7 @@ use Inertia\Response;
 final class EventController extends Controller
 {
     /**
-     * List events, upcoming before past; deleted ones are shown on request.
+     * List events in the chosen order; deleted ones are shown on request.
      */
     public function index(Request $request): Response
     {
@@ -31,11 +32,12 @@ final class EventController extends Controller
 
         $search = $request->string('search')->trim()->value();
         $trashed = $request->boolean('trashed');
+        $sort = $request->enum('sort', EventSort::class) ?? EventSort::UpcomingThenPast;
 
         $events = Event::query()
             ->when($trashed, fn ($query) => $query->onlyTrashed())
             ->when($search !== '', fn ($query) => $query->titleContains($search))
-            ->upcomingThenPast()
+            ->sortedBy($sort)
             ->paginate(15)
             ->withQueryString();
 
@@ -44,7 +46,9 @@ final class EventController extends Controller
             'filters' => [
                 'search' => $search,
                 'trashed' => $trashed,
+                'sort' => $sort->value,
             ],
+            'sorts' => EventSort::options(),
         ]);
     }
 

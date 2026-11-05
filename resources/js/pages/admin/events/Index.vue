@@ -1,12 +1,20 @@
 <script setup lang="ts">
-import { Form, Head, Link } from '@inertiajs/vue3';
+import { Form, Head, Link, router } from '@inertiajs/vue3';
 import { Plus, RotateCcw, Search } from '@lucide/vue';
+import { computed } from 'vue';
 import EventController from '@/actions/App/Http/Controllers/Admin/EventController';
 import RestoreEventController from '@/actions/App/Http/Controllers/Admin/RestoreEventController';
 import PaginationControls from '@/components/PaginationControls.vue';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import {
     Table,
     TableBody,
@@ -18,7 +26,7 @@ import {
 } from '@/components/ui/table';
 import { useDateTimeFormat } from '@/composables/useDateTimeFormat';
 import { index } from '@/routes/admin/events';
-import type { EventResource, Paginated } from '@/types';
+import type { EventResource, Paginated, SelectOption } from '@/types';
 
 defineOptions({
     layout: {
@@ -36,14 +44,39 @@ const props = defineProps<{
     filters: {
         search: string;
         trashed: boolean;
+        sort: string;
     };
+    sorts: SelectOption[];
 }>();
 
 const { formatDateRange } = useDateTimeFormat();
 
+const defaultSort = 'upcoming_then_past';
+
+const sortQuery = computed(() =>
+    props.filters.sort === defaultSort ? {} : { sort: props.filters.sort },
+);
+
+const applySort = (sort: unknown): void => {
+    router.get(
+        index.url({
+            query: {
+                ...(props.filters.search && { search: props.filters.search }),
+                ...(props.filters.trashed && { trashed: 1 }),
+                ...(sort !== defaultSort && { sort: String(sort) }),
+            },
+        }),
+        {},
+        { preserveState: true, preserveScroll: true },
+    );
+};
+
+// Section headers only make sense in the order that keeps the two parts together.
 const startsSection = (index: number): boolean =>
-    index === 0 ||
-    props.events.data[index - 1].is_past !== props.events.data[index].is_past;
+    props.filters.sort === defaultSort &&
+    (index === 0 ||
+        props.events.data[index - 1].is_past !==
+            props.events.data[index].is_past);
 </script>
 
 <template>
@@ -67,42 +100,78 @@ const startsSection = (index: number): boolean =>
                     size="sm"
                     as-child
                 >
-                    <Link :href="index()">{{ $t('Active') }}</Link>
+                    <Link :href="index({ query: sortQuery })">{{
+                        $t('Active')
+                    }}</Link>
                 </Button>
                 <Button
                     :variant="filters.trashed ? 'secondary' : 'ghost'"
                     size="sm"
                     as-child
                 >
-                    <Link :href="index({ query: { trashed: 1 } })">
+                    <Link
+                        :href="index({ query: { ...sortQuery, trashed: 1 } })"
+                    >
                         {{ $t('Deleted') }}
                     </Link>
                 </Button>
             </nav>
 
-            <Form
-                v-bind="index.form()"
-                class="flex w-full max-w-sm gap-2"
-                :options="{ preserveState: true }"
+            <div
+                class="flex w-full flex-wrap items-center justify-end gap-2 lg:w-auto lg:flex-nowrap"
             >
-                <input
-                    v-if="filters.trashed"
-                    type="hidden"
-                    name="trashed"
-                    value="1"
-                />
-                <Input
-                    name="search"
-                    type="search"
-                    :default-value="filters.search"
-                    :placeholder="$t('Search by title')"
-                    :aria-label="$t('Search by title')"
-                />
-                <Button type="submit" variant="outline" size="icon">
-                    <Search class="size-4" />
-                    <span class="sr-only">{{ $t('Search') }}</span>
-                </Button>
-            </Form>
+                <Select
+                    :model-value="filters.sort"
+                    @update:model-value="applySort"
+                >
+                    <SelectTrigger
+                        class="w-60"
+                        :aria-label="$t('Sort by')"
+                        data-test="event-sort"
+                    >
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem
+                            v-for="option in sorts"
+                            :key="option.value"
+                            :value="option.value"
+                        >
+                            {{ option.label }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+
+                <Form
+                    v-bind="index.form()"
+                    class="flex w-full max-w-sm gap-2 lg:w-80"
+                    :options="{ preserveState: true }"
+                >
+                    <input
+                        v-if="filters.sort !== defaultSort"
+                        type="hidden"
+                        name="sort"
+                        :value="filters.sort"
+                    />
+                    <input
+                        v-if="filters.trashed"
+                        type="hidden"
+                        name="trashed"
+                        value="1"
+                    />
+                    <Input
+                        name="search"
+                        type="search"
+                        :default-value="filters.search"
+                        :placeholder="$t('Search by title')"
+                        :aria-label="$t('Search by title')"
+                    />
+                    <Button type="submit" variant="outline" size="icon">
+                        <Search class="size-4" />
+                        <span class="sr-only">{{ $t('Search') }}</span>
+                    </Button>
+                </Form>
+            </div>
         </div>
 
         <Table>

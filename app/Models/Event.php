@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\EventFormat;
+use App\Enums\EventSort;
 use App\Enums\Voivodeship;
 use Carbon\CarbonImmutable;
 use Database\Factories\EventFactory;
@@ -93,6 +94,21 @@ final class Event extends Model
     protected function past(Builder $query): void
     {
         $query->where('ends_at', '<', now());
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function sortedBy(Builder $query, EventSort $sort): void
+    {
+        match ($sort) {
+            EventSort::UpcomingThenPast => $query->upcomingThenPast(),
+            // Closest to today in either direction, so an event from last week beats one next year.
+            EventSort::Nearest => $query->orderByRaw('ABS(TIMESTAMPDIFF(SECOND, starts_at, ?))', [now()]),
+            EventSort::Latest => $query->orderByDesc('starts_at'),
+            EventSort::RecentlyAdded => $query->orderByDesc('created_at'),
+        };
     }
 
     /**
