@@ -63,6 +63,16 @@ test('an event can be promoted', function (?string $checkbox, bool $promoted) {
     'unchecked' => [null, false],
 ]);
 
+test('the invoice title is optional', function (?string $invoiceTitle) {
+    $this->post(route('admin.events.store'), [...$this->payload, 'invoice_title' => $invoiceTitle])
+        ->assertSessionHasNoErrors();
+
+    expect(Event::sole()->invoice_title)->toBe($invoiceTitle);
+})->with([
+    'given' => ['Udział w Ogólnopolskim Kongresie Kardiologii'],
+    'empty' => [null],
+]);
+
 test('online events are stored without a venue', function () {
     $this->post(route('admin.events.store'), [...$this->payload, 'format' => EventFormat::Online->value])
         ->assertSessionHasNoErrors();
@@ -87,6 +97,7 @@ test('invalid event data is rejected', function (array $overrides, string $field
     expect(Event::count())->toBe(0);
 })->with([
     'missing title' => [['title' => ''], 'title'],
+    'too long invoice title' => [['invoice_title' => str_repeat('a', 256)], 'invoice_title'],
     'unknown format' => [['format' => 'webinar'], 'format'],
     'in person without voivodeship' => [['voivodeship' => null], 'voivodeship'],
     'hybrid without city' => [['format' => EventFormat::Hybrid->value, 'city' => ''], 'city'],

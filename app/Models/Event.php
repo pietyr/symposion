@@ -20,6 +20,7 @@ use Illuminate\Support\Str;
 /**
  * @property int $id
  * @property string $title
+ * @property string|null $invoice_title
  * @property string $slug
  * @property EventFormat $format
  * @property Voivodeship|null $voivodeship
@@ -33,7 +34,7 @@ use Illuminate\Support\Str;
  * @property CarbonImmutable|null $updated_at
  * @property CarbonImmutable|null $deleted_at
  */
-#[Fillable(['title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'is_visible', 'is_promoted'])]
+#[Fillable(['title', 'invoice_title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'is_visible', 'is_promoted'])]
 final class Event extends Model
 {
     /** @use HasFactory<EventFactory> */

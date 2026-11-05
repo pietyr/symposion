@@ -141,6 +141,16 @@ const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
             </div>
         </div>
 
+        <div class="grid gap-2">
+            <Label for="invoice_title">{{ $t('Invoice title') }}</Label>
+            <Input
+                id="invoice_title"
+                name="invoice_title"
+                :default-value="event?.invoice_title ?? undefined"
+            />
+            <InputError :message="errors.invoice_title" />
+        </div>
+
         <div class="flex items-center gap-3">
             <Checkbox
                 id="is_hidden"

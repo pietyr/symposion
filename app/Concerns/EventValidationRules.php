@@ -22,6 +22,7 @@ trait EventValidationRules
 
         return [
             'title' => ['required', 'string', 'max:255'],
+            'invoice_title' => ['nullable', 'string', 'max:255'],
             'format' => ['required', Rule::enum(EventFormat::class)],
             'voivodeship' => [Rule::requiredIf($hasVenue), 'nullable', Rule::enum(Voivodeship::class)],
             'city' => [Rule::requiredIf($hasVenue), 'nullable', 'string', 'max:255'],

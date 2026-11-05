@@ -23,6 +23,7 @@ final class EventResource extends JsonResource
         return [
             'id' => $this->id,
             'title' => $this->title,
+            'invoice_title' => $this->invoice_title,
             'slug' => $this->slug,
             'format' => $this->format->value,
             'format_label' => $this->format->label(),

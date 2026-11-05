@@ -3,6 +3,7 @@ export type EventFormat = 'online' | 'in_person' | 'hybrid';
 export type EventResource = {
     id: number;
     title: string;
+    invoice_title: string | null;
     slug: string;
     format: EventFormat;
     format_label: string;
