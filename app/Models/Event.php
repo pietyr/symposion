@@ -52,12 +52,18 @@ use Illuminate\Support\Str;
  * @property-read Collection<int, EventSection> $sections
  * @property-read string|null $large_banner_url
  * @property-read string|null $small_banner_url
+ * @property-read int $default_banner number of the bundled banner pair
  */
 #[Fillable(['title', 'invoice_title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'price_online', 'price_in_person', 'is_visible', 'is_promoted', 'primary_color', 'accent_color', 'large_banner_path', 'small_banner_path'])]
 final class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
     use HasFactory, SoftDeletes;
+
+    /**
+     * How many banner and thumbnail pairs are bundled in public/images/event-banners.
+     */
+    private const int DEFAULT_BANNER_PAIRS = 9;
 
     /**
      * Get the attributes that should be cast.
@@ -140,6 +146,21 @@ final class Event extends Model
     protected function smallBannerUrl(): Attribute
     {
         return Attribute::get(fn (): ?string => $this->bannerUrl($this->small_banner_path));
+    }
+
+    /**
+     * Derived from the id, so an event keeps its picture and consecutive events differ.
+     *
+     * @return Attribute<int, never>
+     */
+    protected function defaultBanner(): Attribute
+    {
+        return Attribute::get(fn (): int => $this->defaultBannerNumber());
+    }
+
+    private function defaultBannerNumber(): int
+    {
+        return ($this->id - 1) % self::DEFAULT_BANNER_PAIRS + 1;
     }
 
     private function bannerUrl(?string $path): ?string

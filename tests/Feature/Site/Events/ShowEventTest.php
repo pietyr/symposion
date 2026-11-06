@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Event;
+use App\Models\EventSection;
 use App\Models\Specialization;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -76,4 +77,35 @@ test('the event page lists its professions and specializations', function () {
             ->where('event.professions', ['Lekarz'])
             ->where('event.specializations', ['Alergologia', 'Urologia']),
         );
+});
+
+test('visitors get the content sections in order', function () {
+    $event = Event::factory()->visible()->create();
+    EventSection::factory()->for($event)->create(['title' => 'Druga', 'position' => 2, 'content' => '<p>Tekst</p>']);
+    EventSection::factory()->for($event)->create(['title' => 'Pierwsza', 'position' => 1]);
+
+    $this->get(route('events.show', ['event' => $event, 'slug' => $event->slug]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('event.sections.0.title', 'Pierwsza')
+            ->where('event.sections.1.title', 'Druga')
+            ->where('event.sections.1.content', '<p>Tekst</p>')
+            ->where('event.sections.1.slug', 'druga'),
+        );
+});
+
+test('visitors get the brand colors of the event', function (?string $primary, ?string $accent) {
+    $event = Event::factory()->visible()->create(['primary_color' => $primary, 'accent_color' => $accent]);
+
+    $this->get(route('events.show', ['event' => $event, 'slug' => $event->slug]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('event.primary_color', $primary)
+            ->where('event.accent_color', $accent),
+        );
+})->with([
+    'set' => ['#0f766e', '#f59e0b'],
+    'missing' => [null, null],
+]);
+
+test('section anchors come from the titles and drop polish characters', function () {
+    expect((new EventSection(['title' => 'Długa Łódzka sekcja']))->slug)->toBe('dluga-lodzka-sekcja');
 });

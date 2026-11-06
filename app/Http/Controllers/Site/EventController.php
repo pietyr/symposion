@@ -51,6 +51,7 @@ final class EventController extends Controller
             'event' => PublicEventResource::make($event->load([
                 'professionEntries',
                 'specializations' => fn ($query) => $query->orderBy('name'),
+                'sections',
             ])),
         ])->toResponse($request);
 

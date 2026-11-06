@@ -5,6 +5,7 @@ export type EventFormat = 'online' | 'in_person' | 'hybrid';
 export type EventSectionResource = {
     id: number;
     title: string;
+    slug: string;
     content: string;
     updated_at: string | null;
 };
@@ -40,15 +41,21 @@ export type PublicEventResource = {
     id: number;
     title: string;
     slug: string;
-    format_label: string;
+    format: EventFormat;
     city: string | null;
     venue: string | null;
     starts_at: string;
     ends_at: string;
     price_online: number | null;
     price_in_person: number | null;
+    large_banner_url: string | null;
+    small_banner_url: string | null;
+    default_banner: number;
+    primary_color: string | null;
+    accent_color: string | null;
     professions?: string[];
     specializations?: string[];
+    sections?: EventSectionResource[];
 };
 
 export type EventFilters = {
