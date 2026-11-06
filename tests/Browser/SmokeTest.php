@@ -115,12 +115,25 @@ test('the table of contents jumps to a section and stays in view', function () {
     $page->assertVisible('@event-toc')->assertNoJavaScriptErrors();
 });
 
-test('a single section gets no table of contents', function () {
+test('the table of contents starts next to the event details and links back to them', function () {
     $event = Event::factory()->visible()->create();
-    $event->sections()->create(['title' => 'Opis', 'position' => 1, 'content' => '<p>Tekst</p>']);
+    $event->sections()->create(['title' => 'Opis', 'position' => 1, 'content' => str_repeat('<p>Tekst</p>', 200)]);
+
+    $page = visit(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false));
+
+    expect($page->script('Math.abs(document.querySelector("[data-test=event-toc]").getBoundingClientRect().top - document.getElementById("event-details").getBoundingClientRect().top) < 5'))->toBeTrue();
+
+    $page->script('window.scrollTo(0, 2000)');
+    $page->click('[data-test="event-toc"] a:has-text("Informacje")')->wait(1);
+
+    expect($page->script('Math.abs(document.getElementById("event-details").getBoundingClientRect().top) < 100'))->toBeTrue();
+});
+
+test('an event without sections has no table of contents', function () {
+    $event = Event::factory()->visible()->create();
 
     visit(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false))
-        ->assertSee('Opis')
+        ->assertSee($event->title)
         ->assertMissing('@event-toc');
 });
 
