@@ -172,11 +172,23 @@ final class EventFactory extends Factory
     public function withSections(): static
     {
         return $this->afterCreating(function (Event $event): void {
-            foreach (['Opis', 'Program', 'Partnerzy'] as $position => $title) {
+            $sections = [
+                'Opis' => '<p>Zapraszamy na spotkanie lekarzy, personelu medycznego i studentów. W programie wykłady ekspertów, omówienie aktualnych wytycznych oraz analiza przypadków klinicznych.</p>'
+                    .'<p>Uczestnicy otrzymają certyfikat potwierdzający udział w wydarzeniu.</p>',
+                'Program' => '<table><thead><tr><th>Godzina</th><th>Temat</th></tr></thead><tbody>'
+                    .'<tr><td>9:00</td><td>Otwarcie i powitanie uczestników</td></tr>'
+                    .'<tr><td>9:30</td><td>Aktualne wytyczne postępowania</td></tr>'
+                    .'<tr><td>11:00</td><td>Analiza przypadków klinicznych</td></tr>'
+                    .'<tr><td>13:00</td><td>Dyskusja i podsumowanie</td></tr>'
+                    .'</tbody></table>',
+                'Partnerzy' => '<h3>Patronat naukowy</h3><ul><li>Towarzystwo Naukowe</li><li>Uniwersytet Medyczny</li></ul>',
+            ];
+
+            foreach (array_keys($sections) as $index => $title) {
                 $event->sections()->create([
                     'title' => $title,
-                    'content' => '<p>'.fake()->paragraph().'</p><p>'.fake()->paragraph().'</p>',
-                    'position' => $position + 1,
+                    'content' => $sections[$title],
+                    'position' => $index + 1,
                 ]);
             }
         });

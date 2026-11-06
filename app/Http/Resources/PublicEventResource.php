@@ -46,6 +46,7 @@ final class PublicEventResource extends JsonResource
                 ->map(fn (Specialization $specialization): string => $specialization->name)
                 ->values()
                 ->all()),
+            'sections' => EventSectionResource::collection($this->whenLoaded('sections')),
         ];
     }
 }

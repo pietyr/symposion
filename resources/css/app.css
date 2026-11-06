@@ -170,3 +170,55 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* The global reset strips headings and lists, so sanitized HTML from content sections gets its look back here. */
+@layer components {
+    .event-content {
+        @apply flex flex-col gap-4 leading-relaxed;
+
+        h2 {
+            @apply text-xl font-semibold tracking-tight;
+        }
+
+        h3 {
+            @apply text-lg font-semibold;
+        }
+
+        h4 {
+            @apply font-semibold;
+        }
+
+        ul {
+            @apply list-disc pl-6;
+        }
+
+        ol {
+            @apply list-decimal pl-6;
+        }
+
+        a {
+            @apply text-primary underline underline-offset-4;
+        }
+
+        blockquote {
+            @apply border-l-2 pl-4 text-muted-foreground italic;
+        }
+
+        table {
+            @apply block overflow-x-auto text-sm;
+        }
+
+        th,
+        td {
+            @apply border px-3 py-2 text-left align-top;
+        }
+
+        th {
+            @apply bg-muted font-medium;
+        }
+
+        hr {
+            @apply my-2;
+        }
+    }
+}

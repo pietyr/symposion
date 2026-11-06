@@ -52,6 +52,7 @@ export type PublicEventResource = {
     default_banner: number;
     professions?: string[];
     specializations?: string[];
+    sections?: EventSectionResource[];
 };
 
 export type EventFilters = {

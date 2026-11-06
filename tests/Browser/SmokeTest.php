@@ -86,3 +86,14 @@ test('the event page banner spans the window without a horizontal scrollbar', fu
         ->and($page->script('document.querySelector("[data-test=event-page-banner]").getBoundingClientRect().left'))->toBeLessThanOrEqual(0)
         ->and($page->script('document.documentElement.scrollWidth <= window.innerWidth'))->toBeTrue();
 });
+
+test('content sections render their html on the event page', function () {
+    $event = Event::factory()->visible()->withSections()->create();
+
+    visit(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false))
+        ->assertSee('Program')
+        ->assertVisible('.event-content table')
+        ->assertSee('Patronat naukowy')
+        ->assertDontSee('<table>')
+        ->assertNoJavaScriptErrors();
+});

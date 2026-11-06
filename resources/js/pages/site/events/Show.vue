@@ -107,5 +107,19 @@ const { formatPrice } = usePriceFormat();
                 </li>
             </ul>
         </section>
+
+        <section
+            v-for="section in event.sections"
+            :id="`section-${section.id}`"
+            :key="section.id"
+            class="flex scroll-mt-8 flex-col gap-3 pt-6"
+            data-test="event-page-section"
+        >
+            <h2 class="text-2xl font-semibold tracking-tight">
+                {{ section.title }}
+            </h2>
+            <!-- eslint-disable-next-line vue/no-v-html -- sanitized when saved (SanitizeEventContent) -->
+            <div class="event-content" v-html="section.content" />
+        </section>
     </article>
 </template>

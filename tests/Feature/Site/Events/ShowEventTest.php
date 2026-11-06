@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Event;
+use App\Models\EventSection;
 use App\Models\Specialization;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -75,5 +76,18 @@ test('the event page lists its professions and specializations', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->where('event.professions', ['Lekarz'])
             ->where('event.specializations', ['Alergologia', 'Urologia']),
+        );
+});
+
+test('visitors get the content sections in order', function () {
+    $event = Event::factory()->visible()->create();
+    EventSection::factory()->for($event)->create(['title' => 'Druga', 'position' => 2, 'content' => '<p>Tekst</p>']);
+    EventSection::factory()->for($event)->create(['title' => 'Pierwsza', 'position' => 1]);
+
+    $this->get(route('events.show', ['event' => $event, 'slug' => $event->slug]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('event.sections.0.title', 'Pierwsza')
+            ->where('event.sections.1.title', 'Druga')
+            ->where('event.sections.1.content', '<p>Tekst</p>'),
         );
 });
