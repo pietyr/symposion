@@ -1,11 +1,20 @@
 <script setup lang="ts">
-import { useElementSize } from '@vueuse/core';
+import { useElementSize, usePreferredReducedMotion } from '@vueuse/core';
+import { trans } from 'laravel-vue-i18n';
 import { computed, useTemplateRef } from 'vue';
 import type { EventSectionResource } from '@/types';
 
-defineProps<{
+const props = defineProps<{
     sections: EventSectionResource[];
 }>();
+
+const items = computed(() => [
+    { id: 'event-details', title: trans('Information') },
+    ...props.sections.map((section) => ({
+        id: `section-${section.id}`,
+        title: section.title,
+    })),
+]);
 
 const nav = useTemplateRef('nav');
 const { height } = useElementSize(nav, undefined, { box: 'border-box' });
@@ -14,6 +23,16 @@ const { height } = useElementSize(nav, undefined, { box: 'border-box' });
 const stickyTop = computed(
     () => `max(5rem, calc(50vh - ${height.value / 2}px))`,
 );
+
+const motion = usePreferredReducedMotion();
+
+// Only these links scroll smoothly: a global setting would also animate moving between pages.
+const scrollTo = (id: string): void => {
+    document.getElementById(id)?.scrollIntoView({
+        behavior: motion.value === 'reduce' ? 'auto' : 'smooth',
+    });
+    window.history.pushState(window.history.state, '', `#${id}`);
+};
 </script>
 
 <template>
@@ -25,20 +44,13 @@ const stickyTop = computed(
         data-test="event-toc"
     >
         <ul class="flex flex-col gap-1">
-            <li>
+            <li v-for="item in items" :key="item.id">
                 <a
-                    href="#event-details"
+                    :href="`#${item.id}`"
                     class="block py-1 text-muted-foreground transition-colors hover:text-foreground"
+                    @click.prevent="scrollTo(item.id)"
                 >
-                    {{ $t('Information') }}
-                </a>
-            </li>
-            <li v-for="section in sections" :key="section.id">
-                <a
-                    :href="`#section-${section.id}`"
-                    class="block py-1 text-muted-foreground transition-colors hover:text-foreground"
-                >
-                    {{ section.title }}
+                    {{ item.title }}
                 </a>
             </li>
         </ul>

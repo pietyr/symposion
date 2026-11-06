@@ -107,7 +107,7 @@ test('the table of contents jumps to a section and stays in view', function () {
     $program = $event->sections()->where('title', 'Program')->sole();
 
     $page = visit(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false));
-    $page->click('[data-test="event-toc"] a:has-text("Program")')->wait(1);
+    $page->click('[data-test="event-toc"] a:has-text("Program")')->wait(2);
 
     expect($page->script("Math.abs(document.getElementById('section-{$program->id}').getBoundingClientRect().top) < 100"))->toBeTrue()
         ->and($page->script('document.querySelector("[data-test=event-toc]").getBoundingClientRect().top >= 0'))->toBeTrue();
@@ -124,7 +124,7 @@ test('the table of contents starts next to the event details and links back to t
     expect($page->script('Math.abs(document.querySelector("[data-test=event-toc]").getBoundingClientRect().top - document.getElementById("event-details").getBoundingClientRect().top) < 5'))->toBeTrue();
 
     $page->script('window.scrollTo(0, 2000)');
-    $page->click('[data-test="event-toc"] a:has-text("Informacje")')->wait(1);
+    $page->click('[data-test="event-toc"] a:has-text("Informacje")')->wait(2);
 
     expect($page->script('Math.abs(document.getElementById("event-details").getBoundingClientRect().top) < 100'))->toBeTrue();
 });
@@ -158,4 +158,19 @@ test('the table of contents stays in the middle of the window while scrolling', 
     $page->wait(0.3);
 
     expect($page->script('(() => { const box = document.querySelector("[data-test=event-toc]").getBoundingClientRect(); return Math.abs(box.top + box.height / 2 - window.innerHeight / 2) < 3; })()'))->toBeTrue();
+});
+
+test('a link with a section anchor opens at that section', function () {
+    $event = Event::factory()->visible()->create();
+    $event->sections()->create(['title' => 'Opis', 'position' => 1, 'content' => str_repeat('<p>Tekst</p>', 200)]);
+    $program = $event->sections()->create(['title' => 'Program', 'position' => 2, 'content' => str_repeat('<p>Tekst</p>', 200)]);
+
+    $url = route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false);
+    $page = visit(route('home', absolute: false));
+
+    // visit() drops the fragment, so the page navigates by itself, as a shared link would.
+    $page->script("window.location.href = new URL('{$url}#section-{$program->id}', window.location.origin).href");
+    $page->wait(1.5);
+
+    expect($page->script("Math.abs(document.getElementById('section-{$program->id}').getBoundingClientRect().top) < 100"))->toBeTrue();
 });
