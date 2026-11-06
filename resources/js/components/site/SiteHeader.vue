@@ -43,7 +43,9 @@ const navItems = computed<NavItem[]>(() => [
 </script>
 
 <template>
-    <header class="border-b border-sidebar-border/80">
+    <header
+        class="sticky top-0 z-40 border-b border-sidebar-border/80 bg-background"
+    >
         <div class="mx-auto flex h-16 items-center gap-2 px-4 md:max-w-7xl">
             <Sheet>
                 <SheetTrigger :as-child="true">

@@ -116,7 +116,7 @@ const { formatPrice } = usePriceFormat();
             <EventTableOfContents
                 v-if="event.sections.length > 1"
                 :sections="event.sections"
-                class="lg:sticky lg:top-8 lg:order-last"
+                class="lg:sticky lg:top-20 lg:order-last"
             />
 
             <div
@@ -127,7 +127,7 @@ const { formatPrice } = usePriceFormat();
                     v-for="section in event.sections"
                     :id="`section-${section.id}`"
                     :key="section.id"
-                    class="flex scroll-mt-8 flex-col gap-3"
+                    class="flex scroll-mt-20 flex-col gap-3"
                     data-test="event-page-section"
                 >
                     <h2 class="text-2xl font-semibold tracking-tight">

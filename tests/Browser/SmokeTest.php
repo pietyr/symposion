@@ -123,3 +123,15 @@ test('a single section gets no table of contents', function () {
         ->assertSee('Opis')
         ->assertMissing('@event-toc');
 });
+
+test('the site header stays in view while scrolling', function () {
+    $event = Event::factory()->visible()->create();
+    $event->sections()->create(['title' => 'Opis', 'position' => 1, 'content' => str_repeat('<p>Tekst</p>', 200)]);
+
+    $page = visit(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false));
+    $page->script('window.scrollTo(0, 1500)');
+    $page->wait(0.3);
+
+    expect($page->script('window.scrollY'))->toBeGreaterThan(1000)
+        ->and($page->script('document.querySelector("header").getBoundingClientRect().top'))->toBe(0);
+});
