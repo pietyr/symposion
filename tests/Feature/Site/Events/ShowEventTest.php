@@ -88,7 +88,8 @@ test('visitors get the content sections in order', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->where('event.sections.0.title', 'Pierwsza')
             ->where('event.sections.1.title', 'Druga')
-            ->where('event.sections.1.content', '<p>Tekst</p>'),
+            ->where('event.sections.1.content', '<p>Tekst</p>')
+            ->where('event.sections.1.slug', 'druga'),
         );
 });
 
@@ -104,3 +105,7 @@ test('visitors get the brand colors of the event', function (?string $primary, ?
     'set' => ['#0f766e', '#f59e0b'],
     'missing' => [null, null],
 ]);
+
+test('section anchors come from the titles and drop polish characters', function () {
+    expect((new EventSection(['title' => 'Długa Łódzka sekcja']))->slug)->toBe('dluga-lodzka-sekcja');
+});

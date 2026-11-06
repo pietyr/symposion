@@ -109,7 +109,7 @@ test('the table of contents jumps to a section and stays in view', function () {
     $page = visit(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false));
     $page->click('[data-test="event-toc"] a:has-text("Program")')->wait(2);
 
-    expect($page->script("Math.abs(document.getElementById('section-{$program->id}').getBoundingClientRect().top) < 100"))->toBeTrue()
+    expect($page->script("Math.abs(document.getElementById('program').getBoundingClientRect().top) < 100"))->toBeTrue()
         ->and($page->script('document.querySelector("[data-test=event-toc]").getBoundingClientRect().top >= 0'))->toBeTrue();
 
     $page->assertVisible('@event-toc')->assertNoJavaScriptErrors();
@@ -121,12 +121,12 @@ test('the table of contents starts next to the event details and links back to t
 
     $page = visit(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false));
 
-    expect($page->script('Math.abs(document.querySelector("[data-test=event-toc]").getBoundingClientRect().top - document.getElementById("event-details").getBoundingClientRect().top) < 5'))->toBeTrue();
+    expect($page->script('Math.abs(document.querySelector("[data-test=event-toc]").getBoundingClientRect().top - document.getElementById("informacje").getBoundingClientRect().top) < 5'))->toBeTrue();
 
     $page->script('window.scrollTo(0, 2000)');
     $page->click('[data-test="event-toc"] a:has-text("Informacje")')->wait(2);
 
-    expect($page->script('Math.abs(document.getElementById("event-details").getBoundingClientRect().top) < 100'))->toBeTrue();
+    expect($page->script('Math.abs(document.getElementById("informacje").getBoundingClientRect().top) < 100'))->toBeTrue();
 });
 
 test('an event without sections has no table of contents', function () {
@@ -169,10 +169,10 @@ test('a link with a section anchor opens at that section', function () {
     $page = visit(route('home', absolute: false));
 
     // visit() drops the fragment, so the page navigates by itself, as a shared link would.
-    $page->script("window.location.href = new URL('{$url}#section-{$program->id}', window.location.origin).href");
+    $page->script("window.location.href = new URL('{$url}#program', window.location.origin).href");
     $page->wait(1.5);
 
-    expect($page->script("Math.abs(document.getElementById('section-{$program->id}').getBoundingClientRect().top) < 100"))->toBeTrue();
+    expect($page->script("Math.abs(document.getElementById('program').getBoundingClientRect().top) < 100"))->toBeTrue();
 });
 
 test('brand colors reach the event page and stay optional', function () {

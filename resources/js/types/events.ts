@@ -5,6 +5,7 @@ export type EventFormat = 'online' | 'in_person' | 'hybrid';
 export type EventSectionResource = {
     id: number;
     title: string;
+    slug: string;
     content: string;
     updated_at: string | null;
 };

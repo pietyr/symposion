@@ -9,9 +9,9 @@ const props = defineProps<{
 }>();
 
 const items = computed(() => [
-    { id: 'event-details', title: trans('Information') },
+    { id: 'informacje', title: trans('Information') },
     ...props.sections.map((section) => ({
-        id: `section-${section.id}`,
+        id: section.slug,
         title: section.title,
     })),
 ]);

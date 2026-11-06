@@ -51,10 +51,7 @@ const { formatPrice } = usePriceFormat();
                 class="flex min-w-0 flex-col gap-8"
                 :class="{ 'lg:col-span-2': !event.sections?.length }"
             >
-                <div
-                    id="event-details"
-                    class="flex scroll-mt-20 flex-col gap-4"
-                >
+                <div id="informacje" class="flex scroll-mt-20 flex-col gap-4">
                     <div>
                         <Badge variant="secondary">{{
                             event.format_label
@@ -160,7 +157,7 @@ const { formatPrice } = usePriceFormat();
 
                 <section
                     v-for="section in event.sections"
-                    :id="`section-${section.id}`"
+                    :id="section.slug"
                     :key="section.id"
                     class="flex scroll-mt-20 flex-col gap-3"
                     data-test="event-page-section"

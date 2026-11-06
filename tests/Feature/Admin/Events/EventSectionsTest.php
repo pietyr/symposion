@@ -88,6 +88,40 @@ describe('as an administrator', function () {
             );
     });
 
+    test('a title is rejected when its anchor is not available', function (string $title) {
+        $this->post(route('admin.events.sections.store', $this->event), ['title' => $title, 'content' => 'x'])
+            ->assertSessionHasErrors('title');
+
+        expect($this->event->sections()->count())->toBe(1);
+    })->with([
+        'same title' => ['Opis'],
+        'different case' => ['OPIS'],
+        'different punctuation' => ['Opis!'],
+        'taken by the event details' => ['Informacje'],
+        'no letters or digits' => ['!!!'],
+    ]);
+
+    test('a section keeps its own title when updated', function () {
+        $this->put(route('admin.events.sections.update', [$this->event, $this->section]), ['title' => 'Opis', 'content' => '<p>Nowa</p>'])
+            ->assertSessionHasNoErrors();
+    });
+
+    test('a section cannot take the title of another one', function () {
+        $program = EventSection::factory()->for($this->event)->create(['title' => 'Program', 'position' => 2]);
+
+        $this->put(route('admin.events.sections.update', [$this->event, $program]), ['title' => 'Opis', 'content' => 'x'])
+            ->assertSessionHasErrors('title');
+
+        expect($program->fresh()->title)->toBe('Program');
+    });
+
+    test('other events can use the same title', function () {
+        $other = Event::factory()->create();
+
+        $this->post(route('admin.events.sections.store', $other), ['title' => 'Opis', 'content' => 'x'])
+            ->assertSessionHasNoErrors();
+    });
+
     test('invalid sections are rejected', function (array $data, string $field) {
         $this->post(route('admin.events.sections.store', $this->event), $data)
             ->assertSessionHasErrors($field);
