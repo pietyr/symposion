@@ -148,3 +148,14 @@ test('the site header stays in view while scrolling', function () {
     expect($page->script('window.scrollY'))->toBeGreaterThan(1000)
         ->and($page->script('document.querySelector("header").getBoundingClientRect().top'))->toBe(0);
 });
+
+test('the table of contents stays in the middle of the window while scrolling', function () {
+    $event = Event::factory()->visible()->create();
+    $event->sections()->create(['title' => 'Opis', 'position' => 1, 'content' => str_repeat('<p>Tekst</p>', 200)]);
+
+    $page = visit(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false));
+    $page->script('window.scrollTo(0, 2000)');
+    $page->wait(0.3);
+
+    expect($page->script('(() => { const box = document.querySelector("[data-test=event-toc]").getBoundingClientRect(); return Math.abs(box.top + box.height / 2 - window.innerHeight / 2) < 3; })()'))->toBeTrue();
+});

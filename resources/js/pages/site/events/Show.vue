@@ -38,7 +38,7 @@ const { formatPrice } = usePriceFormat();
             <EventTableOfContents
                 v-if="event.sections?.length"
                 :sections="event.sections"
-                class="lg:sticky lg:top-20 lg:order-last"
+                class="lg:sticky lg:order-last"
             />
 
             <div
