@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Form } from '@inertiajs/vue3';
+import { ArrowDown, ArrowUp } from '@lucide/vue';
 import EventSectionController from '@/actions/App/Http/Controllers/Admin/EventSectionController';
+import MoveEventSectionController from '@/actions/App/Http/Controllers/Admin/MoveEventSectionController';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,6 +25,11 @@ defineProps<{
 }>();
 
 const formOptions = { preserveScroll: true, preserveState: true };
+
+const moves = [
+    { direction: 'up', icon: ArrowUp, label: 'Move section up' },
+    { direction: 'down', icon: ArrowDown, label: 'Move section down' },
+];
 </script>
 
 <template>
@@ -32,7 +39,7 @@ const formOptions = { preserveScroll: true, preserveState: true };
         </p>
 
         <section
-            v-for="section in sections"
+            v-for="(section, index) in sections"
             :key="`${section.id}-${section.updated_at}`"
             class="space-y-4 rounded-lg border p-4"
             data-test="event-section"
@@ -84,50 +91,89 @@ const formOptions = { preserveScroll: true, preserveState: true };
                 </Button>
             </Form>
 
-            <Dialog>
-                <DialogTrigger as-child>
-                    <Button variant="ghost" size="sm">
-                        {{ $t('Delete section') }}
-                    </Button>
-                </DialogTrigger>
-                <DialogContent>
+            <div class="flex items-center justify-between gap-2">
+                <Dialog>
+                    <DialogTrigger as-child>
+                        <Button variant="ghost" size="sm">
+                            {{ $t('Delete section') }}
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <Form
+                            v-bind="
+                                EventSectionController.destroy.form({
+                                    event: eventId,
+                                    section: section.id,
+                                })
+                            "
+                            :options="formOptions"
+                            class="space-y-6"
+                            v-slot="{ processing }"
+                        >
+                            <DialogHeader>
+                                <DialogTitle>
+                                    {{
+                                        $t('Delete section ":title"?', {
+                                            title: section.title,
+                                        })
+                                    }}
+                                </DialogTitle>
+                            </DialogHeader>
+                            <DialogFooter class="gap-2">
+                                <DialogClose as-child>
+                                    <Button variant="secondary">{{
+                                        $t('Cancel')
+                                    }}</Button>
+                                </DialogClose>
+                                <Button
+                                    type="submit"
+                                    variant="destructive"
+                                    :disabled="processing"
+                                >
+                                    {{ $t('Delete section') }}
+                                </Button>
+                            </DialogFooter>
+                        </Form>
+                    </DialogContent>
+                </Dialog>
+
+                <div class="flex gap-1">
                     <Form
+                        v-for="move in moves"
+                        :key="move.direction"
                         v-bind="
-                            EventSectionController.destroy.form({
+                            MoveEventSectionController.form({
                                 event: eventId,
                                 section: section.id,
                             })
                         "
                         :options="formOptions"
-                        class="space-y-6"
                         v-slot="{ processing }"
                     >
-                        <DialogHeader>
-                            <DialogTitle>
-                                {{
-                                    $t('Delete section ":title"?', {
-                                        title: section.title,
-                                    })
-                                }}
-                            </DialogTitle>
-                        </DialogHeader>
-                        <DialogFooter class="gap-2">
-                            <DialogClose as-child>
-                                <Button variant="secondary">{{
-                                    $t('Cancel')
-                                }}</Button>
-                            </DialogClose>
-                            <Button
-                                type="submit"
-                                variant="destructive"
-                                :disabled="processing"
-                            >
-                                {{ $t('Delete section') }}
-                            </Button>
-                        </DialogFooter>
+                        <input
+                            type="hidden"
+                            name="direction"
+                            :value="move.direction"
+                        />
+                        <Button
+                            type="submit"
+                            variant="ghost"
+                            size="icon-sm"
+                            :disabled="
+                                processing ||
+                                index ===
+                                    (move.direction === 'up'
+                                        ? 0
+                                        : sections.length - 1)
+                            "
+                            :aria-label="$t(move.label)"
+                            :data-test="`move-section-${move.direction}`"
+                        >
+                            <component :is="move.icon" class="size-4" />
+                        </Button>
                     </Form>
-                </DialogContent>
-            </Dialog>
+                </div>
+            </div>
         </section>
 
         <Form

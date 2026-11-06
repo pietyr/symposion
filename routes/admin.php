@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\EventSectionController;
+use App\Http\Controllers\Admin\MoveEventSectionController;
 use App\Http\Controllers\Admin\RestoreEventController;
 use App\Http\Controllers\Admin\SpecializationController;
 use Illuminate\Support\Facades\Route;
@@ -17,5 +18,8 @@ Route::patch('events/{event}/restore', RestoreEventController::class)
 Route::resource('events.sections', EventSectionController::class)
     ->only(['store', 'update', 'destroy'])
     ->scoped();
+Route::patch('events/{event}/sections/{section}/move', MoveEventSectionController::class)
+    ->scopeBindings()
+    ->name('events.sections.move');
 
 Route::resource('specializations', SpecializationController::class)->except('show');
