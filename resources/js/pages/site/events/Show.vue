@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/vue3';
 import { Banknote, Calendar, MapPin } from '@lucide/vue';
 import { computed } from 'vue';
 import EventBanner from '@/components/site/events/EventBanner.vue';
+import EventPlaceBadges from '@/components/site/events/EventPlaceBadges.vue';
 import EventTableOfContents from '@/components/site/events/EventTableOfContents.vue';
 import { Badge } from '@/components/ui/badge';
 import { useDateTimeFormat } from '@/composables/useDateTimeFormat';
@@ -18,7 +19,7 @@ const brandColors = computed(() => ({
     '--brand-accent': props.event.accent_color ?? undefined,
 }));
 
-const { formatDateTimeRange } = useDateTimeFormat();
+const { formatDateRange, formatDateTimeRange } = useDateTimeFormat();
 const { formatPrice } = usePriceFormat();
 </script>
 
@@ -26,16 +27,36 @@ const { formatPrice } = usePriceFormat();
     <Head :title="event.title" />
 
     <article class="event-page flex flex-col gap-4" :style="brandColors">
-        <div class="-mt-8 mb-4 ml-[calc(50%-50vw)] w-screen">
+        <div class="relative -mt-8 mb-4 ml-[calc(50%-50vw)] w-screen">
             <EventBanner
                 kind="banner"
                 :url="event.large_banner_url"
                 :default-number="event.default_banner"
                 sizes="100vw"
-                class="h-32 w-full object-cover sm:aspect-[4128/1024] sm:h-auto"
+                class="h-48 w-full object-cover sm:aspect-[4128/1024] sm:h-auto"
                 fetchpriority="high"
                 data-test="event-page-banner"
             />
+            <div
+                class="absolute inset-x-0 bottom-0 bg-black/60 text-white backdrop-blur-sm"
+                data-test="event-banner-bar"
+            >
+                <div
+                    class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-4 py-3"
+                >
+                    <h1
+                        class="text-lg leading-tight font-semibold tracking-tight sm:text-2xl"
+                    >
+                        {{ event.title }}
+                    </h1>
+                    <div class="flex flex-wrap items-center gap-3 text-sm">
+                        <EventPlaceBadges :event="event" />
+                        <span>{{
+                            formatDateRange(event.starts_at, event.ends_at)
+                        }}</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div
@@ -52,15 +73,11 @@ const { formatPrice } = usePriceFormat();
                 :class="{ 'lg:col-span-2': !event.sections?.length }"
             >
                 <div id="informacje" class="flex scroll-mt-20 flex-col gap-4">
-                    <div>
-                        <Badge variant="secondary">{{
-                            event.format_label
-                        }}</Badge>
-                    </div>
-
-                    <h1 class="text-3xl font-semibold tracking-tight">
-                        {{ event.title }}
-                    </h1>
+                    <h2
+                        class="border-l-4 border-(color:--event-mark) pl-3 text-2xl font-semibold tracking-tight"
+                    >
+                        {{ $t('Information') }}
+                    </h2>
 
                     <dl class="flex flex-col gap-2 text-muted-foreground">
                         <div class="flex items-center gap-2">

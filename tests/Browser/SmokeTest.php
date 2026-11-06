@@ -201,3 +201,20 @@ test('event cards show where the event takes place instead of its price', functi
 
     $page->assertDontSee('123,00');
 });
+
+test('the event page banner carries the name, place and short date', function () {
+    $event = Event::factory()->visible()->hybrid()->create([
+        'title' => 'Forum Testowe',
+        'city' => 'Gdańsk',
+        'starts_at' => '2030-04-25 09:00',
+        'ends_at' => '2030-04-27 17:00',
+    ]);
+
+    $page = visit(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false));
+    $bar = $page->script('document.querySelector("[data-test=event-banner-bar]").textContent');
+
+    expect($bar)->toContain('Forum Testowe', 'Gdańsk', 'Online', '25–27.04.2030')
+        ->and($page->script('document.querySelectorAll("h1").length'))->toBe(1);
+
+    $page->assertSee('Informacje')->assertNoJavaScriptErrors();
+});

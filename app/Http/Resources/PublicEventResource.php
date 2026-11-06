@@ -29,7 +29,6 @@ final class PublicEventResource extends JsonResource
             'title' => $this->title,
             'slug' => $this->slug,
             'format' => $this->format->value,
-            'format_label' => $this->format->label(),
             'city' => $this->city,
             'venue' => $this->venue,
             'starts_at' => $this->starts_at->toIso8601String(),
