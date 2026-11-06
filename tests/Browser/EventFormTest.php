@@ -22,6 +22,8 @@ test('the event form submits the fields of every tab', function () {
         ->fill('price_in_person', '100')
         ->click('@event-tab-audience')
         ->click('#profession_student')
+        ->click('@event-tab-appearance')
+        ->fill('primary_color', '#0f766e')
         ->click('@save-event-button')
         ->assertPathIs(route('admin.events.index', absolute: false))
         ->assertNoJavaScriptErrors();
@@ -30,7 +32,8 @@ test('the event form submits the fields of every tab', function () {
 
     expect($event->title)->toBe('Forum Testowe')
         ->and($event->professions)->toHaveCount(count(Profession::cases()) - 1)
-        ->and($event->professions)->not->toContain(Profession::Student);
+        ->and($event->professions)->not->toContain(Profession::Student)
+        ->and($event->primary_color)->toBe('#0f766e');
 });
 
 test('a validation error opens the tab with the invalid field', function () {
@@ -39,4 +42,16 @@ test('a validation error opens the tab with the invalid field', function () {
         ->click('@save-event-button')
         ->assertSee('Pole tytuł jest wymagane')
         ->assertVisible('#title');
+});
+
+test('an invalid color opens the appearance tab', function () {
+    $event = Event::factory()->withProfessions()->create();
+
+    visit(route('admin.events.edit', $event, absolute: false))
+        ->click('@event-tab-appearance')
+        ->fill('accent_color', 'czerwony')
+        ->click('[role="tab"]:has-text("Dane")')
+        ->click('@save-event-button')
+        ->assertSee('Format pola kolor akcentu jest nieprawidłowy')
+        ->assertVisible('#accent_color');
 });

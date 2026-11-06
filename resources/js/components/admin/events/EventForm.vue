@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Form } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import ColorField from '@/components/admin/events/ColorField.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -43,18 +44,26 @@ const groszeToZlotys = (grosze?: number | null): string | undefined =>
         ? undefined
         : (grosze / 100).toFixed(2).replace('.', ',');
 
+const formTabs = ['details', 'audience', 'appearance'];
 const activeTab = ref('details');
-const isFormTab = computed(() =>
-    ['details', 'audience'].includes(activeTab.value),
-);
+const isFormTab = computed(() => formTabs.includes(activeTab.value));
 
 // Every field lives in one form, so an error may sit on a tab that is not open.
 const showFirstTabWithErrors = (errors: Record<string, string>): void => {
-    const fields = Object.keys(errors);
-    const isAudienceField = (field: string): boolean =>
-        field.startsWith('professions') || field.startsWith('specializations');
+    const tabOfField = (field: string): string => {
+        if (
+            field.startsWith('professions') ||
+            field.startsWith('specializations')
+        ) {
+            return 'audience';
+        }
 
-    activeTab.value = fields.every(isAudienceField) ? 'audience' : 'details';
+        return field.endsWith('_color') ? 'appearance' : 'details';
+    };
+    const tabsWithErrors = Object.keys(errors).map(tabOfField);
+
+    activeTab.value =
+        formTabs.find((tab) => tabsWithErrors.includes(tab)) ?? 'details';
 };
 
 // ISO strings from the server carry the application's offset, so the first
@@ -68,6 +77,9 @@ const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
             <TabsTrigger value="details">{{ $t('Details') }}</TabsTrigger>
             <TabsTrigger value="audience" data-test="event-tab-audience">
                 {{ $t('Professions and specializations') }}
+            </TabsTrigger>
+            <TabsTrigger value="appearance" data-test="event-tab-appearance">
+                {{ $t('Appearance') }}
             </TabsTrigger>
             <slot name="tab-triggers" />
         </TabsList>
@@ -311,6 +323,23 @@ const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
                     </div>
                     <InputError :message="errors.specializations" />
                 </fieldset>
+            </TabsContent>
+
+            <TabsContent value="appearance" class="space-y-6">
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <ColorField
+                        name="primary_color"
+                        :label="$t('Primary color')"
+                        :default-value="event?.primary_color"
+                        :error="errors.primary_color"
+                    />
+                    <ColorField
+                        name="accent_color"
+                        :label="$t('Accent color')"
+                        :default-value="event?.accent_color"
+                        :error="errors.accent_color"
+                    />
+                </div>
             </TabsContent>
 
             <Button :disabled="processing" data-test="save-event-button">

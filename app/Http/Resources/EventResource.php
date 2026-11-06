@@ -47,6 +47,8 @@ final class EventResource extends JsonResource
             'sections' => EventSectionResource::collection($this->whenLoaded('sections')),
             'is_visible' => $this->is_visible,
             'is_promoted' => $this->is_promoted,
+            'primary_color' => $this->primary_color,
+            'accent_color' => $this->accent_color,
             'is_past' => $this->ends_at->isPast(),
             'deleted_at' => $this->deleted_at?->toIso8601String(),
         ];

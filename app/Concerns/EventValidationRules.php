@@ -42,6 +42,8 @@ trait EventValidationRules
             'specializations.*' => ['integer', 'distinct', Rule::exists(Specialization::class, 'id')],
             'is_visible' => ['required', 'boolean'],
             'is_promoted' => ['required', 'boolean'],
+            'primary_color' => ['nullable', 'regex:/^#[0-9a-f]{6}$/iD'],
+            'accent_color' => ['nullable', 'regex:/^#[0-9a-f]{6}$/iD'],
         ];
     }
 

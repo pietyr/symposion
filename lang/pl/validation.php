@@ -200,6 +200,7 @@ return [
     */
 
     'attributes' => [
+        'accent_color' => 'kolor akcentu',
         'city' => 'miasto',
         'content' => 'treść',
         'current_password' => 'obecne hasło',
@@ -210,6 +211,7 @@ return [
         'name' => 'imię i nazwisko',
         'password' => 'hasło',
         'password_confirmation' => 'potwierdzenie hasła',
+        'primary_color' => 'kolor wiodący',
         'professions' => 'zawody',
         'specializations' => 'specjalizacje',
         'price_in_person' => 'cena stacjonarna',

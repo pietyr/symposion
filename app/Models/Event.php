@@ -38,6 +38,8 @@ use Illuminate\Support\Str;
  * @property int|null $price_in_person gross amount in grosze; 0 means free
  * @property bool $is_visible
  * @property bool $is_promoted
+ * @property string|null $primary_color hex, e.g. #0f766e
+ * @property string|null $accent_color hex, e.g. #f59e0b
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property CarbonImmutable|null $deleted_at
@@ -46,7 +48,7 @@ use Illuminate\Support\Str;
  * @property-read Collection<int, Specialization> $specializations
  * @property-read Collection<int, EventSection> $sections
  */
-#[Fillable(['title', 'invoice_title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'price_online', 'price_in_person', 'is_visible', 'is_promoted'])]
+#[Fillable(['title', 'invoice_title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'price_online', 'price_in_person', 'is_visible', 'is_promoted', 'primary_color', 'accent_color'])]
 final class Event extends Model
 {
     /** @use HasFactory<EventFactory> */

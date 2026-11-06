@@ -28,6 +28,8 @@ export type EventResource = {
     sections?: EventSectionResource[];
     is_visible: boolean;
     is_promoted: boolean;
+    primary_color: string | null;
+    accent_color: string | null;
     is_past: boolean;
     deleted_at: string | null;
 };
