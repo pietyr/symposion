@@ -97,3 +97,29 @@ test('content sections render their html on the event page', function () {
         ->assertDontSee('<table>')
         ->assertNoJavaScriptErrors();
 });
+
+test('the table of contents jumps to a section and stays in view', function () {
+    $event = Event::factory()->visible()->create();
+    $event->sections()->createMany([
+        ['title' => 'Opis', 'position' => 1, 'content' => str_repeat('<p>Tekst</p>', 200)],
+        ['title' => 'Program', 'position' => 2, 'content' => str_repeat('<p>Tekst</p>', 200)],
+    ]);
+    $program = $event->sections()->where('title', 'Program')->sole();
+
+    $page = visit(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false));
+    $page->click('[data-test="event-toc"] a:has-text("Program")')->wait(1);
+
+    expect($page->script("Math.abs(document.getElementById('section-{$program->id}').getBoundingClientRect().top) < 100"))->toBeTrue()
+        ->and($page->script('document.querySelector("[data-test=event-toc]").getBoundingClientRect().top >= 0'))->toBeTrue();
+
+    $page->assertVisible('@event-toc')->assertNoJavaScriptErrors();
+});
+
+test('a single section gets no table of contents', function () {
+    $event = Event::factory()->visible()->create();
+    $event->sections()->create(['title' => 'Opis', 'position' => 1, 'content' => '<p>Tekst</p>']);
+
+    visit(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false))
+        ->assertSee('Opis')
+        ->assertMissing('@event-toc');
+});

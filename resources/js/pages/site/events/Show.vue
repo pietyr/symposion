@@ -2,6 +2,7 @@
 import { Head } from '@inertiajs/vue3';
 import { Banknote, Calendar, MapPin } from '@lucide/vue';
 import EventBanner from '@/components/site/events/EventBanner.vue';
+import EventTableOfContents from '@/components/site/events/EventTableOfContents.vue';
 import { Badge } from '@/components/ui/badge';
 import { useDateTimeFormat } from '@/composables/useDateTimeFormat';
 import { usePriceFormat } from '@/composables/usePriceFormat';
@@ -108,18 +109,34 @@ const { formatPrice } = usePriceFormat();
             </ul>
         </section>
 
-        <section
-            v-for="section in event.sections"
-            :id="`section-${section.id}`"
-            :key="section.id"
-            class="flex scroll-mt-8 flex-col gap-3 pt-6"
-            data-test="event-page-section"
+        <div
+            v-if="event.sections?.length"
+            class="flex flex-col gap-8 pt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-start"
         >
-            <h2 class="text-2xl font-semibold tracking-tight">
-                {{ section.title }}
-            </h2>
-            <!-- eslint-disable-next-line vue/no-v-html -- sanitized when saved (SanitizeEventContent) -->
-            <div class="event-content" v-html="section.content" />
-        </section>
+            <EventTableOfContents
+                v-if="event.sections.length > 1"
+                :sections="event.sections"
+                class="lg:sticky lg:top-8 lg:order-last"
+            />
+
+            <div
+                class="flex min-w-0 flex-col gap-8"
+                :class="{ 'lg:col-span-2': event.sections.length === 1 }"
+            >
+                <section
+                    v-for="section in event.sections"
+                    :id="`section-${section.id}`"
+                    :key="section.id"
+                    class="flex scroll-mt-8 flex-col gap-3"
+                    data-test="event-page-section"
+                >
+                    <h2 class="text-2xl font-semibold tracking-tight">
+                        {{ section.title }}
+                    </h2>
+                    <!-- eslint-disable-next-line vue/no-v-html -- sanitized when saved (SanitizeEventContent) -->
+                    <div class="event-content" v-html="section.content" />
+                </section>
+            </div>
+        </div>
     </article>
 </template>
