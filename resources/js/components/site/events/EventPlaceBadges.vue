@@ -5,7 +5,12 @@ import type { PublicEventResource } from '@/types';
 
 const props = defineProps<{
     event: Pick<PublicEventResource, 'city' | 'format'>;
+    large?: boolean;
 }>();
+
+const sizeClass = computed(() =>
+    props.large ? 'px-3 py-1 text-sm sm:text-base' : '',
+);
 
 const isOnline = computed(() => props.event.format !== 'in_person');
 </script>
@@ -15,6 +20,7 @@ const isOnline = computed(() => props.event.format !== 'in_person');
         <Badge
             v-if="event.city"
             class="border-transparent bg-emerald-700 text-white"
+            :class="sizeClass"
             data-test="event-place-city"
         >
             {{ event.city }}
@@ -22,6 +28,7 @@ const isOnline = computed(() => props.event.format !== 'in_person');
         <Badge
             v-if="isOnline"
             class="border-transparent bg-sky-700 text-white"
+            :class="sizeClass"
             data-test="event-place-online"
         >
             {{ $t('Online') }}

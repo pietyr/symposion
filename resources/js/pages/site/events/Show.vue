@@ -33,7 +33,7 @@ const { formatPrice } = usePriceFormat();
                 :url="event.large_banner_url"
                 :default-number="event.default_banner"
                 sizes="100vw"
-                class="h-48 w-full object-cover sm:aspect-[4128/1024] sm:h-auto"
+                class="h-60 w-full object-cover sm:aspect-[4128/1024] sm:h-auto"
                 fetchpriority="high"
                 data-test="event-page-banner"
             />
@@ -42,15 +42,17 @@ const { formatPrice } = usePriceFormat();
                 data-test="event-banner-bar"
             >
                 <div
-                    class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-4 py-3"
+                    class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-4 sm:py-6"
                 >
                     <h1
-                        class="text-lg leading-tight font-semibold tracking-tight sm:text-2xl"
+                        class="text-2xl leading-tight font-semibold tracking-tight sm:text-3xl"
                     >
                         {{ event.title }}
                     </h1>
-                    <div class="flex flex-wrap items-center gap-3 text-sm">
-                        <EventPlaceBadges :event="event" />
+                    <div
+                        class="flex flex-wrap items-center gap-3 text-base sm:text-lg"
+                    >
+                        <EventPlaceBadges :event="event" large />
                         <span>{{
                             formatDateRange(event.starts_at, event.ends_at)
                         }}</span>
