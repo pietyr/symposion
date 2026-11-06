@@ -2,6 +2,13 @@ import type { SelectOption } from './ui';
 
 export type EventFormat = 'online' | 'in_person' | 'hybrid';
 
+export type EventSectionResource = {
+    id: number;
+    title: string;
+    content: string;
+    updated_at: string | null;
+};
+
 export type EventResource = {
     id: number;
     title: string;
@@ -18,8 +25,13 @@ export type EventResource = {
     price_in_person: number | null;
     professions?: string[];
     specializations?: string[];
+    sections?: EventSectionResource[];
     is_visible: boolean;
     is_promoted: boolean;
+    primary_color: string | null;
+    accent_color: string | null;
+    large_banner_url: string | null;
+    small_banner_url: string | null;
     is_past: boolean;
     deleted_at: string | null;
 };

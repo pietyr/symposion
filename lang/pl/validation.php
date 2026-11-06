@@ -200,16 +200,21 @@ return [
     */
 
     'attributes' => [
+        'accent_color' => 'kolor akcentu',
         'city' => 'miasto',
+        'content' => 'treść',
         'current_password' => 'obecne hasło',
         'email' => 'adres e-mail',
         'ends_at' => 'zakończenie',
         'format' => 'forma udziału',
         'invoice_title' => 'tytuł na fakturze',
+        'large_banner' => 'duży baner',
         'name' => 'imię i nazwisko',
         'password' => 'hasło',
         'password_confirmation' => 'potwierdzenie hasła',
+        'primary_color' => 'kolor wiodący',
         'professions' => 'zawody',
+        'small_banner' => 'mały baner',
         'specializations' => 'specjalizacje',
         'price_in_person' => 'cena stacjonarna',
         'price_online' => 'cena online',

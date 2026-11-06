@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\Events\CreateEvent;
 use App\Actions\Events\DeleteEvent;
+use App\Actions\Events\SaveEventBanners;
 use App\Actions\Events\UpdateEvent;
 use App\Enums\EventFormat;
 use App\Enums\EventSort;
@@ -67,11 +68,12 @@ final class EventController extends Controller
     /**
      * Store a newly created event.
      */
-    public function store(StoreEventRequest $request, CreateEvent $createEvent): RedirectResponse
+    public function store(StoreEventRequest $request, CreateEvent $createEvent, SaveEventBanners $saveEventBanners): RedirectResponse
     {
         Gate::authorize('create', Event::class);
 
-        $createEvent->handle($request->eventAttributes(), $request->eventProfessions(), $request->eventSpecializations());
+        $event = $createEvent->handle($request->eventAttributes(), $request->eventProfessions(), $request->eventSpecializations());
+        $saveEventBanners->handle($event, ...$request->eventBanners());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Event created.')]);
 
@@ -86,7 +88,7 @@ final class EventController extends Controller
         Gate::authorize('update', $event);
 
         return Inertia::render('admin/events/Edit', [
-            'event' => EventResource::make($event->load(['professionEntries', 'specializations'])),
+            'event' => EventResource::make($event->load(['professionEntries', 'specializations', 'sections'])),
             ...$this->formOptions(),
         ]);
     }
@@ -94,11 +96,12 @@ final class EventController extends Controller
     /**
      * Update the event.
      */
-    public function update(UpdateEventRequest $request, Event $event, UpdateEvent $updateEvent): RedirectResponse
+    public function update(UpdateEventRequest $request, Event $event, UpdateEvent $updateEvent, SaveEventBanners $saveEventBanners): RedirectResponse
     {
         Gate::authorize('update', $event);
 
         $updateEvent->handle($event, $request->eventAttributes(), $request->eventProfessions(), $request->eventSpecializations());
+        $saveEventBanners->handle($event, ...$request->eventBanners());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Event updated.')]);
 

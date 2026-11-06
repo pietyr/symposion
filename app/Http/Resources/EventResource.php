@@ -44,8 +44,13 @@ final class EventResource extends JsonResource
                 ->map(fn (Specialization $specialization): string => (string) $specialization->id)
                 ->values()
                 ->all()),
+            'sections' => EventSectionResource::collection($this->whenLoaded('sections')),
             'is_visible' => $this->is_visible,
             'is_promoted' => $this->is_promoted,
+            'primary_color' => $this->primary_color,
+            'accent_color' => $this->accent_color,
+            'large_banner_url' => $this->large_banner_url,
+            'small_banner_url' => $this->small_banner_url,
             'is_past' => $this->ends_at->isPast(),
             'deleted_at' => $this->deleted_at?->toIso8601String(),
         ];

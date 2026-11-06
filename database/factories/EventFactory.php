@@ -94,6 +94,10 @@ final class EventFactory extends Factory
             'price_in_person' => $this->randomPrice(),
             'is_visible' => false,
             'is_promoted' => false,
+            'primary_color' => null,
+            'accent_color' => null,
+            'large_banner_path' => null,
+            'small_banner_path' => null,
         ];
     }
 
@@ -141,6 +145,40 @@ final class EventFactory extends Factory
             $event->specializations()->attach(
                 Specialization::query()->inRandomOrder()->limit(fake()->numberBetween(1, 3))->pluck('id'),
             );
+        });
+    }
+
+    /**
+     * Give the event a pair of brand colors.
+     */
+    public function withBrandColors(): static
+    {
+        return $this->state(function (array $attributes) {
+            [$primary, $accent] = $this->pick([
+                ['#0f766e', '#f59e0b'],
+                ['#1d4ed8', '#f97316'],
+                ['#7c3aed', '#10b981'],
+                ['#be123c', '#0ea5e9'],
+                ['#0369a1', '#eab308'],
+            ]);
+
+            return ['primary_color' => $primary, 'accent_color' => $accent];
+        });
+    }
+
+    /**
+     * Give the event a few typical content sections.
+     */
+    public function withSections(): static
+    {
+        return $this->afterCreating(function (Event $event): void {
+            foreach (['Opis', 'Program', 'Partnerzy'] as $position => $title) {
+                $event->sections()->create([
+                    'title' => $title,
+                    'content' => '<p>'.fake()->paragraph().'</p><p>'.fake()->paragraph().'</p>',
+                    'position' => $position + 1,
+                ]);
+            }
         });
     }
 

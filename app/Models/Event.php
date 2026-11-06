@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
@@ -38,14 +39,21 @@ use Illuminate\Support\Str;
  * @property int|null $price_in_person gross amount in grosze; 0 means free
  * @property bool $is_visible
  * @property bool $is_promoted
+ * @property string|null $primary_color hex, e.g. #0f766e
+ * @property string|null $accent_color hex, e.g. #f59e0b
+ * @property string|null $large_banner_path on the public disk
+ * @property string|null $small_banner_path on the public disk
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property CarbonImmutable|null $deleted_at
  * @property-read Collection<int, EventProfession> $professionEntries
  * @property-read list<Profession> $professions
  * @property-read Collection<int, Specialization> $specializations
+ * @property-read Collection<int, EventSection> $sections
+ * @property-read string|null $large_banner_url
+ * @property-read string|null $small_banner_url
  */
-#[Fillable(['title', 'invoice_title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'price_online', 'price_in_person', 'is_visible', 'is_promoted'])]
+#[Fillable(['title', 'invoice_title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'price_online', 'price_in_person', 'is_visible', 'is_promoted', 'primary_color', 'accent_color', 'large_banner_path', 'small_banner_path'])]
 final class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
@@ -87,6 +95,16 @@ final class Event extends Model
     }
 
     /**
+     * Content sections in the order they appear on the event page.
+     *
+     * @return HasMany<EventSection, $this>
+     */
+    public function sections(): HasMany
+    {
+        return $this->hasMany(EventSection::class)->orderBy('position');
+    }
+
+    /**
      * Professions the event is open to; values the enum no longer knows are skipped.
      *
      * @return Attribute<list<Profession>, never>
@@ -106,6 +124,27 @@ final class Event extends Model
 
             return $professions;
         });
+    }
+
+    /**
+     * @return Attribute<string|null, never>
+     */
+    protected function largeBannerUrl(): Attribute
+    {
+        return Attribute::get(fn (): ?string => $this->bannerUrl($this->large_banner_path));
+    }
+
+    /**
+     * @return Attribute<string|null, never>
+     */
+    protected function smallBannerUrl(): Attribute
+    {
+        return Attribute::get(fn (): ?string => $this->bannerUrl($this->small_banner_path));
+    }
+
+    private function bannerUrl(?string $path): ?string
+    {
+        return $path === null ? null : Storage::disk('public')->url($path);
     }
 
     /**

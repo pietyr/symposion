@@ -28,14 +28,14 @@ final class DevelopmentSeeder extends Seeder
             'email' => 'user@example.com',
         ]);
 
-        Event::factory()->withProfessions()->withSpecializations()->visible()->count(8)->create();
-        Event::factory()->withProfessions()->withSpecializations()->visible()->promoted()->count(4)->create();
-        Event::factory()->withProfessions()->withSpecializations()->visible()->online()->count(5)->create();
-        Event::factory()->withProfessions()->withSpecializations()->visible()->hybrid()->count(5)->create();
-        Event::factory()->withProfessions()->withSpecializations()->visible()->past()->count(12)->create();
-        Event::factory()->withProfessions()->withSpecializations()->visible()->past()->online()->count(4)->create();
-        Event::factory()->withProfessions()->withSpecializations()->visible()->past()->hybrid()->count(4)->create();
-        Event::factory()->withProfessions()->withSpecializations()->count(3)->create();
-        Event::factory()->withProfessions()->withSpecializations()->visible()->count(2)->create()->each->delete();
+        Event::factory()->withProfessions()->withSpecializations()->withSections()->withBrandColors()->visible()->count(8)->create();
+        Event::factory()->withProfessions()->withSpecializations()->withSections()->withBrandColors()->visible()->promoted()->count(4)->create();
+        Event::factory()->withProfessions()->withSpecializations()->withSections()->withBrandColors()->visible()->online()->count(5)->create();
+        Event::factory()->withProfessions()->withSpecializations()->withSections()->withBrandColors()->visible()->hybrid()->count(5)->create();
+        Event::factory()->withProfessions()->withSpecializations()->withSections()->withBrandColors()->visible()->past()->count(12)->create();
+        Event::factory()->withProfessions()->withSpecializations()->withSections()->withBrandColors()->visible()->past()->online()->count(4)->create();
+        Event::factory()->withProfessions()->withSpecializations()->withSections()->withBrandColors()->visible()->past()->hybrid()->count(4)->create();
+        Event::factory()->withProfessions()->withSpecializations()->withSections()->withBrandColors()->count(3)->create();
+        Event::factory()->withProfessions()->withSpecializations()->withSections()->withBrandColors()->visible()->count(2)->create()->each->delete();
     }
 }
