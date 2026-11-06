@@ -10,3 +10,37 @@ updates:
       github-actions:
         patterns:
           - "*"
+  - package-ecosystem: "composer"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 5
+    commit-message:
+      prefix: "chore"
+    groups:
+      composer-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 5
+    commit-message:
+      prefix: "chore"
+    groups:
+      npm-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # vue-tsc cannot run on the native TypeScript 7 compiler yet.
+      - dependency-name: "typescript"
+        versions:
+          - ">=7"
+      # Updated together with their overrides entry through `vp migrate`.
+      - dependency-name: "vite"
+      - dependency-name: "vite-plus"
