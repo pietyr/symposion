@@ -74,3 +74,15 @@ test('event cards load their default banner', function () {
     expect($page->script('document.querySelector("[data-test=event-card-banner]").naturalWidth'))->toBeGreaterThan(0)
         ->and($page->script('document.querySelector("[data-test=event-card-banner]").currentSrc'))->toContain('/images/event-banners/thumbnail-');
 });
+
+test('the event page banner spans the window without a horizontal scrollbar', function () {
+    $event = Event::factory()->visible()->create();
+
+    $page = visit(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false));
+    $page->assertVisible('@event-page-banner')->wait(1);
+
+    expect($page->script('document.querySelector("[data-test=event-page-banner]").naturalWidth'))->toBeGreaterThan(0)
+        ->and($page->script('document.querySelector("[data-test=event-page-banner]").currentSrc'))->toContain('/images/event-banners/banner-')
+        ->and($page->script('document.querySelector("[data-test=event-page-banner]").getBoundingClientRect().left'))->toBeLessThanOrEqual(0)
+        ->and($page->script('document.documentElement.scrollWidth <= window.innerWidth'))->toBeTrue();
+});

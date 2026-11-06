@@ -10,7 +10,7 @@ const year = new Date().getFullYear();
 </script>
 
 <template>
-    <AppShell variant="header">
+    <AppShell variant="header" class="overflow-x-clip">
         <SiteHeader />
         <AppContent variant="header" class="px-4 py-8">
             <slot />

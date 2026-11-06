@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 import { Banknote, Calendar, MapPin } from '@lucide/vue';
+import EventBanner from '@/components/site/events/EventBanner.vue';
 import { Badge } from '@/components/ui/badge';
 import { useDateTimeFormat } from '@/composables/useDateTimeFormat';
 import { usePriceFormat } from '@/composables/usePriceFormat';
@@ -18,6 +19,18 @@ const { formatPrice } = usePriceFormat();
     <Head :title="event.title" />
 
     <article class="flex flex-col gap-4">
+        <div class="-mt-8 mb-4 ml-[calc(50%-50vw)] w-screen">
+            <EventBanner
+                kind="banner"
+                :url="event.large_banner_url"
+                :default-number="event.default_banner"
+                sizes="100vw"
+                class="h-32 w-full object-cover sm:aspect-[4128/1024] sm:h-auto"
+                fetchpriority="high"
+                data-test="event-page-banner"
+            />
+        </div>
+
         <div>
             <Badge variant="secondary">{{ event.format_label }}</Badge>
         </div>

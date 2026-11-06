@@ -41,3 +41,15 @@ test('visitors get the uploaded banners and the default pair', function () {
             ->where('events.data.0.default_banner', $event->default_banner),
         );
 });
+
+test('the event page gets the large banner', function () {
+    Storage::fake('public');
+
+    $event = Event::factory()->visible()->create(['large_banner_path' => 'events/1/large.png']);
+
+    $this->get(route('events.show', ['event' => $event, 'slug' => $event->slug]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('event.large_banner_url', Storage::disk('public')->url('events/1/large.png'))
+            ->where('event.default_banner', $event->default_banner),
+        );
+});
