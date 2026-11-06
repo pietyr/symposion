@@ -145,6 +145,22 @@ final class EventFactory extends Factory
     }
 
     /**
+     * Give the event a few typical content sections.
+     */
+    public function withSections(): static
+    {
+        return $this->afterCreating(function (Event $event): void {
+            foreach (['Opis', 'Program', 'Partnerzy'] as $position => $title) {
+                $event->sections()->create([
+                    'title' => $title,
+                    'content' => '<p>'.fake()->paragraph().'</p><p>'.fake()->paragraph().'</p>',
+                    'position' => $position + 1,
+                ]);
+            }
+        });
+    }
+
+    /**
      * Indicate that the event takes place online only.
      */
     public function online(): static

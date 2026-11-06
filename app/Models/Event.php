@@ -44,6 +44,7 @@ use Illuminate\Support\Str;
  * @property-read Collection<int, EventProfession> $professionEntries
  * @property-read list<Profession> $professions
  * @property-read Collection<int, Specialization> $specializations
+ * @property-read Collection<int, EventSection> $sections
  */
 #[Fillable(['title', 'invoice_title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'price_online', 'price_in_person', 'is_visible', 'is_promoted'])]
 final class Event extends Model
@@ -84,6 +85,16 @@ final class Event extends Model
     public function specializations(): BelongsToMany
     {
         return $this->belongsToMany(Specialization::class);
+    }
+
+    /**
+     * Content sections in the order they appear on the event page.
+     *
+     * @return HasMany<EventSection, $this>
+     */
+    public function sections(): HasMany
+    {
+        return $this->hasMany(EventSection::class)->orderBy('position');
     }
 
     /**

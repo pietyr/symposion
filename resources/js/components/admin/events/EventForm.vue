@@ -44,6 +44,9 @@ const groszeToZlotys = (grosze?: number | null): string | undefined =>
         : (grosze / 100).toFixed(2).replace('.', ',');
 
 const activeTab = ref('details');
+const isFormTab = computed(() =>
+    ['details', 'audience'].includes(activeTab.value),
+);
 
 // Every field lives in one form, so an error may sit on a tab that is not open.
 const showFirstTabWithErrors = (errors: Record<string, string>): void => {
@@ -66,10 +69,12 @@ const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
             <TabsTrigger value="audience" data-test="event-tab-audience">
                 {{ $t('Professions and specializations') }}
             </TabsTrigger>
+            <slot name="tab-triggers" />
         </TabsList>
 
         <Form
             v-bind="action"
+            v-show="isFormTab"
             class="space-y-6"
             novalidate
             v-slot="{ errors, processing }"
@@ -312,5 +317,7 @@ const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
                 {{ submitLabel }}
             </Button>
         </Form>
+
+        <slot name="tabs" />
     </Tabs>
 </template>

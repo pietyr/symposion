@@ -201,6 +201,7 @@ return [
 
     'attributes' => [
         'city' => 'miasto',
+        'content' => 'treść',
         'current_password' => 'obecne hasło',
         'email' => 'adres e-mail',
         'ends_at' => 'zakończenie',

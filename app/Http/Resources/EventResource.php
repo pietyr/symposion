@@ -44,6 +44,7 @@ final class EventResource extends JsonResource
                 ->map(fn (Specialization $specialization): string => (string) $specialization->id)
                 ->values()
                 ->all()),
+            'sections' => EventSectionResource::collection($this->whenLoaded('sections')),
             'is_visible' => $this->is_visible,
             'is_promoted' => $this->is_promoted,
             'is_past' => $this->ends_at->isPast(),

@@ -86,7 +86,7 @@ final class EventController extends Controller
         Gate::authorize('update', $event);
 
         return Inertia::render('admin/events/Edit', [
-            'event' => EventResource::make($event->load(['professionEntries', 'specializations'])),
+            'event' => EventResource::make($event->load(['professionEntries', 'specializations', 'sections'])),
             ...$this->formOptions(),
         ]);
     }
