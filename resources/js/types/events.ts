@@ -30,6 +30,8 @@ export type EventResource = {
     is_promoted: boolean;
     primary_color: string | null;
     accent_color: string | null;
+    large_banner_url: string | null;
+    small_banner_url: string | null;
     is_past: boolean;
     deleted_at: string | null;
 };

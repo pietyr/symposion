@@ -96,6 +96,8 @@ final class EventFactory extends Factory
             'is_promoted' => false,
             'primary_color' => null,
             'accent_color' => null,
+            'large_banner_path' => null,
+            'small_banner_path' => null,
         ];
     }
 

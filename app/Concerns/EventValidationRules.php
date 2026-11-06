@@ -9,7 +9,9 @@ use App\Enums\Profession;
 use App\Enums\Voivodeship;
 use App\Models\Specialization;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\File;
 
 trait EventValidationRules
 {
@@ -24,6 +26,7 @@ trait EventValidationRules
         $hasVenue = $format?->hasVenue() ?? false;
         $hasOnlineAttendance = $format?->hasOnlineAttendance() ?? false;
         $priceRules = ['nullable', 'decimal:0,2', 'min:0', 'max:100000'];
+        $bannerRules = ['nullable', File::image()->types(['jpg', 'jpeg', 'png', 'webp'])->max(5 * 1024)];
 
         return [
             'title' => ['required', 'string', 'max:255'],
@@ -44,6 +47,8 @@ trait EventValidationRules
             'is_promoted' => ['required', 'boolean'],
             'primary_color' => ['nullable', 'regex:/^#[0-9a-f]{6}$/iD'],
             'accent_color' => ['nullable', 'regex:/^#[0-9a-f]{6}$/iD'],
+            'large_banner' => $bannerRules,
+            'small_banner' => $bannerRules,
         ];
     }
 
@@ -69,7 +74,7 @@ trait EventValidationRules
     public function eventAttributes(): array
     {
         return [
-            ...$this->safe()->except(['professions', 'specializations']),
+            ...$this->safe()->except(['professions', 'specializations', 'large_banner', 'small_banner']),
             'price_online' => $this->priceInGrosze('price_online'),
             'price_in_person' => $this->priceInGrosze('price_in_person'),
         ];
@@ -89,6 +94,22 @@ trait EventValidationRules
     public function eventSpecializations(): array
     {
         return array_map(intval(...), array_values($this->array('specializations')));
+    }
+
+    /**
+     * @return array{large: UploadedFile|null, small: UploadedFile|null, removeLarge: bool, removeSmall: bool}
+     */
+    public function eventBanners(): array
+    {
+        $large = $this->file('large_banner');
+        $small = $this->file('small_banner');
+
+        return [
+            'large' => $large instanceof UploadedFile ? $large : null,
+            'small' => $small instanceof UploadedFile ? $small : null,
+            'removeLarge' => $this->boolean('remove_large_banner'),
+            'removeSmall' => $this->boolean('remove_small_banner'),
+        ];
     }
 
     /**

@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Enums\Profession;
 use App\Models\Event;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     $this->actingAs(User::factory()->admin()->create());
@@ -54,4 +56,28 @@ test('an invalid color opens the appearance tab', function () {
         ->click('@save-event-button')
         ->assertSee('Format pola kolor akcentu jest nieprawidłowy')
         ->assertVisible('#accent_color');
+});
+
+test('uploading a banner on the edit form keeps the other fields', function () {
+    Storage::fake('public');
+
+    $event = Event::factory()->withProfessions()->create(['title' => 'Stary tytuł']);
+    $professions = $event->professionEntries()->pluck('profession')->sort()->values()->all();
+    $banner = UploadedFile::fake()->image('baner.png', 1200, 400);
+
+    visit(route('admin.events.edit', $event, absolute: false))
+        ->fill('title', 'Nowy tytuł')
+        ->click('@event-tab-appearance')
+        ->attach('#large_banner', $banner->getPathname())
+        ->click('@save-event-button')
+        ->assertSee('Wydarzenie zostało zaktualizowane')
+        ->assertNoJavaScriptErrors();
+
+    $event->refresh();
+
+    expect($event->title)->toBe('Nowy tytuł')
+        ->and($event->large_banner_path)->toStartWith("events/{$event->id}/")
+        ->and($event->professionEntries()->pluck('profession')->sort()->values()->all())->toBe($professions);
+
+    Storage::disk('public')->assertExists((string) $event->large_banner_path);
 });

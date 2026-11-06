@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Form } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import BannerField from '@/components/admin/events/BannerField.vue';
 import ColorField from '@/components/admin/events/ColorField.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -58,7 +59,9 @@ const showFirstTabWithErrors = (errors: Record<string, string>): void => {
             return 'audience';
         }
 
-        return field.endsWith('_color') ? 'appearance' : 'details';
+        return field.endsWith('_color') || field.endsWith('_banner')
+            ? 'appearance'
+            : 'details';
     };
     const tabsWithErrors = Object.keys(errors).map(tabOfField);
 
@@ -340,6 +343,21 @@ const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
                         :error="errors.accent_color"
                     />
                 </div>
+
+                <BannerField
+                    :key="event?.large_banner_url ?? 'no-large-banner'"
+                    name="large_banner"
+                    :label="$t('Large banner')"
+                    :url="event?.large_banner_url"
+                    :error="errors.large_banner"
+                />
+                <BannerField
+                    :key="event?.small_banner_url ?? 'no-small-banner'"
+                    name="small_banner"
+                    :label="$t('Small banner')"
+                    :url="event?.small_banner_url"
+                    :error="errors.small_banner"
+                />
             </TabsContent>
 
             <Button :disabled="processing" data-test="save-event-button">

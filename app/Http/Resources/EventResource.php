@@ -49,6 +49,8 @@ final class EventResource extends JsonResource
             'is_promoted' => $this->is_promoted,
             'primary_color' => $this->primary_color,
             'accent_color' => $this->accent_color,
+            'large_banner_url' => $this->large_banner_url,
+            'small_banner_url' => $this->small_banner_url,
             'is_past' => $this->ends_at->isPast(),
             'deleted_at' => $this->deleted_at?->toIso8601String(),
         ];
