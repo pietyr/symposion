@@ -218,3 +218,12 @@ test('the event page banner carries the name, place and short date', function ()
 
     $page->assertSee('Informacje')->assertNoJavaScriptErrors();
 });
+
+test('the app logo appears on the site, in the panels and on the auth pages', function () {
+    visit(route('home', absolute: false))->assertVisible('@app-logo-icon');
+    visit(route('login', absolute: false))->assertVisible('@app-logo-icon');
+
+    $this->actingAs(User::factory()->admin()->create());
+
+    visit(route('admin.dashboard', absolute: false))->assertVisible('@app-logo-icon');
+});
