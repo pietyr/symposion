@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import EventBanner from '@/components/site/events/EventBanner.vue';
-import { Badge } from '@/components/ui/badge';
+import EventPlaceBadges from '@/components/site/events/EventPlaceBadges.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDateTimeFormat } from '@/composables/useDateTimeFormat';
-import { usePriceFormat } from '@/composables/usePriceFormat';
 import { show } from '@/routes/events';
 import type { PublicEventResource } from '@/types';
 
@@ -13,7 +12,6 @@ defineProps<{
 }>();
 
 const { formatDateRange } = useDateTimeFormat();
-const { formatPriceRange } = usePriceFormat();
 </script>
 
 <template>
@@ -38,23 +36,12 @@ const { formatPriceRange } = usePriceFormat();
                 <CardTitle class="leading-snug">{{ event.title }}</CardTitle>
             </CardHeader>
             <CardContent
-                class="mt-auto flex flex-col gap-2 text-sm text-muted-foreground"
+                class="mt-auto flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground"
             >
-                <span>
-                    {{ formatDateRange(event.starts_at, event.ends_at) }}
-                    <template v-if="event.city"> · {{ event.city }}</template>
-                </span>
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                    <span class="font-medium text-foreground">
-                        {{
-                            formatPriceRange(
-                                event.price_online,
-                                event.price_in_person,
-                            )
-                        }}
-                    </span>
-                    <Badge variant="secondary">{{ event.format_label }}</Badge>
-                </div>
+                <span>{{
+                    formatDateRange(event.starts_at, event.ends_at)
+                }}</span>
+                <EventPlaceBadges :event="event" />
             </CardContent>
         </Card>
     </Link>

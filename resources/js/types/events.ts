@@ -41,6 +41,7 @@ export type PublicEventResource = {
     id: number;
     title: string;
     slug: string;
+    format: EventFormat;
     format_label: string;
     city: string | null;
     venue: string | null;

@@ -186,3 +186,18 @@ test('brand colors reach the event page and stay optional', function () {
     $page = visit(route('events.show', ['event' => $plain, 'slug' => $plain->slug], absolute: false));
     expect($page->script($mark))->not->toBe('rgb(15, 118, 110)');
 });
+
+test('event cards show where the event takes place instead of its price', function () {
+    Event::factory()->visible()->create(['title' => 'Stacjonarne', 'city' => 'Kraków', 'price_in_person' => 12300, 'starts_at' => now()->addDays(1), 'ends_at' => now()->addDays(1)]);
+    Event::factory()->visible()->online()->create(['title' => 'Zdalne', 'starts_at' => now()->addDays(2), 'ends_at' => now()->addDays(2)]);
+    Event::factory()->visible()->hybrid()->create(['title' => 'Mieszane', 'city' => 'Gdańsk', 'starts_at' => now()->addDays(3), 'ends_at' => now()->addDays(3)]);
+
+    $page = visit(route('events.index', absolute: false));
+    $places = fn (int $card): string => $page->script("[...document.querySelectorAll('[data-test=event-card]')[{$card}].querySelectorAll('[data-test^=event-place]')].map((badge) => badge.textContent.trim()).join(',')");
+
+    expect($places(0))->toBe('Kraków')
+        ->and($places(1))->toBe('Online')
+        ->and($places(2))->toBe('Gdańsk,Online');
+
+    $page->assertDontSee('123,00');
+});
