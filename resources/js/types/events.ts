@@ -50,6 +50,8 @@ export type PublicEventResource = {
     large_banner_url: string | null;
     small_banner_url: string | null;
     default_banner: number;
+    primary_color: string | null;
+    accent_color: string | null;
     professions?: string[];
     specializations?: string[];
     sections?: EventSectionResource[];

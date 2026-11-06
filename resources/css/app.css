@@ -171,6 +171,27 @@
     }
 }
 
+/*
+ * --brand-primary and --brand-accent come from the event and may be missing.
+ * Text mixes them with the theme's text color, so a dark brand color stays readable on a dark background.
+ */
+@layer components {
+    .event-page {
+        --event-mark: var(--brand-primary, var(--border));
+        --event-frame: var(--brand-accent, var(--border));
+        --event-link: color-mix(
+            in oklab,
+            var(--brand-primary, var(--foreground)) 70%,
+            var(--foreground)
+        );
+        --event-icon: color-mix(
+            in oklab,
+            var(--brand-accent, var(--muted-foreground)) 75%,
+            var(--foreground)
+        );
+    }
+}
+
 /* The global reset strips headings and lists, so sanitized HTML from content sections gets its look back here. */
 @layer components {
     .event-content {
@@ -197,7 +218,7 @@
         }
 
         a {
-            @apply text-primary underline underline-offset-4;
+            @apply text-(--event-link) underline underline-offset-4;
         }
 
         blockquote {

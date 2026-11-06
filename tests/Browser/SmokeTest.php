@@ -174,3 +174,15 @@ test('a link with a section anchor opens at that section', function () {
 
     expect($page->script("Math.abs(document.getElementById('section-{$program->id}').getBoundingClientRect().top) < 100"))->toBeTrue();
 });
+
+test('brand colors reach the event page and stay optional', function () {
+    $branded = Event::factory()->visible()->withSections()->create(['primary_color' => '#0f766e', 'accent_color' => '#f59e0b']);
+    $plain = Event::factory()->visible()->withSections()->create();
+    $mark = 'getComputedStyle(document.querySelector("[data-test=event-page-section] h2")).borderLeftColor';
+
+    $page = visit(route('events.show', ['event' => $branded, 'slug' => $branded->slug], absolute: false));
+    expect($page->script($mark))->toBe('rgb(15, 118, 110)');
+
+    $page = visit(route('events.show', ['event' => $plain, 'slug' => $plain->slug], absolute: false));
+    expect($page->script($mark))->not->toBe('rgb(15, 118, 110)');
+});

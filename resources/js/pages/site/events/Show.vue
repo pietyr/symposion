@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 import { Banknote, Calendar, MapPin } from '@lucide/vue';
+import { computed } from 'vue';
 import EventBanner from '@/components/site/events/EventBanner.vue';
 import EventTableOfContents from '@/components/site/events/EventTableOfContents.vue';
 import { Badge } from '@/components/ui/badge';
@@ -8,9 +9,14 @@ import { useDateTimeFormat } from '@/composables/useDateTimeFormat';
 import { usePriceFormat } from '@/composables/usePriceFormat';
 import type { PublicEventResource } from '@/types';
 
-defineProps<{
+const props = defineProps<{
     event: PublicEventResource;
 }>();
+
+const brandColors = computed(() => ({
+    '--brand-primary': props.event.primary_color ?? undefined,
+    '--brand-accent': props.event.accent_color ?? undefined,
+}));
 
 const { formatDateTimeRange } = useDateTimeFormat();
 const { formatPrice } = usePriceFormat();
@@ -19,7 +25,7 @@ const { formatPrice } = usePriceFormat();
 <template>
     <Head :title="event.title" />
 
-    <article class="flex flex-col gap-4">
+    <article class="event-page flex flex-col gap-4" :style="brandColors">
         <div class="-mt-8 mb-4 ml-[calc(50%-50vw)] w-screen">
             <EventBanner
                 kind="banner"
@@ -62,7 +68,7 @@ const { formatPrice } = usePriceFormat();
                     <dl class="flex flex-col gap-2 text-muted-foreground">
                         <div class="flex items-center gap-2">
                             <dt>
-                                <Calendar class="size-4" />
+                                <Calendar class="size-4 text-(--event-icon)" />
                                 <span class="sr-only">{{ $t('Date') }}</span>
                             </dt>
                             <dd>
@@ -76,7 +82,7 @@ const { formatPrice } = usePriceFormat();
                         </div>
                         <div v-if="event.city" class="flex items-center gap-2">
                             <dt>
-                                <MapPin class="size-4" />
+                                <MapPin class="size-4 text-(--event-icon)" />
                                 <span class="sr-only">{{ $t('Venue') }}</span>
                             </dt>
                             <dd>{{ event.city }}, {{ event.venue }}</dd>
@@ -86,7 +92,7 @@ const { formatPrice } = usePriceFormat();
                             class="flex items-center gap-2"
                         >
                             <dt>
-                                <Banknote class="size-4" />
+                                <Banknote class="size-4 text-(--event-icon)" />
                                 <span class="sr-only">{{
                                     $t('Online price')
                                 }}</span>
@@ -101,7 +107,7 @@ const { formatPrice } = usePriceFormat();
                             class="flex items-center gap-2"
                         >
                             <dt>
-                                <Banknote class="size-4" />
+                                <Banknote class="size-4 text-(--event-icon)" />
                                 <span class="sr-only">{{
                                     $t('In-person price')
                                 }}</span>
@@ -159,7 +165,9 @@ const { formatPrice } = usePriceFormat();
                     class="flex scroll-mt-20 flex-col gap-3"
                     data-test="event-page-section"
                 >
-                    <h2 class="text-2xl font-semibold tracking-tight">
+                    <h2
+                        class="border-l-4 border-(color:--event-mark) pl-3 text-2xl font-semibold tracking-tight"
+                    >
                         {{ section.title }}
                     </h2>
                     <!-- eslint-disable-next-line vue/no-v-html -- sanitized when saved (SanitizeEventContent) -->

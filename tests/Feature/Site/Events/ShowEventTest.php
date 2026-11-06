@@ -91,3 +91,16 @@ test('visitors get the content sections in order', function () {
             ->where('event.sections.1.content', '<p>Tekst</p>'),
         );
 });
+
+test('visitors get the brand colors of the event', function (?string $primary, ?string $accent) {
+    $event = Event::factory()->visible()->create(['primary_color' => $primary, 'accent_color' => $accent]);
+
+    $this->get(route('events.show', ['event' => $event, 'slug' => $event->slug]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('event.primary_color', $primary)
+            ->where('event.accent_color', $accent),
+        );
+})->with([
+    'set' => ['#0f766e', '#f59e0b'],
+    'missing' => [null, null],
+]);

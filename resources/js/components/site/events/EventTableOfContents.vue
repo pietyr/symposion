@@ -40,14 +40,14 @@ const scrollTo = (id: string): void => {
         ref="nav"
         :aria-label="$t('Table of contents')"
         :style="{ top: stickyTop }"
-        class="rounded-lg border p-4 text-sm"
+        class="rounded-lg border border-t-4 border-t-(color:--event-frame) p-4 text-sm"
         data-test="event-toc"
     >
         <ul class="flex flex-col gap-1">
             <li v-for="item in items" :key="item.id">
                 <a
                     :href="`#${item.id}`"
-                    class="block py-1 text-muted-foreground transition-colors hover:text-foreground"
+                    class="block py-1 text-muted-foreground transition-colors hover:text-(--event-link)"
                     @click.prevent="scrollTo(item.id)"
                 >
                     {{ item.title }}

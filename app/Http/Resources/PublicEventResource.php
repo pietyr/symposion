@@ -38,6 +38,8 @@ final class PublicEventResource extends JsonResource
             'large_banner_url' => $this->large_banner_url,
             'small_banner_url' => $this->small_banner_url,
             'default_banner' => $this->default_banner,
+            'primary_color' => $this->primary_color,
+            'accent_color' => $this->accent_color,
             'professions' => $this->whenLoaded('professionEntries', fn (): array => array_map(
                 fn (Profession $profession): string => $profession->label(),
                 $this->professions,
