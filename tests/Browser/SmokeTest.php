@@ -64,3 +64,13 @@ test('other users do not get a link to the admin panel', function () {
         ->assertSee('Panel użytkownika')
         ->assertDontSee('Panel admina');
 });
+
+test('event cards load their default banner', function () {
+    Event::factory()->visible()->create();
+
+    $page = visit(route('events.index', absolute: false));
+    $page->assertVisible('@event-card-banner')->wait(1);
+
+    expect($page->script('document.querySelector("[data-test=event-card-banner]").naturalWidth'))->toBeGreaterThan(0)
+        ->and($page->script('document.querySelector("[data-test=event-card-banner]").currentSrc'))->toContain('/images/event-banners/thumbnail-');
+});

@@ -47,6 +47,9 @@ export type PublicEventResource = {
     ends_at: string;
     price_online: number | null;
     price_in_person: number | null;
+    large_banner_url: string | null;
+    small_banner_url: string | null;
+    default_banner: number;
     professions?: string[];
     specializations?: string[];
 };
