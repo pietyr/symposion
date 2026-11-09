@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Registrations\ListRegistrationsRequest;
+use App\Http\Resources\ParticipantResource;
 use App\Http\Resources\RegistrationResource;
 use App\Models\Registration;
 use Illuminate\Support\Facades\Gate;
@@ -33,6 +34,21 @@ final class RegistrationController extends Controller
             ),
             'filters' => $request->selectedFilters(),
             'filterOptions' => $request->filterOptions(),
+        ]);
+    }
+
+    /**
+     * Show a registration with the participant's professional profile.
+     */
+    public function show(Registration $registration): Response
+    {
+        Gate::authorize('view', $registration);
+
+        $registration->load(['event', 'user.specializations']);
+
+        return Inertia::render('admin/registrations/Show', [
+            'registration' => RegistrationResource::make($registration),
+            'participant' => ParticipantResource::make($registration->user),
         ]);
     }
 }

@@ -368,3 +368,17 @@ test('an administrator opens the registrations from the sidebar and filters them
         ->assertDontSee('Jan Kowalski')
         ->assertNoJavaScriptErrors();
 });
+
+test('an administrator opens a registration from the list', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $student = User::factory()->create(['name' => 'Anna Nowak', 'profession' => 'student', 'university' => 'UMED Łódź', 'student_number' => '123456']);
+    Registration::factory()->for($student)->create();
+
+    visit(route('admin.registrations.index', absolute: false))
+        ->click('Anna Nowak')
+        ->assertSee('Szczegóły zapisu')
+        ->assertSee('UMED Łódź')
+        ->assertSee('123456')
+        ->assertSee('Oczekuje')
+        ->assertNoJavaScriptErrors();
+});

@@ -15,6 +15,19 @@ export type RegistrationResource = {
     created_at: string | null;
 };
 
+export type ParticipantResource = {
+    id: number;
+    name: string;
+    email: string;
+    profession_label: string | null;
+    license_number: string | null;
+    university: string | null;
+    student_number: string | null;
+    company: string | null;
+    profession_name: string | null;
+    specializations: string[];
+};
+
 export type RegistrationFilters = {
     event: string;
     status: string;

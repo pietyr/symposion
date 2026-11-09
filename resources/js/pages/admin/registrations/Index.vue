@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
+import RegistrationController from '@/actions/App/Http/Controllers/Admin/RegistrationController';
 import RegistrationStatusBadge from '@/components/admin/registrations/RegistrationStatusBadge.vue';
 import FilterSelect from '@/components/FilterSelect.vue';
 import Heading from '@/components/Heading.vue';
@@ -153,9 +154,12 @@ const filterFields = computed(() => [
                     data-test="registration-row"
                 >
                     <TableCell>
-                        <div class="font-medium">
+                        <Link
+                            :href="RegistrationController.show(registration.id)"
+                            class="font-medium hover:underline"
+                        >
                             {{ registration.user.name }}
-                        </div>
+                        </Link>
                         <div class="text-xs text-muted-foreground">
                             {{ registration.user.email }}
                         </div>
