@@ -9,6 +9,7 @@ use App\Enums\EventFormat;
 use App\Enums\EventPriceFilter;
 use App\Enums\EventSort;
 use App\Enums\Profession;
+use App\Enums\RegistrationStatus;
 use App\Enums\Voivodeship;
 use Carbon\CarbonImmutable;
 use Database\Factories\EventFactory;
@@ -129,6 +130,47 @@ final class Event extends Model
             $this->format->hasOnlineAttendance() ? Attendance::Online : null,
             $this->format->hasVenue() ? Attendance::InPerson : null,
         ]));
+    }
+
+    /**
+     * Seat limit for the way of taking part; null means no limit.
+     */
+    public function seatLimit(Attendance $attendance): ?int
+    {
+        return match ($attendance) {
+            Attendance::Online => $this->seats_online,
+            Attendance::InPerson => $this->seats_in_person,
+        };
+    }
+
+    /**
+     * Free seats, counting pending and paid registrations (ADR-019); null when there is no limit.
+     */
+    public function seatsLeft(Attendance $attendance): ?int
+    {
+        $limit = $this->seatLimit($attendance);
+
+        if ($limit === null) {
+            return null;
+        }
+
+        $taken = $this->registrations()
+            ->where('attendance', $attendance)
+            ->whereIn('status', RegistrationStatus::seatTaking())
+            ->count();
+
+        return max(0, $limit - $taken);
+    }
+
+    /**
+     * A cancelled registration does not stop the participant from registering again.
+     */
+    public function hasActiveRegistrationOf(User $user): bool
+    {
+        return $this->registrations()
+            ->whereBelongsTo($user)
+            ->whereIn('status', RegistrationStatus::seatTaking())
+            ->exists();
     }
 
     /**

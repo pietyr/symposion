@@ -23,5 +23,5 @@ Route::patch('events/{event}/sections/{section}/move', MoveEventSectionControlle
     ->scopeBindings()
     ->name('events.sections.move');
 
-Route::resource('registrations', RegistrationController::class)->only(['index', 'show']);
+Route::resource('registrations', RegistrationController::class)->only(['index', 'create', 'store', 'show']);
 Route::resource('specializations', SpecializationController::class)->except('show');

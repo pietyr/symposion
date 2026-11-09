@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
+import { Plus } from '@lucide/vue';
 import { useDebounceFn } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
 import RegistrationController from '@/actions/App/Http/Controllers/Admin/RegistrationController';
@@ -108,7 +109,15 @@ const filterFields = computed(() => [
     <Head :title="$t('Registrations')" />
 
     <div class="flex flex-col gap-6 p-4">
-        <Heading :title="$t('Registrations')" />
+        <div class="flex flex-wrap items-start justify-between gap-4">
+            <Heading :title="$t('Registrations')" />
+            <Button as-child>
+                <Link :href="RegistrationController.create()">
+                    <Plus class="size-4" />
+                    {{ $t('Add registration') }}
+                </Link>
+            </Button>
+        </div>
 
         <div class="flex flex-col gap-3">
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

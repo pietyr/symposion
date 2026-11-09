@@ -18,4 +18,9 @@ final class RegistrationPolicy
     {
         return $user->isAdmin();
     }
+
+    public function create(User $user): bool
+    {
+        return $user->isAdmin();
+    }
 }

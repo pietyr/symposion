@@ -382,3 +382,31 @@ test('an administrator opens a registration from the list', function () {
         ->assertSee('Oczekuje')
         ->assertNoJavaScriptErrors();
 });
+
+test('an administrator adds a registration by hand', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $event = Event::factory()->create(['title' => 'Forum Testowe', 'price_in_person' => 25000]);
+    User::factory()->create(['name' => 'Anna Grzmotowska', 'email' => 'anna.testowa@example.com']);
+    User::factory()->create(['name' => 'Jan Brzęczyszczykiewicz']);
+
+    visit(route('admin.registrations.index', absolute: false))
+        ->click('Dodaj zapis')
+        ->click('@event-select')
+        ->click('[role="option"]:has-text("Forum Testowe")')
+        ->assertSee('Stacjonarnie')
+        ->assertValue('#amount', '250,00')
+        ->click('@participant-input')
+        ->type('@participant-input', 'grzmot')
+        ->assertDontSee('Jan Brzęczyszczykiewicz')
+        ->click('[role="option"]:has-text("Anna Grzmotowska")')
+        ->fill('#amount', '100')
+        ->click('@save-registration-button')
+        ->assertSee('Zapis został dodany')
+        ->assertSee('Anna Grzmotowska')
+        ->assertSee('Oczekuje')
+        ->assertNoJavaScriptErrors();
+
+    expect(Registration::query()->sole())
+        ->event_id->toBe($event->id)
+        ->amount->toBe(10000);
+});

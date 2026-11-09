@@ -201,12 +201,15 @@ return [
 
     'attributes' => [
         'accent_color' => 'kolor akcentu',
+        'amount' => 'kwota',
+        'attendance' => 'forma udziału',
         'city' => 'miasto',
         'company' => 'firma',
         'content' => 'treść',
         'current_password' => 'obecne hasło',
         'email' => 'adres e-mail',
         'ends_at' => 'zakończenie',
+        'event_id' => 'wydarzenie',
         'format' => 'forma udziału',
         'invoice_title' => 'tytuł na fakturze',
         'large_banner' => 'duży baner',
@@ -230,6 +233,7 @@ return [
         'starts_at' => 'rozpoczęcie',
         'title' => 'tytuł',
         'university' => 'uczelnia',
+        'user_id' => 'uczestnik',
         'venue' => 'miejsce',
         'voivodeship' => 'województwo',
     ],

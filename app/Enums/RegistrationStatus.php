@@ -28,6 +28,14 @@ enum RegistrationStatus: string
     }
 
     /**
+     * @return list<self>
+     */
+    public static function seatTaking(): array
+    {
+        return array_values(array_filter(self::cases(), fn (self $status): bool => $status->takesSeat()));
+    }
+
+    /**
      * @return list<array{value: string, label: string}>
      */
     public static function options(): array
