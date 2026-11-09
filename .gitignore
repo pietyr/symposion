@@ -46,3 +46,6 @@ yarn-error.log
 /boost.json
 /opencode.json
 /opencode.jsonc
+
+# CodeGraph index (local tool, not shared)
+/.codegraph/
