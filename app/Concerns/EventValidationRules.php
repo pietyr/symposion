@@ -15,6 +15,8 @@ use Illuminate\Validation\Rules\File;
 
 trait EventValidationRules
 {
+    use PriceInput;
+
     /**
      * Get the validation rules for the event form; a venue is required unless the event is online.
      *
@@ -119,29 +121,5 @@ trait EventValidationRules
             'removeLarge' => $this->boolean('remove_large_banner'),
             'removeSmall' => $this->boolean('remove_small_banner'),
         ];
-    }
-
-    /**
-     * Polish users type "1 500,50"; the validation rules expect "1500.50".
-     */
-    private function normalizedPrice(string $field): ?string
-    {
-        return $this->filled($field)
-            ? str_replace([' ', ','], ['', '.'], $this->string($field)->value())
-            : null;
-    }
-
-    /**
-     * Split the string instead of multiplying, because a float could lose a grosz.
-     */
-    private function priceInGrosze(string $field): ?int
-    {
-        if (! $this->filled($field)) {
-            return null;
-        }
-
-        [$zlotys, $grosze] = array_pad(explode('.', $this->string($field)->value(), 2), 2, '');
-
-        return (int) $zlotys * 100 + (int) str_pad($grosze, 2, '0');
     }
 }
