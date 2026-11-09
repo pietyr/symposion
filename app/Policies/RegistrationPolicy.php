@@ -23,4 +23,9 @@ final class RegistrationPolicy
     {
         return $user->isAdmin();
     }
+
+    public function update(User $user, Registration $registration): bool
+    {
+        return $user->isAdmin();
+    }
 }

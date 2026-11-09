@@ -2,6 +2,8 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import EventController from '@/actions/App/Http/Controllers/Admin/EventController';
+import ConfirmRegistrationController from '@/actions/App/Http/Controllers/Admin/ConfirmRegistrationController';
+import RegistrationActionDialog from '@/components/admin/registrations/RegistrationActionDialog.vue';
 import RegistrationStatusBadge from '@/components/admin/registrations/RegistrationStatusBadge.vue';
 import Heading from '@/components/Heading.vue';
 import { Badge } from '@/components/ui/badge';
@@ -73,6 +75,24 @@ const profileRows = computed(() =>
                 class="mb-8"
                 data-test="registration-status"
             />
+            <div class="mb-8 flex flex-wrap gap-2 sm:ml-auto">
+                <RegistrationActionDialog
+                    v-if="registration.status === 'pending'"
+                    :action="
+                        ConfirmRegistrationController.form(registration.id)
+                    "
+                    :label="$t('Confirm payment')"
+                    :title="
+                        $t('Confirm the payment of :amount?', {
+                            amount: formatPrice(registration.amount),
+                        })
+                    "
+                    :description="
+                        $t('The registration will be marked as paid.')
+                    "
+                    test-id="confirm-payment"
+                />
+            </div>
         </div>
 
         <div class="grid gap-6 lg:grid-cols-2">

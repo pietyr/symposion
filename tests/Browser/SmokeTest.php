@@ -410,3 +410,17 @@ test('an administrator adds a registration by hand', function () {
         ->event_id->toBe($event->id)
         ->amount->toBe(10000);
 });
+
+test('an administrator confirms a payment', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $registration = Registration::factory()->create(['amount' => 25000]);
+
+    visit(route('admin.registrations.show', $registration, absolute: false))
+        ->click('@confirm-payment')
+        ->assertSee('Potwierdzić płatność 250,00 zł?')
+        ->click('@confirm-payment-confirm')
+        ->assertSee('Płatność została potwierdzona')
+        ->assertSee('Opłacony')
+        ->assertMissing('@confirm-payment')
+        ->assertNoJavaScriptErrors();
+});
