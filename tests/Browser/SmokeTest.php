@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Models\Event;
+use App\Models\Specialization;
 use App\Models\User;
+use Database\Seeders\SpecializationSeeder;
 
 test('public pages render without javascript errors or console output', function () {
     visit([
@@ -275,4 +277,49 @@ test('the license number field follows the chosen profession', function () {
         ->assertPathIs(route('verification.notice', absolute: false));
 
     expect(User::query()->sole()->license_number)->toBe('1234567P');
+});
+
+test('a doctor picks specializations by typing', function () {
+    Specialization::factory()->create(['name' => 'Kardiologia']);
+    Specialization::factory()->create(['name' => 'Kardiochirurgia']);
+    Specialization::factory()->create(['name' => 'Chirurgia ogólna']);
+
+    $page = visit(route('register', absolute: false))
+        ->click('@profession-select')
+        ->click('[role="option"]:has(span:text-is("Lekarz"))')
+        ->click('#specializations')
+        ->type('#specializations', 'kardio')
+        ->assertSee('Kardiochirurgia')
+        ->assertDontSee('Chirurgia ogólna')
+        ->click('[role="option"]:has-text("Kardiologia")')
+        ->type('#specializations', 'ogol')
+        ->click('[role="option"]:has-text("Chirurgia ogólna")');
+
+    $page->fill('name', 'Jan Kowalski')
+        ->fill('email', 'jan@example.com')
+        ->fill('license_number', '5425740')
+        ->fill('password', 'password')
+        ->fill('password_confirmation', 'password')
+        ->click('@register-user-button')
+        ->assertPathIs(route('verification.notice', absolute: false))
+        ->assertNoJavaScriptErrors();
+
+    expect(User::query()->sole()->specializations->pluck('name')->sort()->values()->all())->toBe(['Chirurgia ogólna', 'Kardiologia']);
+});
+
+test('a long list of specializations scrolls', function () {
+    $this->seed(SpecializationSeeder::class);
+
+    $page = visit(route('register', absolute: false))
+        ->click('@profession-select')
+        ->click('[role="option"]:has(span:text-is("Lekarz"))')
+        ->click('#specializations')
+        ->assertVisible('[data-slot=combobox-list]');
+
+    // A mouse wheel only moves an element that scrolls; an overflowing one with "hidden" ignores it.
+    $overflowing = $page->script('[...document.querySelectorAll("[data-slot=combobox-list], [data-slot=combobox-list] *")]
+        .filter((element) => element.scrollHeight > element.clientHeight + 1)
+        .map((element) => getComputedStyle(element).overflowY)');
+
+    expect($overflowing)->toBe(['auto']);
 });

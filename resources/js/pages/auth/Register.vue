@@ -10,11 +10,12 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
-import type { ProfessionOption } from '@/types';
+import type { ProfessionOption, SelectOption } from '@/types';
 
 defineProps<{
     passwordRules: string;
     professions: ProfessionOption[];
+    specializations: SelectOption[];
 }>();
 
 defineOptions({
@@ -62,7 +63,11 @@ defineOptions({
                 <InputError :message="errors.email" />
             </div>
 
-            <ProfessionFields :professions="professions" :errors="errors" />
+            <ProfessionFields
+                :professions="professions"
+                :specializations="specializations"
+                :errors="errors"
+            />
 
             <div class="grid gap-2">
                 <Label for="password">{{ $t('Password') }}</Label>

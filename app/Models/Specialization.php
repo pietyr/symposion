@@ -21,4 +21,21 @@ final class Specialization extends Model
 {
     /** @use HasFactory<SpecializationFactory> */
     use HasFactory;
+
+    /**
+     * Options for the forms, alphabetically.
+     *
+     * @return list<array{value: string, label: string}>
+     */
+    public static function options(): array
+    {
+        return array_values(self::query()
+            ->orderBy('name')
+            ->get()
+            ->map(fn (self $specialization): array => [
+                'value' => (string) $specialization->id,
+                'label' => $specialization->name,
+            ])
+            ->all());
+    }
 }

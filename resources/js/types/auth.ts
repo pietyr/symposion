@@ -11,6 +11,7 @@ export type ProfessionOption = {
     label: string;
     license_number: 'required' | 'optional' | null;
     details: string[];
+    specializations: boolean;
 };
 
 export type ProfessionalProfile = {
@@ -20,6 +21,7 @@ export type ProfessionalProfile = {
     student_number: string | null;
     company: string | null;
     profession_name: string | null;
+    specializations: string[];
 };
 
 export type Auth = {

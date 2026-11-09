@@ -67,6 +67,14 @@ enum Profession: string
     }
 
     /**
+     * Doctors pick the specializations they hold; residents are still training (decision of the author).
+     */
+    public function hasSpecializations(): bool
+    {
+        return $this === self::Doctor;
+    }
+
+    /**
      * Further required fields of the professional profile.
      *
      * @return list<'university'|'student_number'|'company'|'profession_name'>
@@ -84,7 +92,7 @@ enum Profession: string
     /**
      * Options for the registration and profile forms, with the fields each profession asks for.
      *
-     * @return list<array{value: string, label: string, license_number: 'required'|'optional'|null, details: list<string>}>
+     * @return list<array{value: string, label: string, license_number: 'required'|'optional'|null, details: list<string>, specializations: bool}>
      */
     public static function profileOptions(): array
     {
@@ -98,6 +106,7 @@ enum Profession: string
                     default => null,
                 },
                 'details' => $profession->detailFields(),
+                'specializations' => $profession->hasSpecializations(),
             ],
             self::cases(),
         );

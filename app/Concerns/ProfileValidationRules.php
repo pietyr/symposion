@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Concerns;
 
 use App\Enums\Profession;
+use App\Models\Specialization;
 use App\Models\User;
 use App\Rules\LicenseNumber;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -50,6 +51,12 @@ trait ProfileValidationRules
                 : ['exclude'],
         ];
 
+        $hasSpecializations = $profession?->hasSpecializations() ?? false;
+        $rules['specializations'] = $hasSpecializations ? ['nullable', 'array'] : ['exclude'];
+        $rules['specializations.*'] = $hasSpecializations
+            ? ['integer', 'distinct', Rule::exists(Specialization::class, 'id')]
+            : ['exclude'];
+
         foreach (self::PROFESSION_DETAIL_FIELDS as $field) {
             $rules[$field] = in_array($field, $detailFields, true)
                 ? ['required', 'string', 'max:'.($field === 'student_number' ? 30 : 255)]
@@ -83,6 +90,21 @@ trait ProfileValidationRules
         }
 
         return $attributes;
+    }
+
+    /**
+     * Specializations from validated data; empty when the profession has none.
+     *
+     * @param  array<string, mixed>  $validated
+     * @return list<int>
+     */
+    protected function professionSpecializations(array $validated): array
+    {
+        $specializations = $validated['specializations'] ?? [];
+
+        return is_array($specializations)
+            ? array_values(array_map(fn (mixed $id): int => is_numeric($id) ? (int) $id : 0, $specializations))
+            : [];
     }
 
     /**

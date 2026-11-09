@@ -10,10 +10,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import type { ProfessionalProfile, ProfessionOption } from '@/types';
+import SpecializationsField from '@/components/profile/SpecializationsField.vue';
+import type {
+    ProfessionalProfile,
+    ProfessionOption,
+    SelectOption,
+} from '@/types';
 
 const props = defineProps<{
     professions: ProfessionOption[];
+    specializations: SelectOption[];
     errors: Partial<Record<string, string>>;
     profile?: ProfessionalProfile;
 }>();
@@ -82,6 +88,19 @@ const detailFields = computed(() =>
                 data-test="license-number"
             />
             <InputError :message="errors.license_number" />
+        </div>
+
+        <div v-if="selected?.specializations" class="grid gap-2">
+            <Label for="specializations">{{
+                $t('Specializations (optional)')
+            }}</Label>
+            <SpecializationsField
+                id="specializations"
+                name="specializations"
+                :options="specializations"
+                :default-value="profile?.specializations"
+            />
+            <InputError :message="errors.specializations" />
         </div>
 
         <div v-for="field in detailFields" :key="field.name" class="grid gap-2">
