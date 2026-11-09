@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Admin\CancelRegistrationController;
 use App\Http\Controllers\Admin\ConfirmRegistrationController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\EventSectionController;
@@ -29,5 +30,7 @@ Route::get('registrations/participants', SearchParticipantsController::class)
     ->name('registrations.participants');
 Route::patch('registrations/{registration}/confirm', ConfirmRegistrationController::class)
     ->name('registrations.confirm');
+Route::patch('registrations/{registration}/cancel', CancelRegistrationController::class)
+    ->name('registrations.cancel');
 Route::resource('registrations', RegistrationController::class)->only(['index', 'create', 'store', 'show']);
 Route::resource('specializations', SpecializationController::class)->except('show');

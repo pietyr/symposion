@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import EventController from '@/actions/App/Http/Controllers/Admin/EventController';
+import CancelRegistrationController from '@/actions/App/Http/Controllers/Admin/CancelRegistrationController';
 import ConfirmRegistrationController from '@/actions/App/Http/Controllers/Admin/ConfirmRegistrationController';
 import RegistrationActionDialog from '@/components/admin/registrations/RegistrationActionDialog.vue';
 import RegistrationStatusBadge from '@/components/admin/registrations/RegistrationStatusBadge.vue';
@@ -91,6 +92,25 @@ const profileRows = computed(() =>
                         $t('The registration will be marked as paid.')
                     "
                     test-id="confirm-payment"
+                />
+                <RegistrationActionDialog
+                    v-if="registration.status !== 'cancelled'"
+                    :action="CancelRegistrationController.form(registration.id)"
+                    :label="$t('Cancel registration')"
+                    :title="
+                        $t('Cancel the registration of :name?', {
+                            name: participant.name,
+                        })
+                    "
+                    :description="
+                        registration.status === 'paid'
+                            ? $t(
+                                  'The seat will be freed. A refund of the payment has to be made outside the system.',
+                              )
+                            : $t('The seat will be freed.')
+                    "
+                    variant="destructive"
+                    test-id="cancel-registration"
                 />
             </div>
         </div>

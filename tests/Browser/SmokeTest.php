@@ -424,3 +424,18 @@ test('an administrator confirms a payment', function () {
         ->assertMissing('@confirm-payment')
         ->assertNoJavaScriptErrors();
 });
+
+test('an administrator cancels a registration', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $registration = Registration::factory()->paid()->create();
+
+    visit(route('admin.registrations.show', $registration, absolute: false))
+        ->click('@cancel-registration')
+        ->assertSee('Zwrot płatności trzeba wykonać poza systemem')
+        ->click('@cancel-registration-confirm')
+        ->assertSee('Zapis został anulowany')
+        ->assertSee('Anulowany')
+        ->assertMissing('@cancel-registration')
+        ->assertMissing('@confirm-payment')
+        ->assertNoJavaScriptErrors();
+});
