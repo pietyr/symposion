@@ -52,9 +52,16 @@ const suggestions = computed(() => {
 
 // Typed text that matches nothing must not become a tag.
 const select = (values: unknown): void => {
-    selected.value = (Array.isArray(values) ? values : [])
+    const next = (Array.isArray(values) ? values : [])
         .map(String)
         .filter((value) => labels.value.has(value));
+
+    // A new pick closes the list, so it does not cover the fields below; typing opens it again.
+    if (next.length > selected.value.length) {
+        isOpen.value = false;
+    }
+
+    selected.value = next;
     searchTerm.value = '';
 };
 
@@ -69,6 +76,8 @@ const displayValue = (value: unknown): string =>
             :model-value="selected"
             multiple
             ignore-filter
+            open-on-focus
+            open-on-click
             @update:model-value="select"
         >
             <ComboboxAnchor as-child>
@@ -98,7 +107,6 @@ const displayValue = (value: unknown): string =>
                                     : undefined
                             "
                             @keydown.enter.prevent
-                            @focus="isOpen = true"
                         />
                     </ComboboxInput>
                 </TagsInput>
