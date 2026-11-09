@@ -53,8 +53,8 @@ describe('as an administrator', function () {
     test('the list can be narrowed down', function (Closure $query, Closure $expected) {
         $event = Event::factory()->hybrid()->create();
         $registrations = [
-            'kowalski' => Registration::factory()->for($event)->for(User::factory()->create(['name' => 'Jan Kowalski', 'email' => 'jan@example.com']))->paid()->create(),
-            'nowak' => Registration::factory()->for($event)->for(User::factory()->create(['name' => 'Anna Nowak', 'email' => 'anna@example.com']))->online()->create(),
+            'kowalski' => Registration::factory()->for($event)->for(User::factory()->create(['name' => 'Jan Brzęczyszczykiewicz', 'email' => 'jan.testowy@example.com']))->paid()->create(),
+            'nowak' => Registration::factory()->for($event)->for(User::factory()->create(['name' => 'Anna Grzmotowska', 'email' => 'anna.testowa@example.com']))->online()->create(),
             'other event' => Registration::factory()->cancelled()->create(),
         ];
 
@@ -67,9 +67,9 @@ describe('as an administrator', function () {
         'event' => [fn (Event $event) => ['event' => $event->id], fn (array $r) => [$r['kowalski'], $r['nowak']]],
         'status' => [fn () => ['status' => 'cancelled'], fn (array $r) => [$r['other event']]],
         'attendance' => [fn () => ['attendance' => 'online'], fn (array $r) => [$r['nowak']]],
-        'name' => [fn () => ['search' => 'kowal'], fn (array $r) => [$r['kowalski']]],
-        'email' => [fn () => ['search' => 'anna@'], fn (array $r) => [$r['nowak']]],
-        'several words' => [fn () => ['search' => 'anna nowak'], fn (array $r) => [$r['nowak']]],
+        'name' => [fn () => ['search' => 'brzęcz'], fn (array $r) => [$r['kowalski']]],
+        'email' => [fn () => ['search' => 'testowa@'], fn (array $r) => [$r['nowak']]],
+        'several words' => [fn () => ['search' => 'anna grzmot'], fn (array $r) => [$r['nowak']]],
         'unknown values are ignored' => [fn () => ['status' => 'lost', 'attendance' => 'x', 'event' => 'abc'], fn (array $r) => array_values($r)],
     ]);
 
