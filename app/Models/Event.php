@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\Attendance;
 use App\Enums\EventFormat;
 use App\Enums\EventPriceFilter;
 use App\Enums\EventSort;
 use App\Enums\Profession;
+use App\Enums\RegistrationStatus;
 use App\Enums\Voivodeship;
 use Carbon\CarbonImmutable;
 use Database\Factories\EventFactory;
@@ -35,8 +37,12 @@ use Illuminate\Support\Str;
  * @property string|null $venue
  * @property CarbonImmutable $starts_at
  * @property CarbonImmutable $ends_at
+ * @property CarbonImmutable|null $registration_opens_at without it registration opens right away
+ * @property CarbonImmutable|null $registration_closes_at without it registration lasts until the event starts
  * @property int|null $price_online gross amount in grosze; 0 means free
  * @property int|null $price_in_person gross amount in grosze; 0 means free
+ * @property int|null $seats_online seat limit for online attendance; null means no limit
+ * @property int|null $seats_in_person seat limit at the venue; null means no limit
  * @property bool $is_visible
  * @property bool $is_promoted
  * @property string|null $primary_color hex, e.g. #0f766e
@@ -50,11 +56,12 @@ use Illuminate\Support\Str;
  * @property-read list<Profession> $professions
  * @property-read Collection<int, Specialization> $specializations
  * @property-read Collection<int, EventSection> $sections
+ * @property-read Collection<int, Registration> $registrations
  * @property-read string|null $large_banner_url
  * @property-read string|null $small_banner_url
  * @property-read int $default_banner number of the bundled banner pair
  */
-#[Fillable(['title', 'invoice_title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'price_online', 'price_in_person', 'is_visible', 'is_promoted', 'primary_color', 'accent_color', 'large_banner_path', 'small_banner_path'])]
+#[Fillable(['title', 'invoice_title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'registration_opens_at', 'registration_closes_at', 'price_online', 'price_in_person', 'seats_online', 'seats_in_person', 'is_visible', 'is_promoted', 'primary_color', 'accent_color', 'large_banner_path', 'small_banner_path'])]
 final class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
@@ -77,8 +84,12 @@ final class Event extends Model
             'voivodeship' => Voivodeship::class,
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
+            'registration_opens_at' => 'datetime',
+            'registration_closes_at' => 'datetime',
             'price_online' => 'integer',
             'price_in_person' => 'integer',
+            'seats_online' => 'integer',
+            'seats_in_person' => 'integer',
             'is_visible' => 'boolean',
             'is_promoted' => 'boolean',
         ];
@@ -98,6 +109,79 @@ final class Event extends Model
     public function specializations(): BelongsToMany
     {
         return $this->belongsToMany(Specialization::class);
+    }
+
+    /**
+     * @return HasMany<Registration, $this>
+     */
+    public function registrations(): HasMany
+    {
+        return $this->hasMany(Registration::class);
+    }
+
+    /**
+     * Ways of taking part the format offers.
+     *
+     * @return list<Attendance>
+     */
+    public function attendances(): array
+    {
+        return array_values(array_filter([
+            $this->format->hasOnlineAttendance() ? Attendance::Online : null,
+            $this->format->hasVenue() ? Attendance::InPerson : null,
+        ]));
+    }
+
+    /**
+     * Seat limit for the way of taking part; null means no limit.
+     */
+    public function seatLimit(Attendance $attendance): ?int
+    {
+        return match ($attendance) {
+            Attendance::Online => $this->seats_online,
+            Attendance::InPerson => $this->seats_in_person,
+        };
+    }
+
+    /**
+     * Free seats, counting pending and paid registrations (ADR-019); null when there is no limit.
+     */
+    public function seatsLeft(Attendance $attendance): ?int
+    {
+        $limit = $this->seatLimit($attendance);
+
+        if ($limit === null) {
+            return null;
+        }
+
+        $taken = $this->registrations()
+            ->where('attendance', $attendance)
+            ->whereIn('status', RegistrationStatus::seatTaking())
+            ->count();
+
+        return max(0, $limit - $taken);
+    }
+
+    /**
+     * A cancelled registration does not stop the participant from registering again.
+     */
+    public function hasActiveRegistrationOf(User $user): bool
+    {
+        return $this->registrations()
+            ->whereBelongsTo($user)
+            ->whereIn('status', RegistrationStatus::seatTaking())
+            ->exists();
+    }
+
+    /**
+     * Gross price in grosze for the way of taking part; null when the format does not offer it.
+     */
+    public function priceFor(Attendance $attendance): ?int
+    {
+        return match ($attendance) {
+            Attendance::Online => $this->format->hasOnlineAttendance() ? $this->price_online : null,
+            Attendance::InPerson => $this->format->hasVenue() ? $this->price_in_person : null,
+        };
     }
 
     /**
@@ -178,10 +262,12 @@ final class Event extends Model
             $this->city = null;
             $this->venue = null;
             $this->price_in_person = null;
+            $this->seats_in_person = null;
         }
 
         if (! $this->format->hasOnlineAttendance()) {
             $this->price_online = null;
+            $this->seats_online = null;
         }
     }
 

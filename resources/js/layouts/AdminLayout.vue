@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
     CalendarDays,
+    ClipboardList,
     Globe,
     LayoutGrid,
     Stethoscope,
@@ -13,6 +14,7 @@ import { home } from '@/routes';
 import { dashboard as accountDashboard } from '@/routes/account';
 import { dashboard } from '@/routes/admin';
 import { index as events } from '@/routes/admin/events';
+import { index as registrations } from '@/routes/admin/registrations';
 import { index as specializations } from '@/routes/admin/specializations';
 import type { BreadcrumbItem, SidebarNavigation } from '@/types';
 
@@ -38,6 +40,11 @@ const navigation = computed<SidebarNavigation>(() => ({
                     title: trans('Events'),
                     href: events(),
                     icon: CalendarDays,
+                },
+                {
+                    title: trans('Registrations'),
+                    href: registrations(),
+                    icon: ClipboardList,
                 },
             ],
         },

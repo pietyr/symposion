@@ -24,6 +24,9 @@ test('the event form submits the fields of every tab', function () {
         ->fill('price_in_person', '100')
         ->click('@event-tab-audience')
         ->click('#profession_student')
+        ->click('@event-tab-registration')
+        ->assertMissing('#seats_online')
+        ->fill('seats_in_person', '80')
         ->click('@event-tab-appearance')
         ->fill('primary_color', '#0f766e')
         ->click('@save-event-button')
@@ -35,7 +38,8 @@ test('the event form submits the fields of every tab', function () {
     expect($event->title)->toBe('Forum Testowe')
         ->and($event->professions)->toHaveCount(count(Profession::cases()) - 1)
         ->and($event->professions)->not->toContain(Profession::Student)
-        ->and($event->primary_color)->toBe('#0f766e');
+        ->and($event->primary_color)->toBe('#0f766e')
+        ->and($event->seats_in_person)->toBe(80);
 });
 
 test('a validation error opens the tab with the invalid field', function () {
@@ -80,4 +84,16 @@ test('uploading a banner on the edit form keeps the other fields', function () {
         ->and($event->professionEntries()->pluck('profession')->sort()->values()->all())->toBe($professions);
 
     Storage::disk('public')->assertExists((string) $event->large_banner_path);
+});
+
+test('an invalid registration window opens the registration tab', function () {
+    $event = Event::factory()->withProfessions()->create();
+
+    visit(route('admin.events.edit', $event, absolute: false))
+        ->click('@event-tab-registration')
+        ->fill('registration_closes_at', $event->ends_at->addDay()->format('Y-m-d\\TH:i'))
+        ->click('[role="tab"]:has-text("Dane")')
+        ->click('@save-event-button')
+        ->assertVisible('#registration_closes_at')
+        ->assertNoJavaScriptErrors();
 });

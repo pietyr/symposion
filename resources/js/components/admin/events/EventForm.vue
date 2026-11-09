@@ -45,7 +45,7 @@ const groszeToZlotys = (grosze?: number | null): string | undefined =>
         ? undefined
         : (grosze / 100).toFixed(2).replace('.', ',');
 
-const formTabs = ['details', 'audience', 'appearance'];
+const formTabs = ['details', 'audience', 'registration', 'appearance'];
 const activeTab = ref('details');
 const isFormTab = computed(() => formTabs.includes(activeTab.value));
 
@@ -57,6 +57,10 @@ const showFirstTabWithErrors = (errors: Record<string, string>): void => {
             field.startsWith('specializations')
         ) {
             return 'audience';
+        }
+
+        if (field.startsWith('registration_') || field.startsWith('seats_')) {
+            return 'registration';
         }
 
         return field.endsWith('_color') || field.endsWith('_banner')
@@ -80,6 +84,12 @@ const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
             <TabsTrigger value="details">{{ $t('Details') }}</TabsTrigger>
             <TabsTrigger value="audience" data-test="event-tab-audience">
                 {{ $t('Professions and specializations') }}
+            </TabsTrigger>
+            <TabsTrigger
+                value="registration"
+                data-test="event-tab-registration"
+            >
+                {{ $t('Registration') }}
             </TabsTrigger>
             <TabsTrigger value="appearance" data-test="event-tab-appearance">
                 {{ $t('Appearance') }}
@@ -326,6 +336,78 @@ const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
                     </div>
                     <InputError :message="errors.specializations" />
                 </fieldset>
+            </TabsContent>
+
+            <TabsContent value="registration" class="space-y-6">
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div class="grid gap-2">
+                        <Label for="registration_opens_at">{{
+                            $t('Registration opens')
+                        }}</Label>
+                        <Input
+                            id="registration_opens_at"
+                            name="registration_opens_at"
+                            type="datetime-local"
+                            :default-value="
+                                toDateTimeLocal(
+                                    event?.registration_opens_at ?? undefined,
+                                )
+                            "
+                        />
+                        <InputError :message="errors.registration_opens_at" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="registration_closes_at">{{
+                            $t('Registration closes')
+                        }}</Label>
+                        <Input
+                            id="registration_closes_at"
+                            name="registration_closes_at"
+                            type="datetime-local"
+                            :default-value="
+                                toDateTimeLocal(
+                                    event?.registration_closes_at ?? undefined,
+                                )
+                            "
+                        />
+                        <InputError :message="errors.registration_closes_at" />
+                    </div>
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div v-if="hasOnlineAttendance" class="grid gap-2">
+                        <Label for="seats_online">{{
+                            $t('Online seats')
+                        }}</Label>
+                        <Input
+                            id="seats_online"
+                            name="seats_online"
+                            type="number"
+                            min="1"
+                            inputmode="numeric"
+                            :placeholder="$t('No limit')"
+                            :default-value="event?.seats_online ?? undefined"
+                        />
+                        <InputError :message="errors.seats_online" />
+                    </div>
+
+                    <div v-if="hasVenue" class="grid gap-2">
+                        <Label for="seats_in_person">{{
+                            $t('In-person seats')
+                        }}</Label>
+                        <Input
+                            id="seats_in_person"
+                            name="seats_in_person"
+                            type="number"
+                            min="1"
+                            inputmode="numeric"
+                            :placeholder="$t('No limit')"
+                            :default-value="event?.seats_in_person ?? undefined"
+                        />
+                        <InputError :message="errors.seats_in_person" />
+                    </div>
+                </div>
             </TabsContent>
 
             <TabsContent value="appearance" class="space-y-6">

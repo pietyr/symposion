@@ -22,8 +22,12 @@ export type EventResource = {
     venue: string | null;
     starts_at: string;
     ends_at: string;
+    registration_opens_at: string | null;
+    registration_closes_at: string | null;
     price_online: number | null;
     price_in_person: number | null;
+    seats_online: number | null;
+    seats_in_person: number | null;
     professions?: string[];
     specializations?: string[];
     sections?: EventSectionResource[];

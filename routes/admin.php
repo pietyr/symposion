@@ -2,10 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Admin\CancelRegistrationController;
+use App\Http\Controllers\Admin\ConfirmRegistrationController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\EventSectionController;
 use App\Http\Controllers\Admin\MoveEventSectionController;
+use App\Http\Controllers\Admin\RegistrationController;
 use App\Http\Controllers\Admin\RestoreEventController;
+use App\Http\Controllers\Admin\SearchParticipantsController;
 use App\Http\Controllers\Admin\SpecializationController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,4 +26,11 @@ Route::patch('events/{event}/sections/{section}/move', MoveEventSectionControlle
     ->scopeBindings()
     ->name('events.sections.move');
 
+Route::get('registrations/participants', SearchParticipantsController::class)
+    ->name('registrations.participants');
+Route::patch('registrations/{registration}/confirm', ConfirmRegistrationController::class)
+    ->name('registrations.confirm');
+Route::patch('registrations/{registration}/cancel', CancelRegistrationController::class)
+    ->name('registrations.cancel');
+Route::resource('registrations', RegistrationController::class)->only(['index', 'create', 'store', 'show']);
 Route::resource('specializations', SpecializationController::class)->except('show');

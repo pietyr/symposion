@@ -15,6 +15,8 @@ use Illuminate\Validation\Rules\File;
 
 trait EventValidationRules
 {
+    use PriceInput;
+
     /**
      * Get the validation rules for the event form; a venue is required unless the event is online.
      *
@@ -37,8 +39,17 @@ trait EventValidationRules
             'venue' => [Rule::requiredIf($hasVenue), 'nullable', 'string', 'max:255'],
             'starts_at' => ['required', 'date'],
             'ends_at' => ['required', 'date', 'after_or_equal:starts_at'],
+            'registration_opens_at' => ['nullable', 'date', 'before_or_equal:ends_at'],
+            'registration_closes_at' => [
+                'nullable',
+                'date',
+                'before_or_equal:ends_at',
+                Rule::when($this->filled('registration_opens_at'), ['after:registration_opens_at']),
+            ],
             'price_online' => [Rule::requiredIf($hasOnlineAttendance), ...$priceRules],
             'price_in_person' => [Rule::requiredIf($hasVenue), ...$priceRules],
+            'seats_online' => ['nullable', 'integer', 'min:1', 'max:100000'],
+            'seats_in_person' => ['nullable', 'integer', 'min:1', 'max:100000'],
             'professions' => ['required', 'array'],
             'professions.*' => ['distinct', Rule::enum(Profession::class)],
             'specializations' => ['nullable', 'array'],
@@ -110,29 +121,5 @@ trait EventValidationRules
             'removeLarge' => $this->boolean('remove_large_banner'),
             'removeSmall' => $this->boolean('remove_small_banner'),
         ];
-    }
-
-    /**
-     * Polish users type "1 500,50"; the validation rules expect "1500.50".
-     */
-    private function normalizedPrice(string $field): ?string
-    {
-        return $this->filled($field)
-            ? str_replace([' ', ','], ['', '.'], $this->string($field)->value())
-            : null;
-    }
-
-    /**
-     * Split the string instead of multiplying, because a float could lose a grosz.
-     */
-    private function priceInGrosze(string $field): ?int
-    {
-        if (! $this->filled($field)) {
-            return null;
-        }
-
-        [$zlotys, $grosze] = array_pad(explode('.', $this->string($field)->value(), 2), 2, '');
-
-        return (int) $zlotys * 100 + (int) str_pad($grosze, 2, '0');
     }
 }

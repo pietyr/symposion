@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Event;
+use App\Models\Registration;
 use App\Models\Specialization;
 use App\Models\User;
 use Database\Seeders\SpecializationSeeder;
@@ -349,4 +350,92 @@ test('a user edits the professional profile in the settings', function () {
     visit(route('account.profile.edit', absolute: false))
         ->assertValue('#license_number', '5425740')
         ->assertSee('Kardiologia');
+});
+
+test('an administrator opens the registrations from the sidebar and filters them', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    Registration::factory()->for(User::factory()->create(['name' => 'Jan Kowalski']))->paid()->create();
+    Registration::factory()->for(User::factory()->create(['name' => 'Anna Nowak']))->create();
+
+    visit(route('admin.dashboard', absolute: false))
+        ->click('Zapisy')
+        ->assertPathIs(route('admin.registrations.index', absolute: false))
+        ->assertSee('Jan Kowalski')
+        ->assertSee('Opłacony')
+        ->fill('@registration-search', 'nowak')
+        ->wait(1)
+        ->assertSee('Anna Nowak')
+        ->assertDontSee('Jan Kowalski')
+        ->assertNoJavaScriptErrors();
+});
+
+test('an administrator opens a registration from the list', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $student = User::factory()->create(['name' => 'Anna Nowak', 'profession' => 'student', 'university' => 'UMED Łódź', 'student_number' => '123456']);
+    Registration::factory()->for($student)->create();
+
+    visit(route('admin.registrations.index', absolute: false))
+        ->click('Anna Nowak')
+        ->assertSee('Szczegóły zapisu')
+        ->assertSee('UMED Łódź')
+        ->assertSee('123456')
+        ->assertSee('Oczekuje')
+        ->assertNoJavaScriptErrors();
+});
+
+test('an administrator adds a registration by hand', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $event = Event::factory()->create(['title' => 'Forum Testowe', 'price_in_person' => 25000]);
+    User::factory()->create(['name' => 'Anna Grzmotowska', 'email' => 'anna.testowa@example.com']);
+    User::factory()->create(['name' => 'Jan Brzęczyszczykiewicz']);
+
+    visit(route('admin.registrations.index', absolute: false))
+        ->click('Dodaj zapis')
+        ->click('@event-select')
+        ->click('[role="option"]:has-text("Forum Testowe")')
+        ->assertSee('Stacjonarnie')
+        ->assertValue('#amount', '250,00')
+        ->click('@participant-input')
+        ->type('@participant-input', 'grzmot')
+        ->assertDontSee('Jan Brzęczyszczykiewicz')
+        ->click('[role="option"]:has-text("Anna Grzmotowska")')
+        ->fill('#amount', '100')
+        ->click('@save-registration-button')
+        ->assertSee('Zapis został dodany')
+        ->assertSee('Anna Grzmotowska')
+        ->assertSee('Oczekuje')
+        ->assertNoJavaScriptErrors();
+
+    expect(Registration::query()->sole())
+        ->event_id->toBe($event->id)
+        ->amount->toBe(10000);
+});
+
+test('an administrator confirms a payment', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $registration = Registration::factory()->create(['amount' => 25000]);
+
+    visit(route('admin.registrations.show', $registration, absolute: false))
+        ->click('@confirm-payment')
+        ->assertSee('Potwierdzić płatność 250,00 zł?')
+        ->click('@confirm-payment-confirm')
+        ->assertSee('Płatność została potwierdzona')
+        ->assertSee('Opłacony')
+        ->assertMissing('@confirm-payment')
+        ->assertNoJavaScriptErrors();
+});
+
+test('an administrator cancels a registration', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $registration = Registration::factory()->paid()->create();
+
+    visit(route('admin.registrations.show', $registration, absolute: false))
+        ->click('@cancel-registration')
+        ->assertSee('Zwrot płatności trzeba wykonać poza systemem')
+        ->click('@cancel-registration-confirm')
+        ->assertSee('Zapis został anulowany')
+        ->assertSee('Anulowany')
+        ->assertMissing('@cancel-registration')
+        ->assertMissing('@confirm-payment')
+        ->assertNoJavaScriptErrors();
 });

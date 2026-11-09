@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\Profession;
+use App\Enums\RegistrationStatus;
 use App\Models\Event;
+use App\Models\Registration;
 use App\Models\Specialization;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -38,5 +41,34 @@ final class DevelopmentSeeder extends Seeder
         Event::factory()->withProfessions()->withSpecializations()->withSections()->withBrandColors()->visible()->past()->hybrid()->count(4)->create();
         Event::factory()->withProfessions()->withSpecializations()->withSections()->withBrandColors()->count(3)->create();
         Event::factory()->withProfessions()->withSpecializations()->withSections()->withBrandColors()->visible()->count(2)->create()->each->delete();
+
+        $this->seedRegistrations();
+    }
+
+    /**
+     * A few participants on most events, including deleted ones, whose registrations the admin still sees.
+     */
+    private function seedRegistrations(): void
+    {
+        $participants = User::factory()->doctor()->count(15)->create()
+            ->concat(User::factory()->count(15)->create(['profession' => Profession::LaboratoryTechnician->value]));
+
+        foreach (Event::withTrashed()->get() as $event) {
+            foreach ($participants->random(fake()->numberBetween(0, 8)) as $participant) {
+                $attendance = collect($event->attendances())->random();
+                $amount = $event->priceFor($attendance) ?? 0;
+                $status = $amount === 0
+                    ? RegistrationStatus::Paid
+                    : collect([RegistrationStatus::Paid, RegistrationStatus::Paid, RegistrationStatus::Pending, RegistrationStatus::Cancelled])->random();
+
+                Registration::factory()->for($event)->for($participant)->create([
+                    'attendance' => $attendance,
+                    'amount' => $amount,
+                    'status' => $status,
+                    'confirmed_at' => $status === RegistrationStatus::Paid ? now() : null,
+                    'created_at' => fake()->dateTimeBetween('-30 days'),
+                ]);
+            }
+        }
     }
 }
