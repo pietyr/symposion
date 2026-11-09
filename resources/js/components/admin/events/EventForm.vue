@@ -59,7 +59,7 @@ const showFirstTabWithErrors = (errors: Record<string, string>): void => {
             return 'audience';
         }
 
-        if (field.startsWith('registration_')) {
+        if (field.startsWith('registration_') || field.startsWith('seats_')) {
             return 'registration';
         }
 
@@ -372,6 +372,40 @@ const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
                             "
                         />
                         <InputError :message="errors.registration_closes_at" />
+                    </div>
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div v-if="hasOnlineAttendance" class="grid gap-2">
+                        <Label for="seats_online">{{
+                            $t('Online seats')
+                        }}</Label>
+                        <Input
+                            id="seats_online"
+                            name="seats_online"
+                            type="number"
+                            min="1"
+                            inputmode="numeric"
+                            :placeholder="$t('No limit')"
+                            :default-value="event?.seats_online ?? undefined"
+                        />
+                        <InputError :message="errors.seats_online" />
+                    </div>
+
+                    <div v-if="hasVenue" class="grid gap-2">
+                        <Label for="seats_in_person">{{
+                            $t('In-person seats')
+                        }}</Label>
+                        <Input
+                            id="seats_in_person"
+                            name="seats_in_person"
+                            type="number"
+                            min="1"
+                            inputmode="numeric"
+                            :placeholder="$t('No limit')"
+                            :default-value="event?.seats_in_person ?? undefined"
+                        />
+                        <InputError :message="errors.seats_in_person" />
                     </div>
                 </div>
             </TabsContent>

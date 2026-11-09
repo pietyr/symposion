@@ -26,6 +26,8 @@ export type EventResource = {
     registration_closes_at: string | null;
     price_online: number | null;
     price_in_person: number | null;
+    seats_online: number | null;
+    seats_in_person: number | null;
     professions?: string[];
     specializations?: string[];
     sections?: EventSectionResource[];

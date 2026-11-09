@@ -46,6 +46,8 @@ trait EventValidationRules
             ],
             'price_online' => [Rule::requiredIf($hasOnlineAttendance), ...$priceRules],
             'price_in_person' => [Rule::requiredIf($hasVenue), ...$priceRules],
+            'seats_online' => ['nullable', 'integer', 'min:1', 'max:100000'],
+            'seats_in_person' => ['nullable', 'integer', 'min:1', 'max:100000'],
             'professions' => ['required', 'array'],
             'professions.*' => ['distinct', Rule::enum(Profession::class)],
             'specializations' => ['nullable', 'array'],

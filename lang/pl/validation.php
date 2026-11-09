@@ -221,6 +221,8 @@ return [
         'small_banner' => 'mały baner',
         'registration_closes_at' => 'zamknięcie zapisów',
         'registration_opens_at' => 'otwarcie zapisów',
+        'seats_in_person' => 'liczba miejsc stacjonarnych',
+        'seats_online' => 'liczba miejsc online',
         'specializations' => 'specjalizacje',
         'student_number' => 'numer albumu',
         'price_in_person' => 'cena stacjonarna',

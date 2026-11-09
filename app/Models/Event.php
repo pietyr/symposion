@@ -39,6 +39,8 @@ use Illuminate\Support\Str;
  * @property CarbonImmutable|null $registration_closes_at without it registration lasts until the event starts
  * @property int|null $price_online gross amount in grosze; 0 means free
  * @property int|null $price_in_person gross amount in grosze; 0 means free
+ * @property int|null $seats_online seat limit for online attendance; null means no limit
+ * @property int|null $seats_in_person seat limit at the venue; null means no limit
  * @property bool $is_visible
  * @property bool $is_promoted
  * @property string|null $primary_color hex, e.g. #0f766e
@@ -56,7 +58,7 @@ use Illuminate\Support\Str;
  * @property-read string|null $small_banner_url
  * @property-read int $default_banner number of the bundled banner pair
  */
-#[Fillable(['title', 'invoice_title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'registration_opens_at', 'registration_closes_at', 'price_online', 'price_in_person', 'is_visible', 'is_promoted', 'primary_color', 'accent_color', 'large_banner_path', 'small_banner_path'])]
+#[Fillable(['title', 'invoice_title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'registration_opens_at', 'registration_closes_at', 'price_online', 'price_in_person', 'seats_online', 'seats_in_person', 'is_visible', 'is_promoted', 'primary_color', 'accent_color', 'large_banner_path', 'small_banner_path'])]
 final class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
@@ -83,6 +85,8 @@ final class Event extends Model
             'registration_closes_at' => 'datetime',
             'price_online' => 'integer',
             'price_in_person' => 'integer',
+            'seats_online' => 'integer',
+            'seats_in_person' => 'integer',
             'is_visible' => 'boolean',
             'is_promoted' => 'boolean',
         ];
@@ -182,10 +186,12 @@ final class Event extends Model
             $this->city = null;
             $this->venue = null;
             $this->price_in_person = null;
+            $this->seats_in_person = null;
         }
 
         if (! $this->format->hasOnlineAttendance()) {
             $this->price_online = null;
+            $this->seats_online = null;
         }
     }
 

@@ -94,6 +94,8 @@ final class EventFactory extends Factory
             'registration_closes_at' => null,
             'price_online' => null,
             'price_in_person' => $this->randomPrice(),
+            'seats_online' => null,
+            'seats_in_person' => null,
             'is_visible' => false,
             'is_promoted' => false,
             'primary_color' => null,
