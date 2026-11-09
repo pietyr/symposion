@@ -10,18 +10,35 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import type { ProfessionOption } from '@/types';
+import type { ProfessionalProfile, ProfessionOption } from '@/types';
 
 const props = defineProps<{
     professions: ProfessionOption[];
     errors: Partial<Record<string, string>>;
-    defaultProfession?: string | null;
-    defaultLicenseNumber?: string | null;
+    profile?: ProfessionalProfile;
 }>();
 
-const profession = ref(props.defaultProfession ?? '');
+const profession = ref(props.profile?.profession ?? '');
 const selected = computed(() =>
     props.professions.find((option) => option.value === profession.value),
+);
+
+const detailLabels = {
+    university: { label: 'University', autocomplete: 'organization' },
+    student_number: { label: 'Student ID number', autocomplete: 'off' },
+    company: { label: 'Company', autocomplete: 'organization' },
+    profession_name: {
+        label: 'Your profession',
+        autocomplete: 'organization-title',
+    },
+} as const;
+
+type DetailField = keyof typeof detailLabels;
+
+const detailFields = computed(() =>
+    (selected.value?.details ?? [])
+        .filter((name): name is DetailField => name in detailLabels)
+        .map((name) => ({ name, ...detailLabels[name] })),
 );
 </script>
 
@@ -60,11 +77,23 @@ const selected = computed(() =>
                 id="license_number"
                 name="license_number"
                 :required="selected.license_number === 'required'"
-                :default-value="defaultLicenseNumber ?? undefined"
+                :default-value="profile?.license_number ?? undefined"
                 autocomplete="off"
                 data-test="license-number"
             />
             <InputError :message="errors.license_number" />
+        </div>
+
+        <div v-for="field in detailFields" :key="field.name" class="grid gap-2">
+            <Label :for="field.name">{{ $t(field.label) }}</Label>
+            <Input
+                :id="field.name"
+                :name="field.name"
+                required
+                :default-value="profile?.[field.name] ?? undefined"
+                :autocomplete="field.autocomplete"
+            />
+            <InputError :message="errors[field.name]" />
         </div>
     </div>
 </template>

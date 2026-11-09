@@ -6,7 +6,10 @@ use App\Models\User;
 use App\Rules\LicenseNumber;
 use Inertia\Testing\AssertableInertia as Assert;
 
-function registerWith(string $profession, ?string $licenseNumber): void
+/**
+ * @param  array<string, string>  $details
+ */
+function registerWith(string $profession, ?string $licenseNumber, array $details = []): void
 {
     test()->post(route('register.store'), [
         'name' => 'Test User',
@@ -15,6 +18,7 @@ function registerWith(string $profession, ?string $licenseNumber): void
         'password_confirmation' => 'password',
         'profession' => $profession,
         'license_number' => $licenseNumber,
+        ...$details,
     ]);
 }
 
@@ -71,7 +75,12 @@ test('an invalid or missing license number is rejected', function (string $profe
 ]);
 
 test('professions without a license number do not store one', function (string $profession) {
-    registerWith($profession, '5425740');
+    registerWith($profession, '5425740', [
+        'university' => 'Uniwersytet Medyczny',
+        'student_number' => '123456',
+        'company' => 'Pharma',
+        'profession_name' => 'Dietetyk',
+    ]);
 
     $this->assertAuthenticated();
     expect(User::query()->sole()->license_number)->toBeNull();

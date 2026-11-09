@@ -27,6 +27,7 @@
     "Clear filters": "Wyczyść filtry",
     "Click here to re-send the verification email.": "Kliknij, aby ponownie wysłać e-mail weryfikacyjny.",
     "Close": "Zamknij",
+    "Company": "Firma",
     "Confirm": "Potwierdź",
     "Confirm password": "Potwierdź hasło",
     "Content": "Treść",
@@ -203,6 +204,7 @@
     "Specializations": "Specjalizacje",
     "Starts at": "Rozpoczęcie",
     "Student": "Student",
+    "Student ID number": "Numer albumu",
     "Subcarpathian": "podkarpackie",
     "System": "Systemowy",
     "Table of contents": "Spis treści",
@@ -219,6 +221,7 @@
     "Two-factor authentication": "Uwierzytelnianie dwuskładnikowe",
     "Two-factor authentication enabled": "Uwierzytelnianie dwuskładnikowe włączone",
     "Two-factor authentication is now enabled. Scan the QR code or enter the setup key in your authenticator app.": "Uwierzytelnianie dwuskładnikowe jest włączone. Zeskanuj kod QR lub wpisz klucz konfiguracyjny w aplikacji uwierzytelniającej.",
+    "University": "Uczelnia",
     "Upcoming and past": "Nadchodzące i zakończone",
     "Upcoming events": "Nadchodzące wydarzenia",
     "Update password": "Zmień hasło",
@@ -240,5 +243,6 @@
     "When you enable two-factor authentication, you will be prompted for a secure pin during login. This pin can be retrieved from a TOTP-supported application on your phone.": "Po włączeniu uwierzytelniania dwuskładnikowego podczas logowania pojawi się prośba o bezpieczny kod. Kod można odczytać z aplikacji obsługującej TOTP w telefonie.",
     "You will be prompted for a secure, random pin during login, which you can retrieve from the TOTP-supported application on your phone.": "Podczas logowania pojawi się prośba o bezpieczny, losowy kod, który można odczytać z aplikacji obsługującej TOTP w telefonie.",
     "Your email address is unverified.": "Twój adres e-mail nie jest zweryfikowany.",
+    "Your profession": "Wykonywany zawód",
     "Łódź": "łódzkie"
 }

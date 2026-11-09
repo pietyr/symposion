@@ -234,13 +234,16 @@ test('a visitor registers with a profession', function () {
         ->fill('email', 'anna@example.com')
         ->click('@profession-select')
         ->click('[role="option"]:has-text("Student")')
+        ->fill('university', 'Uniwersytet Medyczny w Łodzi')
+        ->fill('student_number', '123456')
         ->fill('password', 'password')
         ->fill('password_confirmation', 'password')
         ->click('@register-user-button')
         ->assertPathIs(route('verification.notice', absolute: false))
         ->assertNoJavaScriptErrors();
 
-    expect(User::query()->where('email', 'anna@example.com')->value('profession'))->toBe('student');
+    expect(User::query()->where('email', 'anna@example.com')->sole()->only('profession', 'university', 'student_number'))
+        ->toBe(['profession' => 'student', 'university' => 'Uniwersytet Medyczny w Łodzi', 'student_number' => '123456']);
 });
 
 test('the license number field follows the chosen profession', function () {

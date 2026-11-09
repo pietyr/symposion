@@ -27,6 +27,13 @@ trait ProfileValidationRules
     }
 
     /**
+     * Fields that only some professions fill in.
+     *
+     * @var list<string>
+     */
+    private const array PROFESSION_DETAIL_FIELDS = ['university', 'student_number', 'company', 'profession_name'];
+
+    /**
      * Get the validation rules for the professional profile; fields of other professions are left out.
      *
      * @return array<string, array<int, ValidationRule|object|string>>
@@ -35,31 +42,47 @@ trait ProfileValidationRules
     {
         $profession = is_string($profession) ? Profession::tryFrom($profession) : null;
 
-        return [
+        $detailFields = $profession?->detailFields() ?? [];
+        $rules = [
             'profession' => ['required', Rule::enum(Profession::class)],
             'license_number' => $profession?->hasLicenseNumber()
                 ? [$profession->requiresLicenseNumber() ? 'required' : 'nullable', 'string', 'max:20', new LicenseNumber($profession)]
                 : ['exclude'],
         ];
+
+        foreach (self::PROFESSION_DETAIL_FIELDS as $field) {
+            $rules[$field] = in_array($field, $detailFields, true)
+                ? ['required', 'string', 'max:'.($field === 'student_number' ? 30 : 255)]
+                : ['exclude'];
+        }
+
+        return $rules;
     }
 
     /**
      * Professional profile attributes from validated data, clearing what the profession does not use.
      *
      * @param  array<string, mixed>  $validated
-     * @return array{profession: string|null, license_number: string|null}
+     * @return array<string, string|null>
      */
     protected function professionAttributes(array $validated): array
     {
-        $profession = $validated['profession'] ?? null;
-        $licenseNumber = $validated['license_number'] ?? null;
+        $text = function (string $field) use ($validated): ?string {
+            $value = $validated[$field] ?? null;
 
-        return [
-            'profession' => is_string($profession) ? $profession : null,
-            'license_number' => is_string($licenseNumber) && trim($licenseNumber) !== ''
-                ? mb_strtoupper(trim($licenseNumber))
-                : null,
+            return is_string($value) && trim($value) !== '' ? trim($value) : null;
+        };
+
+        $attributes = [
+            'profession' => $text('profession'),
+            'license_number' => ($licenseNumber = $text('license_number')) !== null ? mb_strtoupper($licenseNumber) : null,
         ];
+
+        foreach (self::PROFESSION_DETAIL_FIELDS as $field) {
+            $attributes[$field] = $text($field);
+        }
+
+        return $attributes;
     }
 
     /**

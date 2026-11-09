@@ -23,7 +23,7 @@ test('new users can register', function () {
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
-        'profession' => 'student',
+        'profession' => 'laboratory_technician',
     ]);
 
     $this->assertAuthenticated();
@@ -36,7 +36,7 @@ test('new users are registered with the user role', function () {
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
-        'profession' => 'student',
+        'profession' => 'laboratory_technician',
     ]);
 
     expect(User::query()->sole()->role)->toBe(UserRole::User);
@@ -48,7 +48,7 @@ test('the role cannot be set during registration', function () {
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
-        'profession' => 'student',
+        'profession' => 'laboratory_technician',
         'role' => UserRole::Admin->value,
     ]);
 
@@ -70,10 +70,10 @@ test('the profession is stored with the new account', function () {
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
-        'profession' => 'student',
+        'profession' => 'laboratory_technician',
     ]);
 
-    expect(User::query()->sole()->profession)->toBe('student');
+    expect(User::query()->sole()->profession)->toBe('laboratory_technician');
 });
 
 test('a known profession is required', function (?string $profession) {

@@ -67,9 +67,24 @@ enum Profession: string
     }
 
     /**
+     * Further required fields of the professional profile.
+     *
+     * @return list<'university'|'student_number'|'company'|'profession_name'>
+     */
+    public function detailFields(): array
+    {
+        return match ($this) {
+            self::Student => ['university', 'student_number'],
+            self::MedicalRepresentative => ['company'],
+            self::Other => ['profession_name'],
+            default => [],
+        };
+    }
+
+    /**
      * Options for the registration and profile forms, with the fields each profession asks for.
      *
-     * @return list<array{value: string, label: string, license_number: 'required'|'optional'|null}>
+     * @return list<array{value: string, label: string, license_number: 'required'|'optional'|null, details: list<string>}>
      */
     public static function profileOptions(): array
     {
@@ -82,6 +97,7 @@ enum Profession: string
                     $profession->hasLicenseNumber() => 'optional',
                     default => null,
                 },
+                'details' => $profession->detailFields(),
             ],
             self::cases(),
         );
