@@ -323,3 +323,30 @@ test('a long list of specializations scrolls', function () {
 
     expect($overflowing)->toBe(['auto']);
 });
+
+test('a user edits the professional profile in the settings', function () {
+    Specialization::factory()->create(['name' => 'Kardiologia']);
+    $user = User::factory()->create(['profession' => 'laboratory_technician']);
+    $this->actingAs($user);
+
+    visit(route('account.profile.edit', absolute: false))
+        ->assertSee('Technik analityki medycznej')
+        ->assertMissing('@license-number')
+        ->click('@profession-select')
+        ->click('[role="option"]:has(span:text-is("Lekarz"))')
+        ->fill('license_number', '5425740')
+        ->click('#specializations')
+        ->type('#specializations', 'kard')
+        ->click('[role="option"]:text-is("Kardiologia")')
+        ->click('@update-profile-button')
+        ->assertSee('Profil zaktualizowany')
+        ->assertNoJavaScriptErrors();
+
+    $user->refresh();
+    expect($user->license_number)->toBe('5425740')
+        ->and($user->specializations->pluck('name')->all())->toBe(['Kardiologia']);
+
+    visit(route('account.profile.edit', absolute: false))
+        ->assertValue('#license_number', '5425740')
+        ->assertSee('Kardiologia');
+});

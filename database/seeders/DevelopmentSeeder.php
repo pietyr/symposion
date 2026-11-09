@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Models\Event;
+use App\Models\Specialization;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -23,10 +24,10 @@ final class DevelopmentSeeder extends Seeder
             'email' => 'admin@example.com',
         ]);
 
-        User::factory()->create([
+        User::factory()->doctor()->create([
             'name' => 'Jan Kowalski',
             'email' => 'user@example.com',
-        ]);
+        ])->specializations()->attach(Specialization::query()->inRandomOrder()->limit(2)->pluck('id'));
 
         Event::factory()->withProfessions()->withSpecializations()->withSections()->withBrandColors()->visible()->count(8)->create();
         Event::factory()->withProfessions()->withSpecializations()->withSections()->withBrandColors()->visible()->promoted()->count(4)->create();

@@ -22,6 +22,7 @@ const props = defineProps<{
     specializations: SelectOption[];
     errors: Partial<Record<string, string>>;
     profile?: ProfessionalProfile;
+    isProfessionRequired?: boolean;
 }>();
 
 const profession = ref(props.profile?.profession ?? '');
@@ -52,7 +53,11 @@ const detailFields = computed(() =>
     <div class="grid gap-6">
         <div class="grid gap-2">
             <Label for="profession">{{ $t('Profession') }}</Label>
-            <Select v-model="profession" name="profession" required>
+            <Select
+                v-model="profession"
+                name="profession"
+                :required="isProfessionRequired ?? true"
+            >
                 <SelectTrigger
                     id="profession"
                     class="w-full"

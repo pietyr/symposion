@@ -39,13 +39,13 @@ trait ProfileValidationRules
      *
      * @return array<string, array<int, ValidationRule|object|string>>
      */
-    protected function professionRules(mixed $profession): array
+    protected function professionRules(mixed $profession, bool $isRequired = true): array
     {
         $profession = is_string($profession) ? Profession::tryFrom($profession) : null;
 
         $detailFields = $profession?->detailFields() ?? [];
         $rules = [
-            'profession' => ['required', Rule::enum(Profession::class)],
+            'profession' => [$isRequired ? 'required' : 'nullable', Rule::enum(Profession::class)],
             'license_number' => $profession?->hasLicenseNumber()
                 ? [$profession->requiresLicenseNumber() ? 'required' : 'nullable', 'string', 'max:20', new LicenseNumber($profession)]
                 : ['exclude'],
