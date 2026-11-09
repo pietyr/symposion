@@ -46,7 +46,6 @@ const props = defineProps<{
         label: string;
         attendances: AttendanceOption[];
     }[];
-    participants: { value: string; label: string; description: string }[];
 }>();
 
 const { formatPrice } = usePriceFormat();
@@ -125,11 +124,7 @@ watch(attendance, () => {
 
             <div class="grid gap-2">
                 <Label for="user_id">{{ $t('Participant') }}</Label>
-                <ParticipantCombobox
-                    id="user_id"
-                    name="user_id"
-                    :options="participants"
-                />
+                <ParticipantCombobox id="user_id" name="user_id" />
                 <InputError :message="errors.user_id" />
             </div>
 

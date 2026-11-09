@@ -13,7 +13,6 @@ use App\Http\Resources\ParticipantResource;
 use App\Http\Resources\RegistrationResource;
 use App\Models\Event;
 use App\Models\Registration;
-use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -63,15 +62,6 @@ final class RegistrationController extends Controller
                         'price' => $event->priceFor($attendance) ?? 0,
                         'seats_left' => $event->seatsLeft($attendance),
                     ], $event->attendances()),
-                ])
-                ->all()),
-            'participants' => array_values(User::query()
-                ->orderBy('name')
-                ->get(['id', 'name', 'email'])
-                ->map(fn (User $user): array => [
-                    'value' => (string) $user->id,
-                    'label' => $user->name,
-                    'description' => $user->email,
                 ])
                 ->all()),
         ]);

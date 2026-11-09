@@ -1,12 +1,15 @@
 <script setup lang="ts">
+import { useHttp } from '@inertiajs/vue3';
 import { ChevronsUpDown } from '@lucide/vue';
+import { useDebounceFn } from '@vueuse/core';
 import {
     ComboboxAnchor,
     ComboboxInput,
     ComboboxRoot,
     ComboboxTrigger,
 } from 'reka-ui';
-import { computed, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
+import SearchParticipantsController from '@/actions/App/Http/Controllers/Admin/SearchParticipantsController';
 import {
     ComboboxEmpty,
     ComboboxItem,
@@ -20,39 +23,60 @@ type ParticipantOption = {
     description: string;
 };
 
-const props = defineProps<{
+defineProps<{
     id: string;
     name: string;
-    options: ParticipantOption[];
 }>();
 
-const selected = ref<string>('');
-const searchTerm = ref('');
+const http = useHttp();
 
-const labels = computed(
-    () => new Map(props.options.map((option) => [option.value, option.label])),
+const selected = ref<string>('');
+const selectedOption = ref<ParticipantOption | null>(null);
+const searchTerm = ref('');
+const suggestions = ref<ParticipantOption[]>([]);
+const isSearching = ref(false);
+
+// A slower answer to an older search must not replace a newer one.
+let latestSearch = 0;
+
+const search = async (term: string): Promise<void> => {
+    const current = ++latestSearch;
+    isSearching.value = true;
+
+    try {
+        const found = (await http.submit(
+            SearchParticipantsController({ query: { search: term } }),
+        )) as ParticipantOption[];
+
+        if (current === latestSearch) {
+            suggestions.value = found;
+        }
+    } catch {
+        if (current === latestSearch) {
+            suggestions.value = [];
+        }
+    } finally {
+        if (current === latestSearch) {
+            isSearching.value = false;
+        }
+    }
+};
+
+// Waits for a pause in typing, so a name sends one request instead of one per letter.
+watch(
+    searchTerm,
+    useDebounceFn((term: string) => search(term), 250),
 );
 
-const normalize = (text: string): string =>
-    text
-        .toLocaleLowerCase('pl')
-        .replaceAll('ł', 'l')
-        .normalize('NFD')
-        .replace(/\p{Diacritic}/gu, '');
+onMounted(() => search(''));
 
-// Every typed word has to appear in the name or the email address.
-const suggestions = computed(() => {
-    const words = normalize(searchTerm.value).split(/\s+/).filter(Boolean);
-
-    return props.options.filter((option) => {
-        const text = normalize(`${option.label} ${option.description}`);
-
-        return words.every((word) => text.includes(word));
-    });
+// The picked participant may drop out of the suggestions after the next search.
+watch(selected, (value) => {
+    selectedOption.value =
+        suggestions.value.find((option) => option.value === value) ?? null;
 });
 
-const displayValue = (value: unknown): string =>
-    labels.value.get(String(value)) ?? '';
+const displayValue = (): string => selectedOption.value?.label ?? '';
 </script>
 
 <template>
@@ -85,7 +109,11 @@ const displayValue = (value: unknown): string =>
             >
                 <ComboboxViewport class="max-h-64 p-1">
                     <ComboboxEmpty class="py-4 text-center text-sm">
-                        {{ $t('No matching participants.') }}
+                        {{
+                            isSearching
+                                ? $t('Searching…')
+                                : $t('No matching participants.')
+                        }}
                     </ComboboxEmpty>
                     <ComboboxItem
                         v-for="option in suggestions"

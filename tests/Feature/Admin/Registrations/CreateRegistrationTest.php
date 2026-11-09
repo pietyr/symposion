@@ -48,7 +48,7 @@ describe('as an administrator', function () {
                     ['value' => 'online', 'label' => 'Online', 'price' => 9900, 'seats_left' => null],
                     ['value' => 'in_person', 'label' => 'Stacjonarnie', 'price' => 25000, 'seats_left' => 1],
                 ])
-                ->has('participants', 3),
+                ->missing('participants'),
             );
     });
 

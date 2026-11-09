@@ -14,7 +14,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Str;
 
 /**
  * A registration for an event, also its "payment": taking part in a free event costs 0 (ADR-019).
@@ -71,8 +70,7 @@ final class Registration extends Model
     }
 
     /**
-     * Narrow the list down by whichever filters are set; every word of the search
-     * has to match the participant's name or email address.
+     * Narrow the list down by whichever filters are set; the search goes through User::matchingSearch().
      *
      * @param  Builder<self>  $query
      */
@@ -88,14 +86,9 @@ final class Registration extends Model
             ->when($eventId, fn (Builder $query, int $eventId) => $query->where('event_id', $eventId))
             ->when($status, fn (Builder $query, RegistrationStatus $status) => $query->where('status', $status))
             ->when($attendance, fn (Builder $query, Attendance $attendance) => $query->where('attendance', $attendance))
-            ->when($search !== '', function (Builder $query) use ($search): void {
-                foreach (Str::of($search)->squish()->explode(' ') as $word) {
-                    $pattern = '%'.addcslashes($word, '%_\\').'%';
-
-                    $query->whereHas('user', fn (Builder $user) => $user
-                        ->where('name', 'like', $pattern)
-                        ->orWhere('email', 'like', $pattern));
-                }
-            });
+            ->when($search !== '', fn (Builder $query) => $query->whereHas(
+                'user',
+                fn (Builder $user) => $user->matchingSearch($search),
+            ));
     }
 }

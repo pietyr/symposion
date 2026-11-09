@@ -9,6 +9,8 @@ use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -16,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
 /**
@@ -87,6 +90,24 @@ final class User extends Authenticatable implements MustVerifyEmail
     public function registrations(): HasMany
     {
         return $this->hasMany(Registration::class);
+    }
+
+    /**
+     * Match every word of the term in the name or the email address. The collation already
+     * ignores case and most Polish diacritics, but treats "ł" as a separate letter, so it is folded here.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function matchingSearch(Builder $query, string $term): void
+    {
+        foreach (Str::of($term)->squish()->explode(' ')->filter() as $word) {
+            $pattern = '%'.addcslashes(str_replace(['ł', 'Ł'], 'l', $word), '%_\\').'%';
+
+            $query->where(fn (Builder $wordQuery) => $wordQuery
+                ->whereRaw("REPLACE(REPLACE(name, 'ł', 'l'), 'Ł', 'l') LIKE ?", [$pattern])
+                ->orWhere('email', 'like', $pattern));
+        }
     }
 
     public function isAdmin(): bool
