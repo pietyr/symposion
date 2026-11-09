@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\Attendance;
 use App\Enums\EventFormat;
 use App\Enums\EventPriceFilter;
 use App\Enums\EventSort;
@@ -54,6 +55,7 @@ use Illuminate\Support\Str;
  * @property-read list<Profession> $professions
  * @property-read Collection<int, Specialization> $specializations
  * @property-read Collection<int, EventSection> $sections
+ * @property-read Collection<int, Registration> $registrations
  * @property-read string|null $large_banner_url
  * @property-read string|null $small_banner_url
  * @property-read int $default_banner number of the bundled banner pair
@@ -106,6 +108,38 @@ final class Event extends Model
     public function specializations(): BelongsToMany
     {
         return $this->belongsToMany(Specialization::class);
+    }
+
+    /**
+     * @return HasMany<Registration, $this>
+     */
+    public function registrations(): HasMany
+    {
+        return $this->hasMany(Registration::class);
+    }
+
+    /**
+     * Ways of taking part the format offers.
+     *
+     * @return list<Attendance>
+     */
+    public function attendances(): array
+    {
+        return array_values(array_filter([
+            $this->format->hasOnlineAttendance() ? Attendance::Online : null,
+            $this->format->hasVenue() ? Attendance::InPerson : null,
+        ]));
+    }
+
+    /**
+     * Gross price in grosze for the way of taking part; null when the format does not offer it.
+     */
+    public function priceFor(Attendance $attendance): ?int
+    {
+        return match ($attendance) {
+            Attendance::Online => $this->format->hasOnlineAttendance() ? $this->price_online : null,
+            Attendance::InPerson => $this->format->hasVenue() ? $this->price_in_person : null,
+        };
     }
 
     /**

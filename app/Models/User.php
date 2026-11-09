@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -37,6 +38,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Collection<int, Specialization> $specializations
+ * @property-read Collection<int, Registration> $registrations
  */
 #[Fillable(['name', 'email', 'password', 'profession', 'license_number', 'university', 'student_number', 'company', 'profession_name'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
@@ -77,6 +79,14 @@ final class User extends Authenticatable implements MustVerifyEmail
     public function specializations(): BelongsToMany
     {
         return $this->belongsToMany(Specialization::class);
+    }
+
+    /**
+     * @return HasMany<Registration, $this>
+     */
+    public function registrations(): HasMany
+    {
+        return $this->hasMany(Registration::class);
     }
 
     public function isAdmin(): bool

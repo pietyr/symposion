@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Event;
+use App\Models\Registration;
 use App\Models\Specialization;
 use App\Models\User;
 use Database\Seeders\SpecializationSeeder;
@@ -349,4 +350,21 @@ test('a user edits the professional profile in the settings', function () {
     visit(route('account.profile.edit', absolute: false))
         ->assertValue('#license_number', '5425740')
         ->assertSee('Kardiologia');
+});
+
+test('an administrator opens the registrations from the sidebar and filters them', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    Registration::factory()->for(User::factory()->create(['name' => 'Jan Kowalski']))->paid()->create();
+    Registration::factory()->for(User::factory()->create(['name' => 'Anna Nowak']))->create();
+
+    visit(route('admin.dashboard', absolute: false))
+        ->click('Zapisy')
+        ->assertPathIs(route('admin.registrations.index', absolute: false))
+        ->assertSee('Jan Kowalski')
+        ->assertSee('Opłacony')
+        ->fill('@registration-search', 'nowak')
+        ->wait(1)
+        ->assertSee('Anna Nowak')
+        ->assertDontSee('Jan Kowalski')
+        ->assertNoJavaScriptErrors();
 });
