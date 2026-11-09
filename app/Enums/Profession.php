@@ -14,7 +14,8 @@ enum Profession: string
 {
     case Doctor = 'doctor';
     case Resident = 'resident';
-    case NursingStaff = 'nursing_staff';
+    case Nurse = 'nurse';
+    case Midwife = 'midwife';
     case LaboratoryDiagnostician = 'laboratory_diagnostician';
     case LaboratoryTechnician = 'laboratory_technician';
     case Paramedic = 'paramedic';
@@ -27,7 +28,8 @@ enum Profession: string
         return match ($this) {
             self::Doctor => __('Doctor'),
             self::Resident => __('Resident doctor'),
-            self::NursingStaff => __('Nursing staff'),
+            self::Nurse => __('Nurse'),
+            self::Midwife => __('Midwife'),
             self::LaboratoryDiagnostician => __('Laboratory diagnostician'),
             self::LaboratoryTechnician => __('Medical laboratory technician'),
             self::Paramedic => __('Paramedic'),

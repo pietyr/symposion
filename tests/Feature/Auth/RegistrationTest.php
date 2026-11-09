@@ -23,7 +23,7 @@ test('new users can register', function () {
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
-        'profession' => 'nursing_staff',
+        'profession' => 'nurse',
     ]);
 
     $this->assertAuthenticated();
@@ -36,7 +36,7 @@ test('new users are registered with the user role', function () {
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
-        'profession' => 'nursing_staff',
+        'profession' => 'nurse',
     ]);
 
     expect(User::query()->sole()->role)->toBe(UserRole::User);
