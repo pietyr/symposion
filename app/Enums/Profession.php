@@ -49,4 +49,41 @@ enum Profession: string
             self::cases(),
         );
     }
+
+    /**
+     * Whether the profession has a number of the right to practise (PWZ).
+     */
+    public function hasLicenseNumber(): bool
+    {
+        return in_array($this, [self::Doctor, self::Resident, self::Nurse, self::Midwife, self::LaboratoryDiagnostician, self::Paramedic], true);
+    }
+
+    /**
+     * Paramedics are still being entered into their new register, so many have no number yet.
+     */
+    public function requiresLicenseNumber(): bool
+    {
+        return $this->hasLicenseNumber() && $this !== self::Paramedic;
+    }
+
+    /**
+     * Options for the registration and profile forms, with the fields each profession asks for.
+     *
+     * @return list<array{value: string, label: string, license_number: 'required'|'optional'|null}>
+     */
+    public static function profileOptions(): array
+    {
+        return array_map(
+            fn (self $profession): array => [
+                'value' => $profession->value,
+                'label' => $profession->label(),
+                'license_number' => match (true) {
+                    $profession->requiresLicenseNumber() => 'required',
+                    $profession->hasLicenseNumber() => 'optional',
+                    default => null,
+                },
+            ],
+            self::cases(),
+        );
+    }
 }

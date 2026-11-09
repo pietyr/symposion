@@ -21,9 +21,9 @@ final class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
-        Validator::make($input, [
+        $validated = Validator::make($input, [
             ...$this->profileRules(),
-            ...$this->professionRules(),
+            ...$this->professionRules($input['profession'] ?? null),
             'password' => $this->passwordRules(),
         ])->validate();
 
@@ -31,7 +31,7 @@ final class CreateNewUser implements CreatesNewUsers
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
-            'profession' => $input['profession'],
+            ...$this->professionAttributes($validated),
         ]);
     }
 }

@@ -10,11 +10,11 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
-import type { SelectOption } from '@/types';
+import type { ProfessionOption } from '@/types';
 
 defineProps<{
     passwordRules: string;
-    professions: SelectOption[];
+    professions: ProfessionOption[];
 }>();
 
 defineOptions({

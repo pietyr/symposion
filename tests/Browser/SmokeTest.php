@@ -242,3 +242,34 @@ test('a visitor registers with a profession', function () {
 
     expect(User::query()->where('email', 'anna@example.com')->value('profession'))->toBe('student');
 });
+
+test('the license number field follows the chosen profession', function () {
+    $page = visit(route('register', absolute: false))
+        ->assertMissing('@license-number')
+        ->click('@profession-select')
+        ->click('[role="option"]:has-text("Lekarz rezydent")')
+        ->assertVisible('@license-number')
+        ->assertSee('Numer prawa wykonywania zawodu (PWZ)');
+
+    $page->click('@profession-select')
+        ->click('[role="option"]:has-text("Ratownik")')
+        ->assertSee('(PWZ, opcjonalnie)')
+        ->click('@profession-select')
+        ->click('[role="option"]:has-text("Student")')
+        ->assertMissing('@license-number');
+
+    $page->click('@profession-select')
+        ->click('[role="option"]:has-text("Pielęgniarka")')
+        ->fill('name', 'Anna Nowak')
+        ->fill('email', 'anna@example.com')
+        ->fill('license_number', '1234567A')
+        ->fill('password', 'password')
+        ->fill('password_confirmation', 'password')
+        ->click('@register-user-button')
+        ->assertSee('Numer PWZ pielęgniarki to 7 cyfr i litera P.')
+        ->fill('license_number', '1234567P')
+        ->click('@register-user-button')
+        ->assertPathIs(route('verification.notice', absolute: false));
+
+    expect(User::query()->sole()->license_number)->toBe('1234567P');
+});

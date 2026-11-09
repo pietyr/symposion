@@ -23,7 +23,7 @@ test('new users can register', function () {
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
-        'profession' => 'nurse',
+        'profession' => 'student',
     ]);
 
     $this->assertAuthenticated();
@@ -36,7 +36,7 @@ test('new users are registered with the user role', function () {
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
-        'profession' => 'nurse',
+        'profession' => 'student',
     ]);
 
     expect(User::query()->sole()->role)->toBe(UserRole::User);
@@ -59,7 +59,8 @@ test('the registration form offers the professions', function () {
     $this->get(route('register'))
         ->assertInertia(fn (Assert $page) => $page
             ->component('auth/Register')
-            ->where('professions.0', ['value' => 'doctor', 'label' => 'Lekarz']),
+            ->where('professions.0.value', 'doctor')
+            ->where('professions.0.label', 'Lekarz'),
         );
 });
 

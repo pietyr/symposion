@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import InputError from '@/components/InputError.vue';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -9,15 +10,19 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import type { SelectOption } from '@/types';
+import type { ProfessionOption } from '@/types';
 
 const props = defineProps<{
-    professions: SelectOption[];
+    professions: ProfessionOption[];
     errors: Partial<Record<string, string>>;
     defaultProfession?: string | null;
+    defaultLicenseNumber?: string | null;
 }>();
 
 const profession = ref(props.defaultProfession ?? '');
+const selected = computed(() =>
+    props.professions.find((option) => option.value === profession.value),
+);
 </script>
 
 <template>
@@ -43,6 +48,23 @@ const profession = ref(props.defaultProfession ?? '');
                 </SelectContent>
             </Select>
             <InputError :message="errors.profession" />
+        </div>
+
+        <div v-if="selected?.license_number" class="grid gap-2">
+            <Label for="license_number">{{
+                selected.license_number === 'optional'
+                    ? $t('License number (PWZ, optional)')
+                    : $t('License number (PWZ)')
+            }}</Label>
+            <Input
+                id="license_number"
+                name="license_number"
+                :required="selected.license_number === 'required'"
+                :default-value="defaultLicenseNumber ?? undefined"
+                autocomplete="off"
+                data-test="license-number"
+            />
+            <InputError :message="errors.license_number" />
         </div>
     </div>
 </template>

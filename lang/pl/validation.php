@@ -209,6 +209,7 @@ return [
         'format' => 'forma udziału',
         'invoice_title' => 'tytuł na fakturze',
         'large_banner' => 'duży baner',
+        'license_number' => 'numer PWZ',
         'name' => 'imię i nazwisko',
         'password' => 'hasło',
         'password_confirmation' => 'potwierdzenie hasła',

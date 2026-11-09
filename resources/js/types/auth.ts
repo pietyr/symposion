@@ -6,6 +6,12 @@ export type User = {
     is_admin: boolean;
 };
 
+export type ProfessionOption = {
+    value: string;
+    label: string;
+    license_number: 'required' | 'optional' | null;
+};
+
 export type Auth = {
     user: User | null;
 };

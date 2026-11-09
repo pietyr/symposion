@@ -20,6 +20,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string $name
  * @property string $email
  * @property string|null $profession a Profession value, kept as text (ADR-017)
+ * @property string|null $license_number number of the right to practise (PWZ)
  * @property UserRole $role
  * @property Carbon|null $email_verified_at
  * @property string $password
@@ -30,7 +31,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password', 'profession'])]
+#[Fillable(['name', 'email', 'password', 'profession', 'license_number'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 final class User extends Authenticatable implements MustVerifyEmail
 {

@@ -6,6 +6,7 @@ namespace App\Concerns;
 
 use App\Enums\Profession;
 use App\Models\User;
+use App\Rules\LicenseNumber;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
@@ -26,14 +27,38 @@ trait ProfileValidationRules
     }
 
     /**
-     * Get the validation rules for the professional profile.
+     * Get the validation rules for the professional profile; fields of other professions are left out.
      *
      * @return array<string, array<int, ValidationRule|object|string>>
      */
-    protected function professionRules(): array
+    protected function professionRules(mixed $profession): array
     {
+        $profession = is_string($profession) ? Profession::tryFrom($profession) : null;
+
         return [
             'profession' => ['required', Rule::enum(Profession::class)],
+            'license_number' => $profession?->hasLicenseNumber()
+                ? [$profession->requiresLicenseNumber() ? 'required' : 'nullable', 'string', 'max:20', new LicenseNumber($profession)]
+                : ['exclude'],
+        ];
+    }
+
+    /**
+     * Professional profile attributes from validated data, clearing what the profession does not use.
+     *
+     * @param  array<string, mixed>  $validated
+     * @return array{profession: string|null, license_number: string|null}
+     */
+    protected function professionAttributes(array $validated): array
+    {
+        $profession = $validated['profession'] ?? null;
+        $licenseNumber = $validated['license_number'] ?? null;
+
+        return [
+            'profession' => is_string($profession) ? $profession : null,
+            'license_number' => is_string($licenseNumber) && trim($licenseNumber) !== ''
+                ? mb_strtoupper(trim($licenseNumber))
+                : null,
         ];
     }
 

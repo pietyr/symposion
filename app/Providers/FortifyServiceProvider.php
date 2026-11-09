@@ -72,7 +72,7 @@ final class FortifyServiceProvider extends ServiceProvider
 
         Fortify::registerView(fn () => Inertia::render('auth/Register', [
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
-            'professions' => Profession::options(),
+            'professions' => Profession::profileOptions(),
         ]));
 
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/TwoFactorChallenge'));
