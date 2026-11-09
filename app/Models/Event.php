@@ -35,6 +35,8 @@ use Illuminate\Support\Str;
  * @property string|null $venue
  * @property CarbonImmutable $starts_at
  * @property CarbonImmutable $ends_at
+ * @property CarbonImmutable|null $registration_opens_at without it registration opens right away
+ * @property CarbonImmutable|null $registration_closes_at without it registration lasts until the event starts
  * @property int|null $price_online gross amount in grosze; 0 means free
  * @property int|null $price_in_person gross amount in grosze; 0 means free
  * @property bool $is_visible
@@ -54,7 +56,7 @@ use Illuminate\Support\Str;
  * @property-read string|null $small_banner_url
  * @property-read int $default_banner number of the bundled banner pair
  */
-#[Fillable(['title', 'invoice_title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'price_online', 'price_in_person', 'is_visible', 'is_promoted', 'primary_color', 'accent_color', 'large_banner_path', 'small_banner_path'])]
+#[Fillable(['title', 'invoice_title', 'format', 'voivodeship', 'city', 'venue', 'starts_at', 'ends_at', 'registration_opens_at', 'registration_closes_at', 'price_online', 'price_in_person', 'is_visible', 'is_promoted', 'primary_color', 'accent_color', 'large_banner_path', 'small_banner_path'])]
 final class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
@@ -77,6 +79,8 @@ final class Event extends Model
             'voivodeship' => Voivodeship::class,
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
+            'registration_opens_at' => 'datetime',
+            'registration_closes_at' => 'datetime',
             'price_online' => 'integer',
             'price_in_person' => 'integer',
             'is_visible' => 'boolean',

@@ -90,6 +90,8 @@ final class EventFactory extends Factory
                 .', ul. '.fake()->streetName().' '.fake()->numberBetween(1, 120),
             'starts_at' => $startsAt,
             'ends_at' => $startsAt->addDays(fake()->numberBetween(0, 2))->setTime(17, 0),
+            'registration_opens_at' => null,
+            'registration_closes_at' => null,
             'price_online' => null,
             'price_in_person' => $this->randomPrice(),
             'is_visible' => false,

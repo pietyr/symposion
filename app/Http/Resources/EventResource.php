@@ -34,6 +34,8 @@ final class EventResource extends JsonResource
             'venue' => $this->venue,
             'starts_at' => $this->starts_at->toIso8601String(),
             'ends_at' => $this->ends_at->toIso8601String(),
+            'registration_opens_at' => $this->registration_opens_at?->toIso8601String(),
+            'registration_closes_at' => $this->registration_closes_at?->toIso8601String(),
             'price_online' => $this->price_online,
             'price_in_person' => $this->price_in_person,
             'professions' => $this->whenLoaded('professionEntries', fn (): array => array_map(

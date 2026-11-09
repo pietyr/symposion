@@ -219,6 +219,8 @@ return [
         'profession_name' => 'nazwa zawodu',
         'professions' => 'zawody',
         'small_banner' => 'mały baner',
+        'registration_closes_at' => 'zamknięcie zapisów',
+        'registration_opens_at' => 'otwarcie zapisów',
         'specializations' => 'specjalizacje',
         'student_number' => 'numer albumu',
         'price_in_person' => 'cena stacjonarna',

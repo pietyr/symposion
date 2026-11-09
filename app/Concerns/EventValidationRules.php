@@ -37,6 +37,13 @@ trait EventValidationRules
             'venue' => [Rule::requiredIf($hasVenue), 'nullable', 'string', 'max:255'],
             'starts_at' => ['required', 'date'],
             'ends_at' => ['required', 'date', 'after_or_equal:starts_at'],
+            'registration_opens_at' => ['nullable', 'date', 'before_or_equal:ends_at'],
+            'registration_closes_at' => [
+                'nullable',
+                'date',
+                'before_or_equal:ends_at',
+                Rule::when($this->filled('registration_opens_at'), ['after:registration_opens_at']),
+            ],
             'price_online' => [Rule::requiredIf($hasOnlineAttendance), ...$priceRules],
             'price_in_person' => [Rule::requiredIf($hasVenue), ...$priceRules],
             'professions' => ['required', 'array'],

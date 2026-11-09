@@ -81,3 +81,15 @@ test('uploading a banner on the edit form keeps the other fields', function () {
 
     Storage::disk('public')->assertExists((string) $event->large_banner_path);
 });
+
+test('an invalid registration window opens the registration tab', function () {
+    $event = Event::factory()->withProfessions()->create();
+
+    visit(route('admin.events.edit', $event, absolute: false))
+        ->click('@event-tab-registration')
+        ->fill('registration_closes_at', $event->ends_at->addDay()->format('Y-m-d\\TH:i'))
+        ->click('[role="tab"]:has-text("Dane")')
+        ->click('@save-event-button')
+        ->assertVisible('#registration_closes_at')
+        ->assertNoJavaScriptErrors();
+});
