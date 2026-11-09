@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
+use App\Enums\Profession;
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
@@ -21,6 +22,18 @@ trait ProfileValidationRules
         return [
             'name' => $this->nameRules(),
             'email' => $this->emailRules($userId),
+        ];
+    }
+
+    /**
+     * Get the validation rules for the professional profile.
+     *
+     * @return array<string, array<int, ValidationRule|object|string>>
+     */
+    protected function professionRules(): array
+    {
+        return [
+            'profession' => ['required', Rule::enum(Profession::class)],
         ];
     }
 

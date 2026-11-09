@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\UserRole;
 use App\Models\User;
+use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Fortify\Features;
 
 beforeEach(function () {
@@ -22,6 +23,7 @@ test('new users can register', function () {
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
+        'profession' => 'nursing_staff',
     ]);
 
     $this->assertAuthenticated();
@@ -34,6 +36,7 @@ test('new users are registered with the user role', function () {
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
+        'profession' => 'nursing_staff',
     ]);
 
     expect(User::query()->sole()->role)->toBe(UserRole::User);
@@ -45,8 +48,44 @@ test('the role cannot be set during registration', function () {
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
+        'profession' => 'student',
         'role' => UserRole::Admin->value,
     ]);
 
     expect(User::query()->sole()->role)->toBe(UserRole::User);
 });
+
+test('the registration form offers the professions', function () {
+    $this->get(route('register'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('auth/Register')
+            ->where('professions.0', ['value' => 'doctor', 'label' => 'Lekarz']),
+        );
+});
+
+test('the profession is stored with the new account', function () {
+    $this->post(route('register.store'), [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'profession' => 'student',
+    ]);
+
+    expect(User::query()->sole()->profession)->toBe('student');
+});
+
+test('a known profession is required', function (?string $profession) {
+    $this->post(route('register.store'), [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'profession' => $profession,
+    ])->assertSessionHasErrors('profession');
+
+    $this->assertGuest();
+})->with([
+    'missing' => [null],
+    'unknown' => ['astronaut'],
+]);

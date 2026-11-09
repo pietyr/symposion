@@ -213,6 +213,7 @@ return [
         'password' => 'hasło',
         'password_confirmation' => 'potwierdzenie hasła',
         'primary_color' => 'kolor wiodący',
+        'profession' => 'zawód',
         'professions' => 'zawody',
         'small_banner' => 'mały baner',
         'specializations' => 'specjalizacje',

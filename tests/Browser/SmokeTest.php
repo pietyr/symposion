@@ -227,3 +227,18 @@ test('the app logo appears on the site, in the panels and on the auth pages', fu
 
     visit(route('admin.dashboard', absolute: false))->assertVisible('@app-logo-icon');
 });
+
+test('a visitor registers with a profession', function () {
+    visit(route('register', absolute: false))
+        ->fill('name', 'Anna Nowak')
+        ->fill('email', 'anna@example.com')
+        ->click('@profession-select')
+        ->click('[role="option"]:has-text("Student")')
+        ->fill('password', 'password')
+        ->fill('password_confirmation', 'password')
+        ->click('@register-user-button')
+        ->assertPathIs(route('verification.notice', absolute: false))
+        ->assertNoJavaScriptErrors();
+
+    expect(User::query()->where('email', 'anna@example.com')->value('profession'))->toBe('student');
+});
