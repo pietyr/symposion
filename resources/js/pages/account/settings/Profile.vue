@@ -5,12 +5,18 @@ import ProfileController from '@/actions/App/Http/Controllers/Account/Settings/P
 import DeleteUser from '@/components/DeleteUser.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import ProfessionFields from '@/components/profile/ProfessionFields.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuthenticatedUser } from '@/composables/useAuthenticatedUser';
 import { edit } from '@/routes/account/profile';
 import { send } from '@/routes/verification';
+import type {
+    ProfessionalProfile,
+    ProfessionOption,
+    SelectOption,
+} from '@/types';
 
 defineOptions({
     layout: {
@@ -22,6 +28,12 @@ defineOptions({
         ],
     },
 });
+
+defineProps<{
+    profile: ProfessionalProfile;
+    professions: ProfessionOption[];
+    specializations: SelectOption[];
+}>();
 
 const page = usePage();
 const user = useAuthenticatedUser();
@@ -98,6 +110,14 @@ const user = useAuthenticatedUser();
                     }}
                 </div>
             </div>
+
+            <ProfessionFields
+                :professions="professions"
+                :specializations="specializations"
+                :profile="profile"
+                :errors="errors"
+                :is-profession-required="!user.is_admin"
+            />
 
             <div class="flex items-center gap-4">
                 <Button

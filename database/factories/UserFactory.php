@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\Profession;
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -31,6 +32,12 @@ final class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
+            'profession' => null,
+            'license_number' => null,
+            'university' => null,
+            'student_number' => null,
+            'company' => null,
+            'profession_name' => null,
             'password' => self::$password ??= Hash::make('password'),
             'role' => UserRole::User,
             'remember_token' => Str::random(10),
@@ -48,6 +55,30 @@ final class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'role' => UserRole::Admin,
         ]);
+    }
+
+    /**
+     * Indicate that the user is a doctor with a license number that passes the check digit.
+     */
+    public function doctor(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'profession' => Profession::Doctor->value,
+            'license_number' => self::doctorLicenseNumber(),
+        ]);
+    }
+
+    /**
+     * Seven digits whose first one is the weighted sum of the other six modulo 11 (LicenseNumber rule).
+     */
+    private static function doctorLicenseNumber(): string
+    {
+        do {
+            $digits = array_map(fn (): int => fake()->numberBetween(0, 9), range(1, 6));
+            $checkDigit = array_sum(array_map(fn (int $digit, int $index): int => $digit * ($index + 1), $digits, array_keys($digits))) % 11;
+        } while ($checkDigit === 0 || $checkDigit === 10);
+
+        return $checkDigit.implode('', $digits);
     }
 
     /**

@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Models\Event;
+use App\Models\Specialization;
 use App\Models\User;
+use Database\Seeders\SpecializationSeeder;
 
 test('public pages render without javascript errors or console output', function () {
     visit([
@@ -226,4 +228,125 @@ test('the app logo appears on the site, in the panels and on the auth pages', fu
     $this->actingAs(User::factory()->admin()->create());
 
     visit(route('admin.dashboard', absolute: false))->assertVisible('@app-logo-icon');
+});
+
+test('a visitor registers with a profession', function () {
+    visit(route('register', absolute: false))
+        ->fill('name', 'Anna Nowak')
+        ->fill('email', 'anna@example.com')
+        ->click('@profession-select')
+        ->click('[role="option"]:has-text("Student")')
+        ->fill('university', 'Uniwersytet Medyczny w Łodzi')
+        ->fill('student_number', '123456')
+        ->fill('password', 'password')
+        ->fill('password_confirmation', 'password')
+        ->click('@register-user-button')
+        ->assertPathIs(route('verification.notice', absolute: false))
+        ->assertNoJavaScriptErrors();
+
+    expect(User::query()->where('email', 'anna@example.com')->sole()->only('profession', 'university', 'student_number'))
+        ->toBe(['profession' => 'student', 'university' => 'Uniwersytet Medyczny w Łodzi', 'student_number' => '123456']);
+});
+
+test('the license number field follows the chosen profession', function () {
+    $page = visit(route('register', absolute: false))
+        ->assertMissing('@license-number')
+        ->click('@profession-select')
+        ->click('[role="option"]:has-text("Lekarz rezydent")')
+        ->assertVisible('@license-number')
+        ->assertSee('Numer prawa wykonywania zawodu (PWZ)');
+
+    $page->click('@profession-select')
+        ->click('[role="option"]:has-text("Ratownik")')
+        ->assertSee('(PWZ, opcjonalnie)')
+        ->click('@profession-select')
+        ->click('[role="option"]:has-text("Student")')
+        ->assertMissing('@license-number');
+
+    $page->click('@profession-select')
+        ->click('[role="option"]:has-text("Pielęgniarka")')
+        ->fill('name', 'Anna Nowak')
+        ->fill('email', 'anna@example.com')
+        ->fill('license_number', '1234567A')
+        ->fill('password', 'password')
+        ->fill('password_confirmation', 'password')
+        ->click('@register-user-button')
+        ->assertSee('Numer PWZ pielęgniarki to 7 cyfr i litera P.')
+        ->fill('license_number', '1234567P')
+        ->click('@register-user-button')
+        ->assertPathIs(route('verification.notice', absolute: false));
+
+    expect(User::query()->sole()->license_number)->toBe('1234567P');
+});
+
+test('a doctor picks specializations by typing', function () {
+    Specialization::factory()->create(['name' => 'Kardiologia']);
+    Specialization::factory()->create(['name' => 'Kardiochirurgia']);
+    Specialization::factory()->create(['name' => 'Chirurgia ogólna']);
+
+    $page = visit(route('register', absolute: false))
+        ->click('@profession-select')
+        ->click('[role="option"]:has(span:text-is("Lekarz"))')
+        ->click('#specializations')
+        ->type('#specializations', 'kardio')
+        ->assertSee('Kardiochirurgia')
+        ->assertDontSee('Chirurgia ogólna')
+        ->click('[role="option"]:has-text("Kardiologia")')
+        ->type('#specializations', 'ogol')
+        ->click('[role="option"]:has-text("Chirurgia ogólna")');
+
+    $page->fill('name', 'Jan Kowalski')
+        ->fill('email', 'jan@example.com')
+        ->fill('license_number', '5425740')
+        ->fill('password', 'password')
+        ->fill('password_confirmation', 'password')
+        ->click('@register-user-button')
+        ->assertPathIs(route('verification.notice', absolute: false))
+        ->assertNoJavaScriptErrors();
+
+    expect(User::query()->sole()->specializations->pluck('name')->sort()->values()->all())->toBe(['Chirurgia ogólna', 'Kardiologia']);
+});
+
+test('a long list of specializations scrolls', function () {
+    $this->seed(SpecializationSeeder::class);
+
+    $page = visit(route('register', absolute: false))
+        ->click('@profession-select')
+        ->click('[role="option"]:has(span:text-is("Lekarz"))')
+        ->click('#specializations')
+        ->assertVisible('[data-slot=combobox-list]');
+
+    // A mouse wheel only moves an element that scrolls; an overflowing one with "hidden" ignores it.
+    $overflowing = $page->script('[...document.querySelectorAll("[data-slot=combobox-list], [data-slot=combobox-list] *")]
+        .filter((element) => element.scrollHeight > element.clientHeight + 1)
+        .map((element) => getComputedStyle(element).overflowY)');
+
+    expect($overflowing)->toBe(['auto']);
+});
+
+test('a user edits the professional profile in the settings', function () {
+    Specialization::factory()->create(['name' => 'Kardiologia']);
+    $user = User::factory()->create(['profession' => 'laboratory_technician']);
+    $this->actingAs($user);
+
+    visit(route('account.profile.edit', absolute: false))
+        ->assertSee('Technik analityki medycznej')
+        ->assertMissing('@license-number')
+        ->click('@profession-select')
+        ->click('[role="option"]:has(span:text-is("Lekarz"))')
+        ->fill('license_number', '5425740')
+        ->click('#specializations')
+        ->type('#specializations', 'kard')
+        ->click('[role="option"]:text-is("Kardiologia")')
+        ->click('@update-profile-button')
+        ->assertSee('Profil zaktualizowany')
+        ->assertNoJavaScriptErrors();
+
+    $user->refresh();
+    expect($user->license_number)->toBe('5425740')
+        ->and($user->specializations->pluck('name')->all())->toBe(['Kardiologia']);
+
+    visit(route('account.profile.edit', absolute: false))
+        ->assertValue('#license_number', '5425740')
+        ->assertSee('Kardiologia');
 });

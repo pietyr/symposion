@@ -131,14 +131,7 @@ final class EventController extends Controller
             'formats' => EventFormat::options(),
             'voivodeships' => Voivodeship::options(),
             'professions' => Profession::options(),
-            'specializations' => array_values(Specialization::query()
-                ->orderBy('name')
-                ->get()
-                ->map(fn (Specialization $specialization): array => [
-                    'value' => (string) $specialization->id,
-                    'label' => $specialization->name,
-                ])
-                ->all()),
+            'specializations' => Specialization::options(),
         ];
     }
 }

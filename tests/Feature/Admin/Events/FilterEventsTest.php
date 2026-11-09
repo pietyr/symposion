@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\Profession;
 use App\Enums\Voivodeship;
 use App\Models\Event;
 use App\Models\User;
@@ -99,7 +100,7 @@ test('the page offers the filter options', function () {
     $this->get(route('admin.events.index'))
         ->assertInertia(fn (Assert $page) => $page
             ->has('filterOptions.formats', 3)
-            ->has('filterOptions.professions', 9)
+            ->has('filterOptions.professions', count(Profession::cases()))
             ->has('filterOptions.voivodeships', 16)
             ->has('filterOptions.prices', 2)
             ->has('filterOptions.visibilities', 2),

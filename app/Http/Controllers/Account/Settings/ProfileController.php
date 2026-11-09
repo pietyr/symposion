@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Account\Settings;
 
+use App\Actions\Users\UpdateProfile;
+use App\Enums\Profession;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Account\Settings\ProfileDeleteRequest;
 use App\Http\Requests\Account\Settings\ProfileUpdateRequest;
+use App\Http\Resources\ProfessionalProfileResource;
+use App\Models\Specialization;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -21,26 +25,23 @@ final class ProfileController extends Controller
     /**
      * Show the user's profile settings page.
      */
-    public function edit(Request $request): Response
+    public function edit(Request $request, #[CurrentUser] User $user): Response
     {
         return Inertia::render('account/settings/Profile', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
+            'profile' => ProfessionalProfileResource::make($user->load('specializations')),
+            'professions' => Profession::profileOptions(),
+            'specializations' => Specialization::options(),
         ]);
     }
 
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request, #[CurrentUser] User $user): RedirectResponse
+    public function update(ProfileUpdateRequest $request, #[CurrentUser] User $user, UpdateProfile $updateProfile): RedirectResponse
     {
-        $user->fill($request->validated());
-
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
-
-        $user->save();
+        $updateProfile->handle($user, $request->profileAttributes(), $request->specializationIds());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);
 
