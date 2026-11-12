@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Event;
+use App\Models\Registration;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -29,6 +30,23 @@ test('the overview shows the nearest upcoming and the most recently finished eve
             ->where('overview.past.1.id', $older->id)
             ->where('filters.trashed', false),
         );
+});
+
+test('the list counts the pending and paid registrations of each event', function () {
+    $event = Event::factory()->create();
+    Registration::factory()->for($event)->create();
+    Registration::factory()->for($event)->paid()->create();
+    Registration::factory()->for($event)->cancelled()->create();
+    $deleted = Event::factory()->create();
+    Registration::factory()->for($deleted)->create();
+    $deleted->delete();
+
+    $this->get(route('admin.events.index'))
+        ->assertInertia(fn (Assert $page) => $page->where('overview.upcoming.0.registrations_count', 2));
+    $this->get(route('admin.events.index', ['sort' => 'upcoming']))
+        ->assertInertia(fn (Assert $page) => $page->where('events.data.0.registrations_count', 2));
+    $this->get(route('admin.events.index', ['trashed' => 1]))
+        ->assertInertia(fn (Assert $page) => $page->where('events.data.0.registrations_count', 1));
 });
 
 test('the overview is limited to five events on each side', function () {

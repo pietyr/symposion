@@ -340,6 +340,19 @@ final class Event extends Model
     }
 
     /**
+     * Count the registrations that take a seat (ADR-019) into registrations_count.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withRegistrationsCount(Builder $query): void
+    {
+        $query->withCount([
+            'registrations' => fn (Builder $registrations) => $registrations->whereIn('status', RegistrationStatus::seatTaking()),
+        ]);
+    }
+
+    /**
      * @param  Builder<self>  $query
      */
     #[Scope]

@@ -370,6 +370,20 @@ test('an administrator opens the registrations from the sidebar and filters them
         ->assertNoJavaScriptErrors();
 });
 
+test('an administrator goes from the event list to the registrations of an event', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $event = Event::factory()->create(['title' => 'Forum Testowe']);
+    Registration::factory()->for($event)->for(User::factory()->create(['name' => 'Anna Nowak', 'email' => 'anna.nowak@example.com']))->create();
+    Registration::factory()->for(User::factory()->create(['name' => 'Jan Kowalski', 'email' => 'jan.kowalski@example.com']))->create();
+
+    visit(route('admin.events.index', absolute: false))
+        ->click('tr:has-text("Forum Testowe") [data-test="event-registrations-link"]')
+        ->assertQueryStringHas('event', (string) $event->id)
+        ->assertSee('Anna Nowak')
+        ->assertDontSee('Jan Kowalski')
+        ->assertNoJavaScriptErrors();
+});
+
 test('an administrator opens a registration from the list', function () {
     $this->actingAs(User::factory()->admin()->create());
     $student = User::factory()->create(['name' => 'Anna Nowak', 'profession' => 'student', 'university' => 'UMED Łódź', 'student_number' => '123456']);

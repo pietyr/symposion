@@ -40,6 +40,7 @@ final class EventResource extends JsonResource
             'price_in_person' => $this->price_in_person,
             'seats_online' => $this->seats_online,
             'seats_in_person' => $this->seats_in_person,
+            'registrations_count' => $this->whenCounted('registrations'),
             'professions' => $this->whenLoaded('professionEntries', fn (): array => array_map(
                 fn (Profession $profession): string => $profession->value,
                 $this->professions,
