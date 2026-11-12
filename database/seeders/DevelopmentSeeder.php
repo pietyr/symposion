@@ -4,8 +4,14 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\Attendance;
+use App\Enums\BenefitType;
+use App\Enums\EventFormat;
 use App\Enums\Profession;
 use App\Enums\RegistrationStatus;
+use App\Models\Benefit;
+use App\Models\BenefitOption;
+use App\Models\Consent;
 use App\Models\Event;
 use App\Models\Registration;
 use App\Models\Specialization;
@@ -43,6 +49,61 @@ final class DevelopmentSeeder extends Seeder
         Event::factory()->withProfessions()->withSpecializations()->withSections()->withBrandColors()->visible()->count(2)->create()->each->delete();
 
         $this->seedRegistrations();
+        $this->seedBenefitsAndConsents();
+    }
+
+    /**
+     * Benefit fields and consents on the upcoming events, as the registration form will show them.
+     */
+    private function seedBenefitsAndConsents(): void
+    {
+        foreach (Event::query()->upcoming()->get() as $event) {
+            if ($event->format->hasVenue()) {
+                $this->seedVenueBenefits($event);
+            } else {
+                $this->seedOnlineBenefits($event);
+            }
+
+            Consent::factory()->for($event)->required()->create([
+                'content' => '<p>Akceptuję <a href="https://example.com/regulamin">regulamin wydarzenia</a>.</p>',
+                'position' => 1,
+            ]);
+            Consent::factory()->for($event)->create([
+                'content' => '<p>Wyrażam zgodę na publikację mojego wizerunku na zdjęciach z wydarzenia.</p>',
+                'position' => 2,
+            ]);
+        }
+    }
+
+    /**
+     * Accommodation and a dinner concern only those who come, so at a hybrid event they are limited to them.
+     */
+    private function seedVenueBenefits(Event $event): void
+    {
+        $inPersonOnly = $event->format === EventFormat::Hybrid ? Attendance::InPerson : null;
+
+        $accommodation = Benefit::factory()->for($event)->select()->create(['name' => 'Nocleg', 'attendance' => $inPersonOnly, 'position' => 1]);
+        BenefitOption::factory()->for($accommodation)->createMany([
+            ['name' => '1 noc', 'price' => 30000, 'seat_limit' => 40, 'position' => 1],
+            ['name' => '2 noce', 'price' => 55000, 'seat_limit' => 40, 'position' => 2],
+            ['name' => '3 noce', 'price' => 80000, 'seat_limit' => 10, 'is_disabled' => true, 'position' => 3],
+        ]);
+
+        $dinner = Benefit::factory()->for($event)->create(['name' => 'Kolacja galowa', 'attendance' => $inPersonOnly, 'position' => 2]);
+        BenefitOption::factory()->for($dinner)->create(['name' => 'Udział w kolacji', 'price' => 18000, 'seat_limit' => 80, 'position' => 1]);
+
+        $workshops = Benefit::factory()->for($event)->create(['name' => 'Warsztaty', 'type' => BenefitType::Radio, 'is_required' => true, 'position' => 3]);
+        BenefitOption::factory()->for($workshops)->createMany([
+            ['name' => 'Interpretacja EKG', 'price' => 0, 'seat_limit' => 20, 'position' => 1],
+            ['name' => 'USG w praktyce', 'price' => 0, 'seat_limit' => 20, 'position' => 2],
+            ['name' => 'Resuscytacja krążeniowo-oddechowa', 'price' => 0, 'seat_limit' => 15, 'is_hidden' => true, 'position' => 3],
+        ]);
+    }
+
+    private function seedOnlineBenefits(Event $event): void
+    {
+        $recordings = Benefit::factory()->for($event)->create(['name' => 'Nagrania wykładów', 'position' => 1]);
+        BenefitOption::factory()->for($recordings)->create(['name' => 'Dostęp do nagrań przez 30 dni', 'price' => 9900, 'position' => 1]);
     }
 
     /**
