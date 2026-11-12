@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Enums\RegistrationStatus;
 use App\Models\Registration;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -23,8 +22,6 @@ final class MyRegistrationResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $awaitsTransfer = $this->status === RegistrationStatus::Pending && $this->amount > 0;
-
         return [
             'id' => $this->id,
             'event' => $this->whenLoaded('event', fn (): array => [
@@ -39,12 +36,7 @@ final class MyRegistrationResource extends JsonResource
             'status' => $this->status->value,
             'status_label' => $this->status->label(),
             'created_at' => $this->created_at?->toIso8601String(),
-            'transfer' => $awaitsTransfer ? [
-                'recipient' => config('symposion.bank_transfer.recipient'),
-                'account_number' => config('symposion.bank_transfer.account_number'),
-                'title' => $this->transferTitle(),
-                'amount' => $this->amount,
-            ] : null,
+            'transfer' => $this->transferDetails(),
         ];
     }
 }

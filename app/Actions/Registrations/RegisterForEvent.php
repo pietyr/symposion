@@ -6,9 +6,11 @@ namespace App\Actions\Registrations;
 
 use App\Enums\Attendance;
 use App\Enums\RegistrationAvailability;
+use App\Mail\RegistrationConfirmation;
 use App\Models\Event;
 use App\Models\Registration;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 final class RegisterForEvent
@@ -20,7 +22,8 @@ final class RegisterForEvent
 
     /**
      * A participant registers themselves at the event price; the dates, the profession
-     * and the seats are checked here, unlike when the admin adds a registration by hand.
+     * and the seats are checked here, unlike when the admin adds a registration by hand,
+     * and only here the participant gets a confirmation email.
      *
      * @throws ValidationException when registration is not available or the attendance is not offered
      */
@@ -40,6 +43,11 @@ final class RegisterForEvent
             ]);
         }
 
-        return $this->createRegistration->handle($event, $participant, $attendance, $price);
+        $registration = $this->createRegistration->handle($event, $participant, $attendance, $price);
+        $registration->setRelation('event', $event);
+
+        Mail::to($participant)->queue(new RegistrationConfirmation($registration));
+
+        return $registration;
     }
 }

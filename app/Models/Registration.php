@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Config;
 
 /**
  * A registration for an event, also its "payment": taking part in a free event costs 0 (ADR-019).
@@ -75,6 +76,25 @@ final class Registration extends Model
     public function transferTitle(): string
     {
         return __('Registration no. :number', ['number' => $this->id]);
+    }
+
+    /**
+     * What the participant needs to pay by transfer; null when nothing is owed.
+     *
+     * @return array{recipient: string, account_number: string, title: string, amount: int}|null
+     */
+    public function transferDetails(): ?array
+    {
+        if ($this->status !== RegistrationStatus::Pending || $this->amount === 0) {
+            return null;
+        }
+
+        return [
+            'recipient' => Config::string('symposion.bank_transfer.recipient'),
+            'account_number' => Config::string('symposion.bank_transfer.account_number'),
+            'title' => $this->transferTitle(),
+            'amount' => $this->amount,
+        ];
     }
 
     /**
