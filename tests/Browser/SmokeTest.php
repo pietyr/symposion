@@ -415,6 +415,22 @@ test('an administrator adds an option to a benefit field', function () {
     expect(BenefitOption::query()->sole())->price->toBe(55000)->seat_limit->toBe(40);
 });
 
+test('an administrator hides a benefit option', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $option = BenefitOption::factory()->create(['name' => '3 noce']);
+
+    visit(route('admin.events.edit', $option->benefit->event, absolute: false))
+        ->click('@event-tab-benefits')
+        ->click('@edit-benefit-option')
+        ->click("#option_{$option->id}_is_hidden")
+        ->click('@edit-benefit-option-save')
+        ->assertSee('Opcja została zapisana')
+        ->assertSeeIn('@benefit-option', 'Ukryta')
+        ->assertNoJavaScriptErrors();
+
+    expect($option->fresh())->is_hidden->toBeTrue()->is_disabled->toBeFalse();
+});
+
 test('an administrator opens the registrations from the sidebar and filters them', function () {
     $this->actingAs(User::factory()->admin()->create());
     Registration::factory()->for(User::factory()->create(['name' => 'Jan Kowalski', 'email' => 'jan.kowalski@example.com']))->paid()->create();

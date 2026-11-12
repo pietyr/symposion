@@ -3,6 +3,7 @@ import { Form } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
     DialogClose,
@@ -98,6 +99,31 @@ const idPrefix = `option_${props.option?.id ?? `new_${props.benefitId}`}`;
                             :default-value="option?.seat_limit ?? undefined"
                         />
                         <InputError :message="errors.seat_limit" />
+                    </div>
+                </div>
+
+                <div class="grid gap-3">
+                    <div class="flex items-center gap-3">
+                        <Checkbox
+                            :id="`${idPrefix}_is_disabled`"
+                            name="is_disabled"
+                            value="1"
+                            :default-value="option?.is_disabled ?? false"
+                        />
+                        <Label :for="`${idPrefix}_is_disabled`">{{
+                            $t('Shown, but cannot be chosen')
+                        }}</Label>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <Checkbox
+                            :id="`${idPrefix}_is_hidden`"
+                            name="is_hidden"
+                            value="1"
+                            :default-value="option?.is_hidden ?? false"
+                        />
+                        <Label :for="`${idPrefix}_is_hidden`">{{
+                            $t('Hidden in the registration form')
+                        }}</Label>
                     </div>
                 </div>
 

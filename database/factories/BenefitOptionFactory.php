@@ -25,6 +25,8 @@ final class BenefitOptionFactory extends Factory
             'name' => fake()->randomElement(['1 noc', '2 noce', 'Udział', 'Pakiet podstawowy']),
             'price' => fake()->randomElement([0, 15000, 30000]),
             'seat_limit' => null,
+            'is_disabled' => false,
+            'is_hidden' => false,
             'position' => 1,
         ];
     }

@@ -9,7 +9,7 @@ use App\Models\BenefitOption;
 final class UpdateBenefitOption
 {
     /**
-     * @param  array{name: string, price: int, seat_limit: int|null}  $attributes
+     * @param  array{name: string, price: int, seat_limit: int|null, is_disabled: bool, is_hidden: bool}  $attributes
      */
     public function handle(BenefitOption $option, array $attributes): void
     {

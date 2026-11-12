@@ -36,6 +36,8 @@ final class SaveBenefitOptionRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'price' => ['nullable', 'decimal:0,2', 'min:0', 'max:100000'],
             'seat_limit' => ['nullable', 'integer', 'min:1', 'max:100000'],
+            'is_disabled' => ['boolean'],
+            'is_hidden' => ['boolean'],
         ];
     }
 
@@ -52,7 +54,7 @@ final class SaveBenefitOptionRequest extends FormRequest
     /**
      * An empty price means the option is included at no cost.
      *
-     * @return array{name: string, price: int, seat_limit: int|null}
+     * @return array{name: string, price: int, seat_limit: int|null, is_disabled: bool, is_hidden: bool}
      */
     public function optionAttributes(): array
     {
@@ -60,6 +62,8 @@ final class SaveBenefitOptionRequest extends FormRequest
             'name' => $this->string('name')->trim()->value(),
             'price' => $this->priceInGrosze('price') ?? 0,
             'seat_limit' => $this->filled('seat_limit') ? $this->integer('seat_limit') : null,
+            'is_disabled' => $this->boolean('is_disabled'),
+            'is_hidden' => $this->boolean('is_hidden'),
         ];
     }
 }

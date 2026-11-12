@@ -20,12 +20,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $name
  * @property int $price gross price in grosze, 0 when the option is included
  * @property int|null $seat_limit null means no limit
+ * @property bool $is_disabled shown in the registration form, but cannot be chosen
+ * @property bool $is_hidden left out of the registration form
  * @property int $position
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read Benefit $benefit
  */
-#[Fillable(['name', 'price', 'seat_limit', 'position'])]
+#[Fillable(['name', 'price', 'seat_limit', 'is_disabled', 'is_hidden', 'position'])]
 final class BenefitOption extends Model
 {
     /** @use HasFactory<BenefitOptionFactory> */
@@ -41,6 +43,8 @@ final class BenefitOption extends Model
         return [
             'price' => 'integer',
             'seat_limit' => 'integer',
+            'is_disabled' => 'boolean',
+            'is_hidden' => 'boolean',
             'position' => 'integer',
         ];
     }

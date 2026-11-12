@@ -5,6 +5,8 @@ export type BenefitOptionResource = {
     name: string;
     price: number;
     seat_limit: number | null;
+    is_disabled: boolean;
+    is_hidden: boolean;
     updated_at: string | null;
 };
 

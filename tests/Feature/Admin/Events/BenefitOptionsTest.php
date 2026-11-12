@@ -73,6 +73,27 @@ describe('as an administrator', function () {
             ->seat_limit->toBeNull();
     });
 
+    test('an option can be shown without being available, or hidden', function () {
+        $this->put(route('admin.events.benefits.options.update', [$this->event, $this->benefit, $this->option]), ['name' => '1 noc', 'is_disabled' => '1', 'is_hidden' => '1'])
+            ->assertSessionHasNoErrors();
+
+        expect($this->option->fresh())
+            ->is_disabled->toBeTrue()
+            ->is_hidden->toBeTrue();
+
+        $this->put(route('admin.events.benefits.options.update', [$this->event, $this->benefit, $this->option]), ['name' => '1 noc']);
+
+        expect($this->option->fresh())
+            ->is_disabled->toBeFalse()
+            ->is_hidden->toBeFalse();
+
+        $this->get(route('admin.events.edit', $this->event))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('event.benefits.0.options.0.is_disabled', false)
+                ->where('event.benefits.0.options.0.is_hidden', false),
+            );
+    });
+
     test('an option is updated', function () {
         $this->put(route('admin.events.benefits.options.update', [$this->event, $this->benefit, $this->option]), ['name' => 'Jedna noc', 'price' => '320', 'seat_limit' => '10'])
             ->assertSessionHasNoErrors()
@@ -119,5 +140,7 @@ describe('as an administrator', function () {
         'price not a number' => [['price' => 'dużo'], 'price'],
         'zero seats' => [['seat_limit' => '0'], 'seat_limit'],
         'fractional seats' => [['seat_limit' => '2.5'], 'seat_limit'],
+        'disabled not a boolean' => [['is_disabled' => 'maybe'], 'is_disabled'],
+        'hidden not a boolean' => [['is_hidden' => 'maybe'], 'is_hidden'],
     ]);
 });

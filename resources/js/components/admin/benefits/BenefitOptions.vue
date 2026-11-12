@@ -4,6 +4,7 @@ import BenefitOptionController from '@/actions/App/Http/Controllers/Admin/Benefi
 import MoveBenefitOptionController from '@/actions/App/Http/Controllers/Admin/MoveBenefitOptionController';
 import BenefitOptionDialog from '@/components/admin/benefits/BenefitOptionDialog.vue';
 import MoveButtons from '@/components/admin/MoveButtons.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -62,7 +63,21 @@ const route = (option: BenefitOptionResource) => ({
                     data-test="benefit-option"
                 >
                     <TableCell class="whitespace-normal">
-                        {{ option.name }}
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span
+                                :class="{
+                                    'text-muted-foreground':
+                                        option.is_disabled || option.is_hidden,
+                                }"
+                                >{{ option.name }}</span
+                            >
+                            <Badge v-if="option.is_disabled" variant="outline">
+                                {{ $t('Disabled') }}
+                            </Badge>
+                            <Badge v-if="option.is_hidden" variant="outline">
+                                {{ $t('Hidden') }}
+                            </Badge>
+                        </div>
                     </TableCell>
                     <TableCell class="text-right tabular-nums">
                         {{ formatPrice(option.price) }}
