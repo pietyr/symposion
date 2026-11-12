@@ -80,7 +80,7 @@ const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
 
 <template>
     <Tabs v-model="activeTab" class="max-w-2xl gap-6" :unmount-on-hide="false">
-        <TabsList>
+        <TabsList class="h-auto max-w-full flex-wrap justify-start">
             <TabsTrigger value="details">{{ $t('Details') }}</TabsTrigger>
             <TabsTrigger value="audience" data-test="event-tab-audience">
                 {{ $t('Professions and specializations') }}

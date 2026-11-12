@@ -356,6 +356,18 @@ test('a user edits the professional profile in the settings', function () {
         ->assertSee('Kardiologia');
 });
 
+test('every tab of the event form can be reached on a phone', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $event = Event::factory()->hybrid()->create();
+
+    visit(route('admin.events.edit', $event, absolute: false))
+        ->resize(390, 844)
+        ->click('@event-tab-benefits')
+        ->assertSee('Dodaj świadczenie')
+        ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
+        ->assertNoJavaScriptErrors();
+});
+
 test('an administrator adds a benefit field to an event', function () {
     $this->actingAs(User::factory()->admin()->create());
     $event = Event::factory()->hybrid()->create();
