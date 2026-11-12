@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Form } from '@inertiajs/vue3';
-import { ArrowDown, ArrowUp } from '@lucide/vue';
 import EventSectionController from '@/actions/App/Http/Controllers/Admin/EventSectionController';
 import MoveEventSectionController from '@/actions/App/Http/Controllers/Admin/MoveEventSectionController';
+import MoveButtons from '@/components/admin/MoveButtons.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,11 +25,6 @@ defineProps<{
 }>();
 
 const formOptions = { preserveScroll: true, preserveState: true };
-
-const moves = [
-    { direction: 'up', icon: ArrowUp, label: 'Move section up' },
-    { direction: 'down', icon: ArrowDown, label: 'Move section down' },
-];
 </script>
 
 <template>
@@ -137,42 +132,19 @@ const moves = [
                     </DialogContent>
                 </Dialog>
 
-                <div class="flex gap-1">
-                    <Form
-                        v-for="move in moves"
-                        :key="move.direction"
-                        v-bind="
-                            MoveEventSectionController.form({
-                                event: eventId,
-                                section: section.id,
-                            })
-                        "
-                        :options="formOptions"
-                        v-slot="{ processing }"
-                    >
-                        <input
-                            type="hidden"
-                            name="direction"
-                            :value="move.direction"
-                        />
-                        <Button
-                            type="submit"
-                            variant="ghost"
-                            size="icon-sm"
-                            :disabled="
-                                processing ||
-                                index ===
-                                    (move.direction === 'up'
-                                        ? 0
-                                        : sections.length - 1)
-                            "
-                            :aria-label="$t(move.label)"
-                            :data-test="`move-section-${move.direction}`"
-                        >
-                            <component :is="move.icon" class="size-4" />
-                        </Button>
-                    </Form>
-                </div>
+                <MoveButtons
+                    :action="
+                        MoveEventSectionController.form({
+                            event: eventId,
+                            section: section.id,
+                        })
+                    "
+                    :is-first="index === 0"
+                    :is-last="index === sections.length - 1"
+                    :up-label="$t('Move section up')"
+                    :down-label="$t('Move section down')"
+                    test-id="move-section"
+                />
             </div>
         </section>
 
