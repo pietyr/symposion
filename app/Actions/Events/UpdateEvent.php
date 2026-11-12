@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Events;
 
+use App\Enums\EventFormat;
 use App\Models\Event;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +17,8 @@ final class UpdateEvent
 
     /**
      * Update an event; a new title or city gives it a new slug, which is safe
-     * because public URLs identify the event by its id.
+     * because public URLs identify the event by its id. Without two kinds of
+     * attendance a benefit cannot be limited to one of them any more.
      *
      * @param  array<string, mixed>  $attributes  validated event form data
      * @param  list<string>  $professions
@@ -33,6 +35,10 @@ final class UpdateEvent
             }
 
             $event->save();
+
+            if ($event->format !== EventFormat::Hybrid) {
+                $event->benefits()->update(['attendance' => null]);
+            }
 
             $this->syncEventProfessions->handle($event, $professions);
             $event->specializations()->sync($specializations);

@@ -7,6 +7,7 @@ namespace App\Models;
 use Carbon\CarbonImmutable;
 use Database\Factories\EventSectionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -40,6 +41,16 @@ final class EventSection extends Model
     protected function slug(): Attribute
     {
         return Attribute::get(fn (): string => Str::slug($this->title));
+    }
+
+    /**
+     * The sections of the same event, this one among them.
+     *
+     * @return Builder<self>
+     */
+    public function siblings(): Builder
+    {
+        return self::query()->where('event_id', $this->event_id);
     }
 
     /**

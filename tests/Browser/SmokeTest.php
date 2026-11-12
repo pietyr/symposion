@@ -2,7 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Enums\Attendance;
+use App\Enums\BenefitType;
 use App\Enums\RegistrationStatus;
+use App\Models\Benefit;
+use App\Models\BenefitOption;
+use App\Models\Consent;
 use App\Models\Event;
 use App\Models\Registration;
 use App\Models\Specialization;
@@ -351,6 +356,98 @@ test('a user edits the professional profile in the settings', function () {
     visit(route('account.profile.edit', absolute: false))
         ->assertValue('#license_number', '5425740')
         ->assertSee('Kardiologia');
+});
+
+test('every tab of the event form can be reached on a phone', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $event = Event::factory()->hybrid()->create();
+
+    visit(route('admin.events.edit', $event, absolute: false))
+        ->resize(390, 844)
+        ->click('@event-tab-benefits')
+        ->assertSee('Dodaj świadczenie')
+        ->assertScript('document.documentElement.scrollWidth <= window.innerWidth')
+        ->assertNoJavaScriptErrors();
+});
+
+test('an administrator adds a benefit field to an event', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $event = Event::factory()->hybrid()->create();
+
+    visit(route('admin.events.edit', $event, absolute: false))
+        ->click('@event-tab-benefits')
+        ->click('@add-benefit')
+        ->fill('#benefit_new_name', 'Nocleg')
+        ->click('@benefit-type')
+        ->click('[role="option"]:has-text("Lista rozwijana")')
+        ->click('#benefit_new_is_required')
+        ->click('@benefit-attendance')
+        ->click('[role="option"]:has-text("Tylko stacjonarnie")')
+        ->click('@add-benefit-save')
+        ->assertSee('Świadczenie zostało dodane')
+        ->assertSeeIn('@event-benefit', 'Nocleg')
+        ->assertSeeIn('@event-benefit', 'Wybór obowiązkowy')
+        ->assertSeeIn('@event-benefit', 'Tylko stacjonarnie')
+        ->assertNoJavaScriptErrors();
+
+    expect(Benefit::query()->sole())
+        ->type->toBe(BenefitType::Select)
+        ->is_required->toBeTrue()
+        ->attendance->toBe(Attendance::InPerson);
+});
+
+test('an administrator adds an option to a benefit field', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $benefit = Benefit::factory()->select()->create(['name' => 'Nocleg']);
+
+    visit(route('admin.events.edit', $benefit->event, absolute: false))
+        ->click('@event-tab-benefits')
+        ->click('@add-benefit-option')
+        ->fill("#option_new_{$benefit->id}_name", '2 noce')
+        ->fill("#option_new_{$benefit->id}_price", '550')
+        ->fill("#option_new_{$benefit->id}_seat_limit", '40')
+        ->click('@add-benefit-option-save')
+        ->assertSee('Opcja została dodana')
+        ->assertSeeIn('@benefit-option', '2 noce')
+        ->assertSeeIn('@benefit-option', '550,00')
+        ->assertSeeIn('@benefit-option', '40')
+        ->assertNoJavaScriptErrors();
+
+    expect(BenefitOption::query()->sole())->price->toBe(55000)->seat_limit->toBe(40);
+});
+
+test('an administrator hides a benefit option', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $option = BenefitOption::factory()->create(['name' => '3 noce']);
+
+    visit(route('admin.events.edit', $option->benefit->event, absolute: false))
+        ->click('@event-tab-benefits')
+        ->click('@edit-benefit-option')
+        ->click("#option_{$option->id}_is_hidden")
+        ->click('@edit-benefit-option-save')
+        ->assertSee('Opcja została zapisana')
+        ->assertSeeIn('@benefit-option', 'Ukryta')
+        ->assertNoJavaScriptErrors();
+
+    expect($option->fresh())->is_hidden->toBeTrue()->is_disabled->toBeFalse();
+});
+
+test('an administrator adds a consent to an event', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $event = Event::factory()->create();
+
+    visit(route('admin.events.edit', $event, absolute: false))
+        ->click('@event-tab-consents')
+        ->click('@add-consent')
+        ->fill('#consent_new_content', '<p>Akceptuję <a href="https://example.com/regulamin">regulamin</a></p>')
+        ->click('#consent_new_is_required')
+        ->click('@add-consent-save')
+        ->assertSee('Zgoda została dodana')
+        ->assertSeeIn('@event-consent', 'Obowiązkowa')
+        ->assertSeeLink('regulamin')
+        ->assertNoJavaScriptErrors();
+
+    expect(Consent::query()->sole())->is_required->toBeTrue();
 });
 
 test('an administrator opens the registrations from the sidebar and filters them', function () {

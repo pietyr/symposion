@@ -2,6 +2,8 @@
 import { Head } from '@inertiajs/vue3';
 import { ExternalLink } from '@lucide/vue';
 import EventController from '@/actions/App/Http/Controllers/Admin/EventController';
+import EventBenefits from '@/components/admin/benefits/EventBenefits.vue';
+import EventConsents from '@/components/admin/consents/EventConsents.vue';
 import DeleteEventDialog from '@/components/admin/events/DeleteEventDialog.vue';
 import EventForm from '@/components/admin/events/EventForm.vue';
 import EventSections from '@/components/admin/events/EventSections.vue';
@@ -34,6 +36,8 @@ defineProps<{
     voivodeships: SelectOption[];
     professions: SelectOption[];
     specializations: SelectOption[];
+    benefitTypes: SelectOption[];
+    benefitAttendances: SelectOption[];
 }>();
 </script>
 
@@ -70,12 +74,33 @@ defineProps<{
                 <TabsTrigger value="content" data-test="event-tab-content">
                     {{ $t('Content') }}
                 </TabsTrigger>
+                <TabsTrigger value="benefits" data-test="event-tab-benefits">
+                    {{ $t('Benefits') }}
+                </TabsTrigger>
+                <TabsTrigger value="consents" data-test="event-tab-consents">
+                    {{ $t('Consents') }}
+                </TabsTrigger>
             </template>
             <template #tabs>
                 <TabsContent value="content">
                     <EventSections
                         :event-id="event.id"
                         :sections="event.sections ?? []"
+                    />
+                </TabsContent>
+                <TabsContent value="benefits">
+                    <EventBenefits
+                        :event-id="event.id"
+                        :is-hybrid="event.format === 'hybrid'"
+                        :benefits="event.benefits ?? []"
+                        :types="benefitTypes"
+                        :attendances="benefitAttendances"
+                    />
+                </TabsContent>
+                <TabsContent value="consents">
+                    <EventConsents
+                        :event-id="event.id"
+                        :consents="event.consents ?? []"
                     />
                 </TabsContent>
             </template>

@@ -112,6 +112,26 @@ final class Event extends Model
     }
 
     /**
+     * Fields of the registration form with extras to choose (ADR-021).
+     *
+     * @return HasMany<Benefit, $this>
+     */
+    public function benefits(): HasMany
+    {
+        return $this->hasMany(Benefit::class)->orderBy('position');
+    }
+
+    /**
+     * Consents the participant gives in the registration form (ADR-021).
+     *
+     * @return HasMany<Consent, $this>
+     */
+    public function consents(): HasMany
+    {
+        return $this->hasMany(Consent::class)->orderBy('position');
+    }
+
+    /**
      * @return HasMany<Registration, $this>
      */
     public function registrations(): HasMany

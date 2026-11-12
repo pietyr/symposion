@@ -8,6 +8,8 @@ use App\Actions\Events\CreateEvent;
 use App\Actions\Events\DeleteEvent;
 use App\Actions\Events\SaveEventBanners;
 use App\Actions\Events\UpdateEvent;
+use App\Enums\Attendance;
+use App\Enums\BenefitType;
 use App\Enums\EventFormat;
 use App\Enums\EventSort;
 use App\Enums\Profession;
@@ -89,8 +91,10 @@ final class EventController extends Controller
         Gate::authorize('update', $event);
 
         return Inertia::render('admin/events/Edit', [
-            'event' => EventResource::make($event->load(['professionEntries', 'specializations', 'sections'])),
+            'event' => EventResource::make($event->load(['professionEntries', 'specializations', 'sections', 'benefits.options', 'consents'])),
             ...$this->formOptions(),
+            'benefitTypes' => BenefitType::options(),
+            'benefitAttendances' => Attendance::onlyOptions(),
         ]);
     }
 
