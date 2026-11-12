@@ -354,8 +354,8 @@ test('a user edits the professional profile in the settings', function () {
 
 test('an administrator opens the registrations from the sidebar and filters them', function () {
     $this->actingAs(User::factory()->admin()->create());
-    Registration::factory()->for(User::factory()->create(['name' => 'Jan Kowalski']))->paid()->create();
-    Registration::factory()->for(User::factory()->create(['name' => 'Anna Nowak']))->create();
+    Registration::factory()->for(User::factory()->create(['name' => 'Jan Kowalski', 'email' => 'jan.kowalski@example.com']))->paid()->create();
+    Registration::factory()->for(User::factory()->create(['name' => 'Anna Nowak', 'email' => 'anna.nowak@example.com']))->create();
 
     visit(route('admin.dashboard', absolute: false))
         ->click('Zapisy')
