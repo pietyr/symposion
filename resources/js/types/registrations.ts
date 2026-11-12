@@ -30,6 +30,13 @@ export type ParticipantResource = {
 
 export type MyRegistrationResource = {
     id: number;
+    event?: {
+        id: number;
+        slug: string;
+        title: string;
+        starts_at: string;
+        ends_at: string;
+    };
     attendance_label: string;
     amount: number;
     status: RegistrationStatus;

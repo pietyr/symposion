@@ -27,6 +27,13 @@ final class MyRegistrationResource extends JsonResource
 
         return [
             'id' => $this->id,
+            'event' => $this->whenLoaded('event', fn (): array => [
+                'id' => $this->event->id,
+                'slug' => $this->event->slug,
+                'title' => $this->event->title,
+                'starts_at' => $this->event->starts_at->toIso8601String(),
+                'ends_at' => $this->event->ends_at->toIso8601String(),
+            ]),
             'attendance_label' => $this->attendance->label(),
             'amount' => $this->amount,
             'status' => $this->status->value,

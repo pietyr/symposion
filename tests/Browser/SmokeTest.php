@@ -475,6 +475,22 @@ test('a guest signs in from the event page and registers', function () {
         ->amount->toBe(9900);
 });
 
+test('a participant opens an event from their registrations', function () {
+    $participant = User::factory()->create();
+    $event = Event::factory()->visible()->create(['title' => 'Zjazd Kardiologów', 'starts_at' => now()->addDays(10), 'ends_at' => now()->addDays(10)]);
+    Registration::factory()->for($participant)->for($event)->create();
+    $this->actingAs($participant);
+
+    visit(route('account.dashboard', absolute: false))
+        ->click('Moje zapisy')
+        ->assertPathIs(route('account.registrations.index', absolute: false))
+        ->assertSee('Oczekuje')
+        ->click('Zjazd Kardiologów')
+        ->assertPathIs(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false))
+        ->assertSee('Dane do przelewu')
+        ->assertNoJavaScriptErrors();
+});
+
 test('the event page says why the visitor cannot register', function () {
     $event = Event::factory()->visible()->create(['starts_at' => now()->addDays(10), 'ends_at' => now()->addDays(10)]);
     $event->professionEntries()->create(['profession' => 'doctor']);
