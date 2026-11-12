@@ -28,6 +28,7 @@ export type EventResource = {
     price_in_person: number | null;
     seats_online: number | null;
     seats_in_person: number | null;
+    registrations_count?: number;
     professions?: string[];
     specializations?: string[];
     sections?: EventSectionResource[];

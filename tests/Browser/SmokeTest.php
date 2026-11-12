@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\RegistrationStatus;
 use App\Models\Event;
 use App\Models\Registration;
 use App\Models\Specialization;
@@ -354,8 +355,8 @@ test('a user edits the professional profile in the settings', function () {
 
 test('an administrator opens the registrations from the sidebar and filters them', function () {
     $this->actingAs(User::factory()->admin()->create());
-    Registration::factory()->for(User::factory()->create(['name' => 'Jan Kowalski']))->paid()->create();
-    Registration::factory()->for(User::factory()->create(['name' => 'Anna Nowak']))->create();
+    Registration::factory()->for(User::factory()->create(['name' => 'Jan Kowalski', 'email' => 'jan.kowalski@example.com']))->paid()->create();
+    Registration::factory()->for(User::factory()->create(['name' => 'Anna Nowak', 'email' => 'anna.nowak@example.com']))->create();
 
     visit(route('admin.dashboard', absolute: false))
         ->click('Zapisy')
@@ -364,6 +365,20 @@ test('an administrator opens the registrations from the sidebar and filters them
         ->assertSee('Opłacony')
         ->fill('@registration-search', 'nowak')
         ->wait(1)
+        ->assertSee('Anna Nowak')
+        ->assertDontSee('Jan Kowalski')
+        ->assertNoJavaScriptErrors();
+});
+
+test('an administrator goes from the event list to the registrations of an event', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $event = Event::factory()->create(['title' => 'Forum Testowe']);
+    Registration::factory()->for($event)->for(User::factory()->create(['name' => 'Anna Nowak', 'email' => 'anna.nowak@example.com']))->create();
+    Registration::factory()->for(User::factory()->create(['name' => 'Jan Kowalski', 'email' => 'jan.kowalski@example.com']))->create();
+
+    visit(route('admin.events.index', absolute: false))
+        ->click('tr:has-text("Forum Testowe") [data-test="event-registrations-link"]')
+        ->assertQueryStringHas('event', (string) $event->id)
         ->assertSee('Anna Nowak')
         ->assertDontSee('Jan Kowalski')
         ->assertNoJavaScriptErrors();
@@ -437,5 +452,94 @@ test('an administrator cancels a registration', function () {
         ->assertSee('Anulowany')
         ->assertMissing('@cancel-registration')
         ->assertMissing('@confirm-payment')
+        ->assertNoJavaScriptErrors();
+});
+
+test('a guest signs in from the event page and registers', function () {
+    $event = Event::factory()->visible()->hybrid()->create([
+        'starts_at' => now()->addDays(10),
+        'ends_at' => now()->addDays(10),
+        'price_online' => 9900,
+        'price_in_person' => 25000,
+    ]);
+    $event->professionEntries()->create(['profession' => 'nurse']);
+    $nurse = User::factory()->create(['profession' => 'nurse', 'email' => 'nurse@example.com']);
+
+    visit(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false))
+        ->click('@register-button')
+        ->assertPathIs(route('login', absolute: false))
+        ->fill('email', 'nurse@example.com')
+        ->fill('password', 'password')
+        ->click('@login-button')
+        ->assertPathIs(route('events.registration.create', ['event' => $event, 'slug' => $event->slug], absolute: false))
+        ->assertSee('Zapis na wydarzenie')
+        ->click('@attendance-online')
+        ->assertSee('99,00 zł')
+        ->click('@confirm-registration-button')
+        ->assertPathIs(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false))
+        ->assertSee('Zapisano na wydarzenie')
+        ->assertSee('Twój zapis')
+        ->assertSee('Dane do przelewu')
+        ->assertSee('PL46 9999 0000 0000 1234 5678 9012')
+        ->assertSee('Zapis nr '.Registration::query()->sole()->id)
+        ->assertMissing('@register-button')
+        ->assertNoJavaScriptErrors();
+
+    expect(Registration::query()->sole())
+        ->user_id->toBe($nurse->id)
+        ->amount->toBe(9900);
+});
+
+test('a participant opens an event from their registrations', function () {
+    $participant = User::factory()->create();
+    $event = Event::factory()->visible()->create(['title' => 'Zjazd Kardiologów', 'starts_at' => now()->addDays(10), 'ends_at' => now()->addDays(10)]);
+    Registration::factory()->for($participant)->for($event)->create();
+    $this->actingAs($participant);
+
+    visit(route('account.dashboard', absolute: false))
+        ->click('Moje zapisy')
+        ->assertPathIs(route('account.registrations.index', absolute: false))
+        ->assertSee('Oczekuje')
+        ->click('Zjazd Kardiologów')
+        ->assertPathIs(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false))
+        ->assertSee('Dane do przelewu')
+        ->assertNoJavaScriptErrors();
+});
+
+test('a participant cancels a pending registration', function () {
+    $participant = User::factory()->create();
+    $registration = Registration::factory()->for($participant)->create();
+    $this->actingAs($participant);
+
+    visit(route('account.registrations.index', absolute: false))
+        ->click('@cancel-registration')
+        ->click('@cancel-registration-confirm')
+        ->assertSee('Zapis został anulowany')
+        ->assertSee('Anulowany')
+        ->assertMissing('@cancel-registration')
+        ->assertNoJavaScriptErrors();
+
+    expect($registration->fresh()->status)->toBe(RegistrationStatus::Cancelled);
+});
+
+test('the event page says why the visitor cannot register', function () {
+    $event = Event::factory()->visible()->create(['starts_at' => now()->addDays(10), 'ends_at' => now()->addDays(10)]);
+    $event->professionEntries()->create(['profession' => 'doctor']);
+    $url = route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false);
+
+    $this->actingAs(User::factory()->create(['profession' => 'student']));
+    visit($url)
+        ->assertMissing('@register-button')
+        ->assertSee('To wydarzenie nie jest przeznaczone dla Twojego zawodu.');
+
+    $this->actingAs(User::factory()->create());
+    visit($url)
+        ->assertSee('Aby się zapisać, uzupełnij zawód w ustawieniach profilu.')
+        ->click('Przejdź do ustawień profilu')
+        ->assertPathIs(route('account.profile.edit', absolute: false));
+
+    $event->update(['registration_opens_at' => now()->addDays(2)]);
+    visit($url)
+        ->assertSee('Zapisy rozpoczną się')
         ->assertNoJavaScriptErrors();
 });

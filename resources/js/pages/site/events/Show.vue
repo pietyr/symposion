@@ -4,14 +4,22 @@ import { Banknote, Calendar, MapPin } from '@lucide/vue';
 import { computed } from 'vue';
 import EventBanner from '@/components/site/events/EventBanner.vue';
 import EventPlaceBadges from '@/components/site/events/EventPlaceBadges.vue';
+import EventRegistrationPanel from '@/components/site/events/EventRegistrationPanel.vue';
+import MyRegistrationSummary from '@/components/site/events/MyRegistrationSummary.vue';
 import EventTableOfContents from '@/components/site/events/EventTableOfContents.vue';
 import { Badge } from '@/components/ui/badge';
 import { useDateTimeFormat } from '@/composables/useDateTimeFormat';
 import { usePriceFormat } from '@/composables/usePriceFormat';
-import type { PublicEventResource } from '@/types';
+import type {
+    EventRegistrationState,
+    MyRegistrationResource,
+    PublicEventResource,
+} from '@/types';
 
 const props = defineProps<{
     event: PublicEventResource;
+    registration: EventRegistrationState;
+    myRegistration: MyRegistrationResource | null;
 }>();
 
 const brandColors = computed(() => ({
@@ -134,6 +142,16 @@ const { formatPrice } = usePriceFormat();
                             </dd>
                         </div>
                     </dl>
+
+                    <MyRegistrationSummary
+                        v-if="myRegistration"
+                        :registration="myRegistration"
+                    />
+                    <EventRegistrationPanel
+                        v-else
+                        :event="event"
+                        :registration="registration"
+                    />
 
                     <section
                         v-if="event.professions?.length"

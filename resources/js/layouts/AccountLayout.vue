@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
-import { Globe, LayoutGrid, Settings, Shield } from '@lucide/vue';
+import { Globe, LayoutGrid, Settings, Shield, Ticket } from '@lucide/vue';
 import { trans } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 import AppSidebarLayout from '@/layouts/app/AppSidebarLayout.vue';
 import { home } from '@/routes';
 import { dashboard, settings } from '@/routes/account';
+import { index as registrations } from '@/routes/account/registrations';
 import { dashboard as adminDashboard } from '@/routes/admin';
 import type { BreadcrumbItem, SidebarNavigation } from '@/types';
 
@@ -28,6 +29,11 @@ const navigation = computed<SidebarNavigation>(() => ({
                     href: dashboard(),
                     icon: LayoutGrid,
                     exact: true,
+                },
+                {
+                    title: trans('My registrations'),
+                    href: registrations(),
+                    icon: Ticket,
                 },
                 {
                     title: trans('Settings'),

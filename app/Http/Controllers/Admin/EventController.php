@@ -38,13 +38,14 @@ final class EventController extends Controller
 
         return Inertia::render('admin/events/Index', [
             'overview' => $isOverview ? [
-                'upcoming' => EventResource::collection(Event::query()->sortedBy(EventSort::Upcoming)->limit(5)->get()),
-                'past' => EventResource::collection(Event::query()->sortedBy(EventSort::Past)->limit(5)->get()),
+                'upcoming' => EventResource::collection(Event::query()->withRegistrationsCount()->sortedBy(EventSort::Upcoming)->limit(5)->get()),
+                'past' => EventResource::collection(Event::query()->withRegistrationsCount()->sortedBy(EventSort::Past)->limit(5)->get()),
             ] : null,
             'events' => $isOverview ? null : EventResource::collection(
                 Event::query()
                     ->when($request->showsDeleted(), fn ($query) => $query->onlyTrashed())
                     ->filteredBy(...$request->eventFilters())
+                    ->withRegistrationsCount()
                     ->sortedBy($request->sort())
                     ->paginate(15)
                     ->withQueryString(),

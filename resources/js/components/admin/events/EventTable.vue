@@ -3,6 +3,7 @@ import { Form, Link } from '@inertiajs/vue3';
 import { RotateCcw } from '@lucide/vue';
 import EventController from '@/actions/App/Http/Controllers/Admin/EventController';
 import RestoreEventController from '@/actions/App/Http/Controllers/Admin/RestoreEventController';
+import { index as registrations } from '@/routes/admin/registrations';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -36,6 +37,9 @@ const startsSection = (index: number): boolean =>
                 <TableHead>{{ $t('Date') }}</TableHead>
                 <TableHead>{{ $t('Format') }}</TableHead>
                 <TableHead class="text-right">
+                    {{ $t('Registered participants') }}
+                </TableHead>
+                <TableHead class="text-right">
                     <span class="sr-only">{{ $t('Actions') }}</span>
                 </TableHead>
             </TableRow>
@@ -47,7 +51,7 @@ const startsSection = (index: number): boolean =>
                     class="bg-muted/50 hover:bg-muted/50"
                 >
                     <TableCell
-                        :colspan="4"
+                        :colspan="5"
                         class="font-medium text-muted-foreground"
                     >
                         {{
@@ -82,6 +86,19 @@ const startsSection = (index: number): boolean =>
                         {{ formatDateRange(event.starts_at, event.ends_at) }}
                     </TableCell>
                     <TableCell>{{ event.format_label }}</TableCell>
+                    <TableCell class="text-right tabular-nums">
+                        <Link
+                            v-if="event.registrations_count"
+                            :href="
+                                registrations({ query: { event: event.id } })
+                            "
+                            class="hover:underline"
+                            data-test="event-registrations-link"
+                        >
+                            {{ event.registrations_count }}
+                        </Link>
+                        <span v-else class="text-muted-foreground">0</span>
+                    </TableCell>
                     <TableCell class="text-right">
                         <Form
                             v-if="event.deleted_at"
@@ -106,7 +123,7 @@ const startsSection = (index: number): boolean =>
                     </TableCell>
                 </TableRow>
             </template>
-            <TableEmpty v-if="events.length === 0" :colspan="4">
+            <TableEmpty v-if="events.length === 0" :colspan="5">
                 {{ $t('No events found.') }}
             </TableEmpty>
         </TableBody>

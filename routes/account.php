@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Account\CancelRegistrationController;
+use App\Http\Controllers\Account\RegistrationController;
 use App\Http\Controllers\Account\Settings\ProfileController;
 use App\Http\Controllers\Account\Settings\SecurityController;
 use Illuminate\Auth\Middleware\RequirePassword;
@@ -16,6 +18,9 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('/', 'account/Dashboard')->name('dashboard');
+
+    Route::get('zapisy', [RegistrationController::class, 'index'])->name('registrations.index');
+    Route::patch('zapisy/{registration}/anuluj', CancelRegistrationController::class)->name('registrations.cancel');
 
     Route::delete('ustawienia/profil', [ProfileController::class, 'destroy'])->name('profile.destroy');
 

@@ -163,6 +163,36 @@ final class Event extends Model
     }
 
     /**
+     * Without a closing date registration lasts until the event starts.
+     */
+    public function registrationClosesAt(): CarbonImmutable
+    {
+        return $this->registration_closes_at ?? $this->starts_at;
+    }
+
+    /**
+     * An event without professions is open to all of them.
+     */
+    public function isOpenTo(Profession $profession): bool
+    {
+        $entries = $this->professionEntries();
+
+        return ! $entries->exists() || $entries->where('profession', $profession->value)->exists();
+    }
+
+    /**
+     * The pending or paid registration of the user, if there is one.
+     */
+    public function activeRegistrationOf(User $user): ?Registration
+    {
+        return $this->registrations()
+            ->whereBelongsTo($user)
+            ->whereIn('status', RegistrationStatus::seatTaking())
+            ->latest()
+            ->first();
+    }
+
+    /**
      * A cancelled registration does not stop the participant from registering again.
      */
     public function hasActiveRegistrationOf(User $user): bool
@@ -307,6 +337,19 @@ final class Event extends Model
     protected function past(Builder $query): void
     {
         $query->where('ends_at', '<', now());
+    }
+
+    /**
+     * Count the registrations that take a seat (ADR-019) into registrations_count.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withRegistrationsCount(Builder $query): void
+    {
+        $query->withCount([
+            'registrations' => fn (Builder $registrations) => $registrations->whereIn('status', RegistrationStatus::seatTaking()),
+        ]);
     }
 
     /**

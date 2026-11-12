@@ -5,6 +5,7 @@ import { usePage } from '@inertiajs/vue3';
 const timeZone = 'Europe/Warsaw';
 
 export type UseDateTimeFormatReturn = {
+    formatDateTime: (iso: string) => string;
     formatDateTimeRange: (start: string, end: string) => string;
     formatDateRange: (start: string, end: string) => string;
 };
@@ -38,6 +39,8 @@ export function useDateTimeFormat(): UseDateTimeFormatReturn {
     };
 
     return {
+        formatDateTime: (iso) => dateTimeFormatter.format(new Date(iso)),
+
         formatDateTimeRange: (start, end) =>
             dateTimeFormatter.formatRange(new Date(start), new Date(end)),
 

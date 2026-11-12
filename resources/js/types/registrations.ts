@@ -28,6 +28,43 @@ export type ParticipantResource = {
     specializations: string[];
 };
 
+export type MyRegistrationResource = {
+    id: number;
+    event?: {
+        id: number;
+        slug: string;
+        title: string;
+        starts_at: string;
+        ends_at: string;
+    };
+    attendance_label: string;
+    amount: number;
+    status: RegistrationStatus;
+    status_label: string;
+    created_at: string | null;
+    transfer: {
+        recipient: string;
+        account_number: string;
+        title: string;
+        amount: number;
+    } | null;
+};
+
+export type EventRegistrationState = {
+    availability:
+        | 'open'
+        | 'sign_in_required'
+        | 'not_open_yet'
+        | 'closed'
+        | 'already_registered'
+        | 'profession_missing'
+        | 'profession_not_allowed'
+        | 'full';
+    message: string;
+    opens_at: string | null;
+    closes_at: string;
+};
+
 export type RegistrationFilters = {
     event: string;
     status: string;
