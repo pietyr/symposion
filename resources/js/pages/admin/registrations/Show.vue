@@ -5,7 +5,7 @@ import EventController from '@/actions/App/Http/Controllers/Admin/EventControlle
 import CancelRegistrationController from '@/actions/App/Http/Controllers/Admin/CancelRegistrationController';
 import ConfirmRegistrationController from '@/actions/App/Http/Controllers/Admin/ConfirmRegistrationController';
 import RegistrationActionDialog from '@/components/admin/registrations/RegistrationActionDialog.vue';
-import RegistrationStatusBadge from '@/components/admin/registrations/RegistrationStatusBadge.vue';
+import RegistrationStatusBadge from '@/components/registrations/RegistrationStatusBadge.vue';
 import Heading from '@/components/Heading.vue';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

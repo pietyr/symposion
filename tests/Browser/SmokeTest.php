@@ -463,6 +463,11 @@ test('a guest signs in from the event page and registers', function () {
         ->click('@confirm-registration-button')
         ->assertPathIs(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false))
         ->assertSee('Zapisano na wydarzenie')
+        ->assertSee('Twój zapis')
+        ->assertSee('Dane do przelewu')
+        ->assertSee('PL46 9999 0000 0000 1234 5678 9012')
+        ->assertSee('Zapis nr '.Registration::query()->sole()->id)
+        ->assertMissing('@register-button')
         ->assertNoJavaScriptErrors();
 
     expect(Registration::query()->sole())

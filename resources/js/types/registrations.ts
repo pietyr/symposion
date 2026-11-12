@@ -28,6 +28,21 @@ export type ParticipantResource = {
     specializations: string[];
 };
 
+export type MyRegistrationResource = {
+    id: number;
+    attendance_label: string;
+    amount: number;
+    status: RegistrationStatus;
+    status_label: string;
+    created_at: string | null;
+    transfer: {
+        recipient: string;
+        account_number: string;
+        title: string;
+        amount: number;
+    } | null;
+};
+
 export type EventRegistrationState = {
     availability:
         | 'open'

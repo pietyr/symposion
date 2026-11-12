@@ -4,7 +4,7 @@ import { Plus } from '@lucide/vue';
 import { useDebounceFn } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
 import RegistrationController from '@/actions/App/Http/Controllers/Admin/RegistrationController';
-import RegistrationStatusBadge from '@/components/admin/registrations/RegistrationStatusBadge.vue';
+import RegistrationStatusBadge from '@/components/registrations/RegistrationStatusBadge.vue';
 import FilterSelect from '@/components/FilterSelect.vue';
 import Heading from '@/components/Heading.vue';
 import PaginationControls from '@/components/PaginationControls.vue';

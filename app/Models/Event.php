@@ -181,6 +181,18 @@ final class Event extends Model
     }
 
     /**
+     * The pending or paid registration of the user, if there is one.
+     */
+    public function activeRegistrationOf(User $user): ?Registration
+    {
+        return $this->registrations()
+            ->whereBelongsTo($user)
+            ->whereIn('status', RegistrationStatus::seatTaking())
+            ->latest()
+            ->first();
+    }
+
+    /**
      * A cancelled registration does not stop the participant from registering again.
      */
     public function hasActiveRegistrationOf(User $user): bool

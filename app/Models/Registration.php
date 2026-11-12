@@ -70,6 +70,14 @@ final class Registration extends Model
     }
 
     /**
+     * The registration number in the title lets the administrator match the transfer.
+     */
+    public function transferTitle(): string
+    {
+        return __('Registration no. :number', ['number' => $this->id]);
+    }
+
+    /**
      * Narrow the list down by whichever filters are set; the search goes through User::matchingSearch().
      *
      * @param  Builder<self>  $query

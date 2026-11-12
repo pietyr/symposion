@@ -8,6 +8,7 @@ use App\Actions\Registrations\DetermineRegistrationAvailability;
 use App\Enums\RegistrationAvailability;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Site\Events\ListEventsRequest;
+use App\Http\Resources\MyRegistrationResource;
 use App\Http\Resources\PublicEventResource;
 use App\Models\Event;
 use Illuminate\Http\Request;
@@ -49,13 +50,17 @@ final class EventController extends Controller
             return to_route('events.show', ['event' => $event, 'slug' => $event->slug], 301);
         }
 
+        $user = $request->user();
+        $myRegistration = $user === null ? null : $event->activeRegistrationOf($user);
+
         $response = Inertia::render('site/events/Show', [
             'event' => PublicEventResource::make($event->load([
                 'professionEntries',
                 'specializations' => fn ($query) => $query->orderBy('name'),
                 'sections',
             ])),
-            'registration' => $this->registrationState($event, $determineRegistrationAvailability->handle($event, $request->user())),
+            'registration' => $this->registrationState($event, $determineRegistrationAvailability->handle($event, $user)),
+            'myRegistration' => $myRegistration === null ? null : MyRegistrationResource::make($myRegistration),
         ])->toResponse($request);
 
         if (! $event->is_visible) {
