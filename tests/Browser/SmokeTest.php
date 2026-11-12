@@ -6,6 +6,7 @@ use App\Enums\Attendance;
 use App\Enums\BenefitType;
 use App\Enums\RegistrationStatus;
 use App\Models\Benefit;
+use App\Models\BenefitOption;
 use App\Models\Event;
 use App\Models\Registration;
 use App\Models\Specialization;
@@ -392,6 +393,26 @@ test('an administrator adds a benefit field to an event', function () {
         ->type->toBe(BenefitType::Select)
         ->is_required->toBeTrue()
         ->attendance->toBe(Attendance::InPerson);
+});
+
+test('an administrator adds an option to a benefit field', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $benefit = Benefit::factory()->select()->create(['name' => 'Nocleg']);
+
+    visit(route('admin.events.edit', $benefit->event, absolute: false))
+        ->click('@event-tab-benefits')
+        ->click('@add-benefit-option')
+        ->fill("#option_new_{$benefit->id}_name", '2 noce')
+        ->fill("#option_new_{$benefit->id}_price", '550')
+        ->fill("#option_new_{$benefit->id}_seat_limit", '40')
+        ->click('@add-benefit-option-save')
+        ->assertSee('Opcja została dodana')
+        ->assertSeeIn('@benefit-option', '2 noce')
+        ->assertSeeIn('@benefit-option', '550,00')
+        ->assertSeeIn('@benefit-option', '40')
+        ->assertNoJavaScriptErrors();
+
+    expect(BenefitOption::query()->sole())->price->toBe(55000)->seat_limit->toBe(40);
 });
 
 test('an administrator opens the registrations from the sidebar and filters them', function () {

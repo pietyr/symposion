@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * A field of the registration form with extras to choose, such as accommodation or a dinner (ADR-021).
@@ -55,6 +56,14 @@ final class Benefit extends Model
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);
+    }
+
+    /**
+     * @return HasMany<BenefitOption, $this>
+     */
+    public function options(): HasMany
+    {
+        return $this->hasMany(BenefitOption::class)->orderBy('position');
     }
 
     /**

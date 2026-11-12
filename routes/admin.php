@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Admin\BenefitOptionController;
 use App\Http\Controllers\Admin\CancelRegistrationController;
 use App\Http\Controllers\Admin\ConfirmRegistrationController;
 use App\Http\Controllers\Admin\EventBenefitController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\EventSectionController;
+use App\Http\Controllers\Admin\MoveBenefitOptionController;
 use App\Http\Controllers\Admin\MoveEventBenefitController;
 use App\Http\Controllers\Admin\MoveEventSectionController;
 use App\Http\Controllers\Admin\RegistrationController;
@@ -33,6 +35,12 @@ Route::resource('events.benefits', EventBenefitController::class)
 Route::patch('events/{event}/benefits/{benefit}/move', MoveEventBenefitController::class)
     ->scopeBindings()
     ->name('events.benefits.move');
+Route::resource('events.benefits.options', BenefitOptionController::class)
+    ->only(['store', 'update', 'destroy'])
+    ->scoped();
+Route::patch('events/{event}/benefits/{benefit}/options/{option}/move', MoveBenefitOptionController::class)
+    ->scopeBindings()
+    ->name('events.benefits.options.move');
 
 Route::get('registrations/participants', SearchParticipantsController::class)
     ->name('registrations.participants');

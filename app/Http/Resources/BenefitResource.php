@@ -28,6 +28,7 @@ final class BenefitResource extends JsonResource
             'is_required' => $this->is_required,
             'attendance' => $this->attendance?->value,
             'attendance_label' => $this->attendance?->onlyLabel(),
+            'options' => BenefitOptionResource::collection($this->whenLoaded('options')),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];
     }
