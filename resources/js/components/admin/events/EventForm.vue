@@ -16,6 +16,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { usePriceFormat } from '@/composables/usePriceFormat';
 import type { EventFormat, EventResource, SelectOption } from '@/types';
 import type { RouteFormDefinition } from '@/wayfinder';
 
@@ -40,10 +41,7 @@ const isProfessionChecked = (profession: string): boolean =>
 const isSpecializationChecked = (specialization: string): boolean =>
     props.event?.specializations?.includes(specialization) ?? false;
 
-const groszeToZlotys = (grosze?: number | null): string | undefined =>
-    grosze === null || grosze === undefined
-        ? undefined
-        : (grosze / 100).toFixed(2).replace('.', ',');
+const { toPriceInput } = usePriceFormat();
 
 const formTabs = ['details', 'audience', 'registration', 'appearance'];
 const activeTab = ref('details');
@@ -220,7 +218,7 @@ const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
                             id="price_online"
                             name="price_online"
                             inputmode="decimal"
-                            :default-value="groszeToZlotys(event?.price_online)"
+                            :default-value="toPriceInput(event?.price_online)"
                             required
                         />
                         <InputError :message="errors.price_online" />
@@ -235,7 +233,7 @@ const toDateTimeLocal = (iso?: string): string | undefined => iso?.slice(0, 16);
                             name="price_in_person"
                             inputmode="decimal"
                             :default-value="
-                                groszeToZlotys(event?.price_in_person)
+                                toPriceInput(event?.price_in_person)
                             "
                             required
                         />

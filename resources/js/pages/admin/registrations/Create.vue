@@ -48,7 +48,7 @@ const props = defineProps<{
     }[];
 }>();
 
-const { formatPrice } = usePriceFormat();
+const { formatPrice, toPriceInput } = usePriceFormat();
 
 const eventId = ref('');
 const attendance = ref('');
@@ -83,8 +83,7 @@ watch(attendance, () => {
         (option) => option.value === attendance.value,
     )?.price;
 
-    amount.value =
-        price === undefined ? '' : (price / 100).toFixed(2).replace('.', ',');
+    amount.value = toPriceInput(price);
 });
 </script>
 
