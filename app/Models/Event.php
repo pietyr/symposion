@@ -122,6 +122,16 @@ final class Event extends Model
     }
 
     /**
+     * Consents the participant gives in the registration form (ADR-021).
+     *
+     * @return HasMany<Consent, $this>
+     */
+    public function consents(): HasMany
+    {
+        return $this->hasMany(Consent::class)->orderBy('position');
+    }
+
+    /**
      * @return HasMany<Registration, $this>
      */
     public function registrations(): HasMany

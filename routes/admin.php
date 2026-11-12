@@ -6,10 +6,12 @@ use App\Http\Controllers\Admin\BenefitOptionController;
 use App\Http\Controllers\Admin\CancelRegistrationController;
 use App\Http\Controllers\Admin\ConfirmRegistrationController;
 use App\Http\Controllers\Admin\EventBenefitController;
+use App\Http\Controllers\Admin\EventConsentController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\EventSectionController;
 use App\Http\Controllers\Admin\MoveBenefitOptionController;
 use App\Http\Controllers\Admin\MoveEventBenefitController;
+use App\Http\Controllers\Admin\MoveEventConsentController;
 use App\Http\Controllers\Admin\MoveEventSectionController;
 use App\Http\Controllers\Admin\RegistrationController;
 use App\Http\Controllers\Admin\RestoreEventController;
@@ -41,6 +43,12 @@ Route::resource('events.benefits.options', BenefitOptionController::class)
 Route::patch('events/{event}/benefits/{benefit}/options/{option}/move', MoveBenefitOptionController::class)
     ->scopeBindings()
     ->name('events.benefits.options.move');
+Route::resource('events.consents', EventConsentController::class)
+    ->only(['store', 'update', 'destroy'])
+    ->scoped();
+Route::patch('events/{event}/consents/{consent}/move', MoveEventConsentController::class)
+    ->scopeBindings()
+    ->name('events.consents.move');
 
 Route::get('registrations/participants', SearchParticipantsController::class)
     ->name('registrations.participants');

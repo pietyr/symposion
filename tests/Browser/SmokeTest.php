@@ -7,6 +7,7 @@ use App\Enums\BenefitType;
 use App\Enums\RegistrationStatus;
 use App\Models\Benefit;
 use App\Models\BenefitOption;
+use App\Models\Consent;
 use App\Models\Event;
 use App\Models\Registration;
 use App\Models\Specialization;
@@ -429,6 +430,24 @@ test('an administrator hides a benefit option', function () {
         ->assertNoJavaScriptErrors();
 
     expect($option->fresh())->is_hidden->toBeTrue()->is_disabled->toBeFalse();
+});
+
+test('an administrator adds a consent to an event', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $event = Event::factory()->create();
+
+    visit(route('admin.events.edit', $event, absolute: false))
+        ->click('@event-tab-consents')
+        ->click('@add-consent')
+        ->fill('#consent_new_content', '<p>Akceptuję <a href="https://example.com/regulamin">regulamin</a></p>')
+        ->click('#consent_new_is_required')
+        ->click('@add-consent-save')
+        ->assertSee('Zgoda została dodana')
+        ->assertSeeIn('@event-consent', 'Obowiązkowa')
+        ->assertSeeLink('regulamin')
+        ->assertNoJavaScriptErrors();
+
+    expect(Consent::query()->sole())->is_required->toBeTrue();
 });
 
 test('an administrator opens the registrations from the sidebar and filters them', function () {

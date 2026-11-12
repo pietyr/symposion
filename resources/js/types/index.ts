@@ -1,5 +1,6 @@
 export * from './auth';
 export * from './benefits';
+export * from './consents';
 export * from './events';
 export * from './navigation';
 export * from './pagination';

@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/vue3';
 import { ExternalLink } from '@lucide/vue';
 import EventController from '@/actions/App/Http/Controllers/Admin/EventController';
 import EventBenefits from '@/components/admin/benefits/EventBenefits.vue';
+import EventConsents from '@/components/admin/consents/EventConsents.vue';
 import DeleteEventDialog from '@/components/admin/events/DeleteEventDialog.vue';
 import EventForm from '@/components/admin/events/EventForm.vue';
 import EventSections from '@/components/admin/events/EventSections.vue';
@@ -76,6 +77,9 @@ defineProps<{
                 <TabsTrigger value="benefits" data-test="event-tab-benefits">
                     {{ $t('Benefits') }}
                 </TabsTrigger>
+                <TabsTrigger value="consents" data-test="event-tab-consents">
+                    {{ $t('Consents') }}
+                </TabsTrigger>
             </template>
             <template #tabs>
                 <TabsContent value="content">
@@ -91,6 +95,12 @@ defineProps<{
                         :benefits="event.benefits ?? []"
                         :types="benefitTypes"
                         :attendances="benefitAttendances"
+                    />
+                </TabsContent>
+                <TabsContent value="consents">
+                    <EventConsents
+                        :event-id="event.id"
+                        :consents="event.consents ?? []"
                     />
                 </TabsContent>
             </template>

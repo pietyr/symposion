@@ -51,6 +51,7 @@ final class EventResource extends JsonResource
                 ->all()),
             'sections' => EventSectionResource::collection($this->whenLoaded('sections')),
             'benefits' => BenefitResource::collection($this->whenLoaded('benefits')),
+            'consents' => ConsentResource::collection($this->whenLoaded('consents')),
             'is_visible' => $this->is_visible,
             'is_promoted' => $this->is_promoted,
             'primary_color' => $this->primary_color,
