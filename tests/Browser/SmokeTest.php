@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Enums\Attendance;
+use App\Enums\BenefitType;
 use App\Enums\RegistrationStatus;
+use App\Models\Benefit;
 use App\Models\Event;
 use App\Models\Registration;
 use App\Models\Specialization;
@@ -351,6 +354,32 @@ test('a user edits the professional profile in the settings', function () {
     visit(route('account.profile.edit', absolute: false))
         ->assertValue('#license_number', '5425740')
         ->assertSee('Kardiologia');
+});
+
+test('an administrator adds a benefit field to an event', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $event = Event::factory()->hybrid()->create();
+
+    visit(route('admin.events.edit', $event, absolute: false))
+        ->click('@event-tab-benefits')
+        ->click('@add-benefit')
+        ->fill('#benefit_new_name', 'Nocleg')
+        ->click('@benefit-type')
+        ->click('[role="option"]:has-text("Lista rozwijana")')
+        ->click('#benefit_new_is_required')
+        ->click('@benefit-attendance')
+        ->click('[role="option"]:has-text("Tylko stacjonarnie")')
+        ->click('@add-benefit-save')
+        ->assertSee('Świadczenie zostało dodane')
+        ->assertSeeIn('@event-benefit', 'Nocleg')
+        ->assertSeeIn('@event-benefit', 'Wybór obowiązkowy')
+        ->assertSeeIn('@event-benefit', 'Tylko stacjonarnie')
+        ->assertNoJavaScriptErrors();
+
+    expect(Benefit::query()->sole())
+        ->type->toBe(BenefitType::Select)
+        ->is_required->toBeTrue()
+        ->attendance->toBe(Attendance::InPerson);
 });
 
 test('an administrator opens the registrations from the sidebar and filters them', function () {

@@ -1,3 +1,4 @@
+import type { BenefitResource } from './benefits';
 import type { SelectOption } from './ui';
 
 export type EventFormat = 'online' | 'in_person' | 'hybrid';
@@ -32,6 +33,7 @@ export type EventResource = {
     professions?: string[];
     specializations?: string[];
     sections?: EventSectionResource[];
+    benefits?: BenefitResource[];
     is_visible: boolean;
     is_promoted: boolean;
     primary_color: string | null;
