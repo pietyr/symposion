@@ -469,3 +469,25 @@ test('a guest signs in from the event page and registers', function () {
         ->user_id->toBe($nurse->id)
         ->amount->toBe(9900);
 });
+
+test('the event page says why the visitor cannot register', function () {
+    $event = Event::factory()->visible()->create(['starts_at' => now()->addDays(10), 'ends_at' => now()->addDays(10)]);
+    $event->professionEntries()->create(['profession' => 'doctor']);
+    $url = route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false);
+
+    $this->actingAs(User::factory()->create(['profession' => 'student']));
+    visit($url)
+        ->assertMissing('@register-button')
+        ->assertSee('To wydarzenie nie jest przeznaczone dla Twojego zawodu.');
+
+    $this->actingAs(User::factory()->create());
+    visit($url)
+        ->assertSee('Aby się zapisać, uzupełnij zawód w ustawieniach profilu.')
+        ->click('Przejdź do ustawień profilu')
+        ->assertPathIs(route('account.profile.edit', absolute: false));
+
+    $event->update(['registration_opens_at' => now()->addDays(2)]);
+    visit($url)
+        ->assertSee('Zapisy rozpoczną się')
+        ->assertNoJavaScriptErrors();
+});

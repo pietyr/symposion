@@ -1,25 +1,20 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import { Banknote, Calendar, MapPin } from '@lucide/vue';
 import { computed } from 'vue';
 import EventBanner from '@/components/site/events/EventBanner.vue';
 import EventPlaceBadges from '@/components/site/events/EventPlaceBadges.vue';
+import EventRegistrationPanel from '@/components/site/events/EventRegistrationPanel.vue';
 import EventTableOfContents from '@/components/site/events/EventTableOfContents.vue';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { create as createRegistration } from '@/routes/events/registration';
 import { useDateTimeFormat } from '@/composables/useDateTimeFormat';
 import { usePriceFormat } from '@/composables/usePriceFormat';
-import type { PublicEventResource } from '@/types';
+import type { EventRegistrationState, PublicEventResource } from '@/types';
 
 const props = defineProps<{
     event: PublicEventResource;
-    registrationAvailability: string;
+    registration: EventRegistrationState;
 }>();
-
-const canStartRegistration = computed(() =>
-    ['open', 'sign_in_required'].includes(props.registrationAvailability),
-);
 
 const brandColors = computed(() => ({
     '--brand-primary': props.event.primary_color ?? undefined,
@@ -142,21 +137,10 @@ const { formatPrice } = usePriceFormat();
                         </div>
                     </dl>
 
-                    <div v-if="canStartRegistration">
-                        <Button size="lg" as-child>
-                            <Link
-                                :href="
-                                    createRegistration({
-                                        event: event.id,
-                                        slug: event.slug,
-                                    })
-                                "
-                                data-test="register-button"
-                            >
-                                {{ $t('Sign up for the event') }}
-                            </Link>
-                        </Button>
-                    </div>
+                    <EventRegistrationPanel
+                        :event="event"
+                        :registration="registration"
+                    />
 
                     <section
                         v-if="event.professions?.length"

@@ -130,6 +130,32 @@ test('a full attendance is refused', function () {
 test('the event page tells whether the visitor may start registering', function () {
     $showUrl = route('events.show', ['event' => $this->event, 'slug' => $this->event->slug]);
 
-    $this->get($showUrl)->assertInertia(fn (Assert $page) => $page->where('registrationAvailability', 'sign_in_required'));
-    $this->actingAs($this->nurse)->get($showUrl)->assertInertia(fn (Assert $page) => $page->where('registrationAvailability', 'open'));
+    $this->get($showUrl)->assertInertia(fn (Assert $page) => $page->where('registration.availability', 'sign_in_required'));
+    $this->actingAs($this->nurse)->get($showUrl)->assertInertia(fn (Assert $page) => $page
+        ->where('registration.availability', 'open')
+        ->where('registration.closes_at', $this->event->starts_at->toIso8601String()));
 });
+
+test('the event page explains why registration is not possible', function (Closure $visitor, string $availability, string $message) {
+    $this->event->update(['registration_opens_at' => now()->addDays(2)->startOfMinute()]);
+
+    $this->actingAs($visitor($this))
+        ->get(route('events.show', ['event' => $this->event, 'slug' => $this->event->slug]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('registration.availability', $availability)
+            ->where('registration.message', $message)
+            ->where('registration.opens_at', $this->event->registration_opens_at?->toIso8601String()));
+})->with([
+    'not open yet' => [fn ($test) => $test->nurse, 'not_open_yet', 'Zapisy jeszcze się nie rozpoczęły.'],
+]);
+
+test('the reasons a signed-in participant cannot register reach the page', function (Closure $visitor, string $availability, string $message) {
+    $this->actingAs($visitor($this))
+        ->get(route('events.show', ['event' => $this->event, 'slug' => $this->event->slug]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('registration.availability', $availability)
+            ->where('registration.message', $message));
+})->with([
+    'other profession' => [fn () => User::factory()->create(['profession' => 'student']), 'profession_not_allowed', 'To wydarzenie nie jest przeznaczone dla Twojego zawodu.'],
+    'no profession' => [fn () => User::factory()->create(), 'profession_missing', 'Aby się zapisać, uzupełnij zawód w ustawieniach profilu.'],
+]);

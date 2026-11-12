@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Site;
 
 use App\Actions\Registrations\DetermineRegistrationAvailability;
+use App\Enums\RegistrationAvailability;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Site\Events\ListEventsRequest;
 use App\Http\Resources\PublicEventResource;
@@ -54,7 +55,7 @@ final class EventController extends Controller
                 'specializations' => fn ($query) => $query->orderBy('name'),
                 'sections',
             ])),
-            'registrationAvailability' => $determineRegistrationAvailability->handle($event, $request->user())->value,
+            'registration' => $this->registrationState($event, $determineRegistrationAvailability->handle($event, $request->user())),
         ])->toResponse($request);
 
         if (! $event->is_visible) {
@@ -62,5 +63,20 @@ final class EventController extends Controller
         }
 
         return $response;
+    }
+
+    /**
+     * What the event page shows instead of the button when registration is not possible.
+     *
+     * @return array{availability: string, message: string, opens_at: string|null, closes_at: string}
+     */
+    private function registrationState(Event $event, RegistrationAvailability $availability): array
+    {
+        return [
+            'availability' => $availability->value,
+            'message' => $availability->message(),
+            'opens_at' => $event->registration_opens_at?->toIso8601String(),
+            'closes_at' => $event->registrationClosesAt()->toIso8601String(),
+        ];
     }
 }
