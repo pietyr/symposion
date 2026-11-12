@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\RegistrationStatus;
 use App\Models\Event;
 use App\Models\Registration;
 use App\Models\Specialization;
@@ -489,6 +490,22 @@ test('a participant opens an event from their registrations', function () {
         ->assertPathIs(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false))
         ->assertSee('Dane do przelewu')
         ->assertNoJavaScriptErrors();
+});
+
+test('a participant cancels a pending registration', function () {
+    $participant = User::factory()->create();
+    $registration = Registration::factory()->for($participant)->create();
+    $this->actingAs($participant);
+
+    visit(route('account.registrations.index', absolute: false))
+        ->click('@cancel-registration')
+        ->click('@cancel-registration-confirm')
+        ->assertSee('Zapis został anulowany')
+        ->assertSee('Anulowany')
+        ->assertMissing('@cancel-registration')
+        ->assertNoJavaScriptErrors();
+
+    expect($registration->fresh()->status)->toBe(RegistrationStatus::Cancelled);
 });
 
 test('the event page says why the visitor cannot register', function () {

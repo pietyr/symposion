@@ -4,7 +4,7 @@ import { computed } from 'vue';
 import EventController from '@/actions/App/Http/Controllers/Admin/EventController';
 import CancelRegistrationController from '@/actions/App/Http/Controllers/Admin/CancelRegistrationController';
 import ConfirmRegistrationController from '@/actions/App/Http/Controllers/Admin/ConfirmRegistrationController';
-import RegistrationActionDialog from '@/components/admin/registrations/RegistrationActionDialog.vue';
+import RegistrationActionDialog from '@/components/registrations/RegistrationActionDialog.vue';
 import RegistrationStatusBadge from '@/components/registrations/RegistrationStatusBadge.vue';
 import Heading from '@/components/Heading.vue';
 import { Badge } from '@/components/ui/badge';

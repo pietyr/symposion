@@ -20,6 +20,7 @@ defineProps<{
     title: string;
     description: string;
     variant?: 'default' | 'destructive';
+    size?: 'default' | 'sm';
     testId: string;
 }>();
 </script>
@@ -27,7 +28,11 @@ defineProps<{
 <template>
     <Dialog>
         <DialogTrigger as-child>
-            <Button :variant="variant ?? 'default'" :data-test="testId">
+            <Button
+                :variant="variant ?? 'default'"
+                :size="size ?? 'default'"
+                :data-test="testId"
+            >
                 {{ label }}
             </Button>
         </DialogTrigger>

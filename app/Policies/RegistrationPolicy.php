@@ -28,4 +28,12 @@ final class RegistrationPolicy
     {
         return $user->isAdmin();
     }
+
+    /**
+     * Participants withdraw their own registrations; the administrator uses update().
+     */
+    public function cancel(User $user, Registration $registration): bool
+    {
+        return $registration->user()->is($user);
+    }
 }

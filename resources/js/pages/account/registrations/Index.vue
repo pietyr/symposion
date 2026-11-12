@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import CancelRegistrationController from '@/actions/App/Http/Controllers/Account/CancelRegistrationController';
+import RegistrationActionDialog from '@/components/registrations/RegistrationActionDialog.vue';
 import RegistrationStatusBadge from '@/components/registrations/RegistrationStatusBadge.vue';
 import Heading from '@/components/Heading.vue';
 import PaginationControls from '@/components/PaginationControls.vue';
@@ -51,6 +53,9 @@ const { formatPrice } = usePriceFormat();
                     <TableHead>{{ $t('Attendance') }}</TableHead>
                     <TableHead class="text-right">{{ $t('Amount') }}</TableHead>
                     <TableHead>{{ $t('Status') }}</TableHead>
+                    <TableHead>
+                        <span class="sr-only">{{ $t('Actions') }}</span>
+                    </TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -93,8 +98,28 @@ const { formatPrice } = usePriceFormat();
                             :label="registration.status_label"
                         />
                     </TableCell>
+                    <TableCell class="text-right">
+                        <RegistrationActionDialog
+                            v-if="registration.status === 'pending'"
+                            :action="
+                                CancelRegistrationController.form(
+                                    registration.id,
+                                )
+                            "
+                            :label="$t('Cancel registration')"
+                            :title="
+                                $t('Cancel your registration for :title?', {
+                                    title: registration.event?.title ?? '',
+                                })
+                            "
+                            :description="$t('The seat will be freed.')"
+                            variant="destructive"
+                            size="sm"
+                            test-id="cancel-registration"
+                        />
+                    </TableCell>
                 </TableRow>
-                <TableEmpty v-if="registrations.data.length === 0" :colspan="5">
+                <TableEmpty v-if="registrations.data.length === 0" :colspan="6">
                     {{ $t('You have no registrations yet.') }}
                 </TableEmpty>
             </TableBody>
