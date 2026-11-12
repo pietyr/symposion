@@ -163,6 +163,24 @@ final class Event extends Model
     }
 
     /**
+     * Without a closing date registration lasts until the event starts.
+     */
+    public function registrationClosesAt(): CarbonImmutable
+    {
+        return $this->registration_closes_at ?? $this->starts_at;
+    }
+
+    /**
+     * An event without professions is open to all of them.
+     */
+    public function isOpenTo(Profession $profession): bool
+    {
+        $entries = $this->professionEntries();
+
+        return ! $entries->exists() || $entries->where('profession', $profession->value)->exists();
+    }
+
+    /**
      * A cancelled registration does not stop the participant from registering again.
      */
     public function hasActiveRegistrationOf(User $user): bool

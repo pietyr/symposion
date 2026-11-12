@@ -439,3 +439,33 @@ test('an administrator cancels a registration', function () {
         ->assertMissing('@confirm-payment')
         ->assertNoJavaScriptErrors();
 });
+
+test('a guest signs in from the event page and registers', function () {
+    $event = Event::factory()->visible()->hybrid()->create([
+        'starts_at' => now()->addDays(10),
+        'ends_at' => now()->addDays(10),
+        'price_online' => 9900,
+        'price_in_person' => 25000,
+    ]);
+    $event->professionEntries()->create(['profession' => 'nurse']);
+    $nurse = User::factory()->create(['profession' => 'nurse', 'email' => 'nurse@example.com']);
+
+    visit(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false))
+        ->click('@register-button')
+        ->assertPathIs(route('login', absolute: false))
+        ->fill('email', 'nurse@example.com')
+        ->fill('password', 'password')
+        ->click('@login-button')
+        ->assertPathIs(route('events.registration.create', ['event' => $event, 'slug' => $event->slug], absolute: false))
+        ->assertSee('Zapis na wydarzenie')
+        ->click('@attendance-online')
+        ->assertSee('99,00 zł')
+        ->click('@confirm-registration-button')
+        ->assertPathIs(route('events.show', ['event' => $event, 'slug' => $event->slug], absolute: false))
+        ->assertSee('Zapisano na wydarzenie')
+        ->assertNoJavaScriptErrors();
+
+    expect(Registration::query()->sole())
+        ->user_id->toBe($nurse->id)
+        ->amount->toBe(9900);
+});
