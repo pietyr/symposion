@@ -507,6 +507,21 @@ test('an administrator searches the participants of an event', function () {
         ->assertNoJavaScriptErrors();
 });
 
+test('an administrator cancels a registration from the participant list', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $registration = Registration::factory()->for(User::factory()->create(['name' => 'Anna Nowak']))->create();
+
+    visit(route('admin.events.participants.index', $registration->event, absolute: false))
+        ->click('@cancel-participant')
+        ->click('@cancel-participant-confirm')
+        ->assertSee('Zapis został anulowany')
+        ->assertPathIs(route('admin.events.participants.index', $registration->event, absolute: false))
+        ->assertSee('Brak uczestników')
+        ->assertNoJavaScriptErrors();
+
+    expect($registration->fresh()->status)->toBe(RegistrationStatus::Cancelled);
+});
+
 test('an administrator opens a registration from the list', function () {
     $this->actingAs(User::factory()->admin()->create());
     $student = User::factory()->create(['name' => 'Anna Nowak', 'profession' => 'student', 'university' => 'UMED Łódź', 'student_number' => '123456']);

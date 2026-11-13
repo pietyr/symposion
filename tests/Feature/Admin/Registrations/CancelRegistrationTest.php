@@ -27,12 +27,22 @@ describe('as an administrator', function () {
     test('pending and paid registrations can be cancelled', function (string $state) {
         $registration = Registration::factory()->create(['status' => $state]);
 
-        $this->patch(route('admin.registrations.cancel', $registration))
+        $this->from(route('admin.registrations.show', $registration))
+            ->patch(route('admin.registrations.cancel', $registration))
             ->assertSessionHasNoErrors()
             ->assertRedirect(route('admin.registrations.show', $registration));
 
         expect($registration->fresh()->status)->toBe(RegistrationStatus::Cancelled);
     })->with(['pending' => ['pending'], 'paid' => ['paid']]);
+
+    test('cancelling from the participant list goes back to it', function () {
+        $registration = Registration::factory()->create();
+        $list = route('admin.events.participants.index', $registration->event);
+
+        $this->from($list)
+            ->patch(route('admin.registrations.cancel', $registration))
+            ->assertRedirect($list);
+    });
 
     test('cancelling frees the seat', function () {
         $event = Event::factory()->create(['seats_in_person' => 1]);

@@ -3,7 +3,9 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
 import EventParticipantController from '@/actions/App/Http/Controllers/Admin/EventParticipantController';
+import CancelRegistrationController from '@/actions/App/Http/Controllers/Admin/CancelRegistrationController';
 import RegistrationController from '@/actions/App/Http/Controllers/Admin/RegistrationController';
+import RegistrationActionDialog from '@/components/registrations/RegistrationActionDialog.vue';
 import RegistrationStatusBadge from '@/components/registrations/RegistrationStatusBadge.vue';
 import FilterSelect from '@/components/FilterSelect.vue';
 import Heading from '@/components/Heading.vue';
@@ -152,6 +154,9 @@ const filterFields = computed(() =>
                     <TableHead>{{ $t('Attendance') }}</TableHead>
                     <TableHead>{{ $t('Benefits') }}</TableHead>
                     <TableHead>{{ $t('Status') }}</TableHead>
+                    <TableHead class="text-right">
+                        <span class="sr-only">{{ $t('Actions') }}</span>
+                    </TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -192,8 +197,34 @@ const filterFields = computed(() =>
                             :label="registration.status_label"
                         />
                     </TableCell>
+                    <TableCell class="text-right">
+                        <RegistrationActionDialog
+                            v-if="registration.status !== 'cancelled'"
+                            :action="
+                                CancelRegistrationController.form(
+                                    registration.id,
+                                )
+                            "
+                            :label="$t('Cancel registration')"
+                            :title="
+                                $t('Cancel the registration of :name?', {
+                                    name: registration.user.name,
+                                })
+                            "
+                            :description="
+                                registration.status === 'paid'
+                                    ? $t(
+                                          'The seat will be freed. A refund of the payment has to be made outside the system.',
+                                      )
+                                    : $t('The seat will be freed.')
+                            "
+                            variant="destructive"
+                            size="sm"
+                            test-id="cancel-participant"
+                        />
+                    </TableCell>
                 </TableRow>
-                <TableEmpty v-if="registrations.data.length === 0" :colspan="5">
+                <TableEmpty v-if="registrations.data.length === 0" :colspan="6">
                     {{
                         hasFilters
                             ? $t('No participants match these filters.')
