@@ -643,6 +643,24 @@ test('a participant chooses benefits and sees the amount add up', function () {
         ->benefits->pluck('option_name')->all()->toBe(['2 noce', 'Udział w kolacji']);
 });
 
+test('a participant has to give the required consent', function () {
+    $event = Event::factory()->visible()->create(['starts_at' => now()->addDays(10), 'ends_at' => now()->addDays(11)]);
+    $terms = Consent::factory()->for($event)->required()->create();
+    $this->actingAs(User::factory()->create(['profession' => 'doctor']));
+
+    visit(route('events.registration.create', ['event' => $event, 'slug' => $event->slug], absolute: false))
+        ->assertSee('regulamin wydarzenia')
+        ->assertAttribute('a[href="https://example.com/regulamin"]', 'target', '_blank')
+        ->click('@confirm-registration-button')
+        ->assertSee('Bez tej zgody nie można się zapisać')
+        ->click("[data-test=\"consent-{$terms->id}\"] input")
+        ->click('@confirm-registration-button')
+        ->assertSee('Zapisano na wydarzenie')
+        ->assertNoJavaScriptErrors();
+
+    expect(Registration::query()->sole()->consents)->toHaveCount(1);
+});
+
 test('the event page says why the visitor cannot register', function () {
     $event = Event::factory()->visible()->create(['starts_at' => now()->addDays(10), 'ends_at' => now()->addDays(10)]);
     $event->professionEntries()->create(['profession' => 'doctor']);

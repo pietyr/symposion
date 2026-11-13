@@ -20,6 +20,7 @@ final class RegisterForEvent
         private readonly DetermineRegistrationAvailability $determineRegistrationAvailability,
         private readonly CreateRegistration $createRegistration,
         private readonly ResolveBenefitChoices $resolveBenefitChoices,
+        private readonly ResolveGivenConsents $resolveGivenConsents,
     ) {}
 
     /**
@@ -30,10 +31,11 @@ final class RegisterForEvent
      * The amount is the attendance price plus the chosen benefit options.
      *
      * @param  array<array-key, mixed>  $benefitChoices  as submitted, see ResolveBenefitChoices
+     * @param  array<array-key, mixed>  $consentIds  ids of the ticked consents, as submitted
      *
      * @throws ValidationException when registration is not available, the attendance is not offered or a choice is wrong
      */
-    public function handle(Event $event, User $participant, Attendance $attendance, array $benefitChoices = []): Registration
+    public function handle(Event $event, User $participant, Attendance $attendance, array $benefitChoices = [], array $consentIds = []): Registration
     {
         $availability = $this->determineRegistrationAvailability->handle($event, $participant);
 
@@ -50,9 +52,10 @@ final class RegisterForEvent
         }
 
         $options = $this->resolveBenefitChoices->handle($event, $attendance, $benefitChoices);
+        $consents = $this->resolveGivenConsents->handle($event, $consentIds);
         $amount = $price + array_sum(array_map(fn (BenefitOption $option): int => $option->price, $options));
 
-        $registration = $this->createRegistration->handle($event, $participant, $attendance, $amount, $options);
+        $registration = $this->createRegistration->handle($event, $participant, $attendance, $amount, $options, $consents);
         $registration->setRelation('event', $event);
 
         Mail::to($participant)->queue(new RegistrationConfirmation($registration));

@@ -3,13 +3,18 @@ import { Form, Head, Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import EventPlaceBadges from '@/components/site/events/EventPlaceBadges.vue';
 import BenefitField from '@/components/site/registrations/BenefitField.vue';
+import ConsentField from '@/components/site/registrations/ConsentField.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { useDateTimeFormat } from '@/composables/useDateTimeFormat';
 import { usePriceFormat } from '@/composables/usePriceFormat';
 import { show } from '@/routes/events';
 import { store } from '@/routes/events/registration';
-import type { PublicBenefitResource, PublicEventResource } from '@/types';
+import type {
+    ConsentResource,
+    PublicBenefitResource,
+    PublicEventResource,
+} from '@/types';
 
 type AttendanceOption = {
     value: string;
@@ -22,6 +27,7 @@ const props = defineProps<{
     event: PublicEventResource;
     attendances: AttendanceOption[];
     benefits: PublicBenefitResource[];
+    consents: ConsentResource[];
 }>();
 
 const { formatDateTimeRange } = useDateTimeFormat();
@@ -154,6 +160,16 @@ const total = computed(() => {
                 :benefit="benefit"
                 :error="errors[`benefits.${benefit.id}`]"
             />
+
+            <fieldset v-if="consents.length > 0" class="flex flex-col gap-3">
+                <legend class="mb-3 font-medium">{{ $t('Consents') }}</legend>
+                <ConsentField
+                    v-for="consent in consents"
+                    :key="consent.id"
+                    :consent="consent"
+                    :error="errors[`consents.${consent.id}`]"
+                />
+            </fieldset>
 
             <div
                 class="flex flex-wrap items-center justify-between gap-4 border-t pt-6"

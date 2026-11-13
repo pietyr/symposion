@@ -7,6 +7,7 @@ namespace App\Actions\Registrations;
 use App\Enums\Attendance;
 use App\Enums\RegistrationStatus;
 use App\Models\BenefitOption;
+use App\Models\Consent;
 use App\Models\Event;
 use App\Models\Registration;
 use App\Models\User;
@@ -23,12 +24,13 @@ final class CreateRegistration
      * at the same moment cannot both take the last seat of an attendance or an option.
      *
      * @param  list<BenefitOption>  $options  checked by ResolveBenefitChoices, with their benefit loaded
+     * @param  list<Consent>  $consents  given by the participant, checked by ResolveGivenConsents
      *
      * @throws ValidationException when the participant is already registered or no seat is left
      */
-    public function handle(Event $event, User $participant, Attendance $attendance, int $amount, array $options = []): Registration
+    public function handle(Event $event, User $participant, Attendance $attendance, int $amount, array $options = [], array $consents = []): Registration
     {
-        return DB::transaction(function () use ($event, $participant, $attendance, $amount, $options): Registration {
+        return DB::transaction(function () use ($event, $participant, $attendance, $amount, $options, $consents): Registration {
             $event = Event::query()->lockForUpdate()->findOrFail($event->id);
 
             if ($event->hasActiveRegistrationOf($participant)) {
@@ -70,6 +72,12 @@ final class CreateRegistration
                 ]);
                 $chosen->option()->associate($option);
                 $chosen->save();
+            }
+
+            foreach ($consents as $consent) {
+                $given = $registration->consents()->make(['content' => $consent->content]);
+                $given->consent()->associate($consent);
+                $given->save();
             }
 
             return $registration;

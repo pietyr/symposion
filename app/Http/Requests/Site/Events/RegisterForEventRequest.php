@@ -27,6 +27,7 @@ final class RegisterForEventRequest extends FormRequest
         return [
             'attendance' => ['required', Rule::enum(Attendance::class)],
             'benefits' => ['nullable', 'array'],
+            'consents' => ['nullable', 'array'],
         ];
     }
 
@@ -40,6 +41,18 @@ final class RegisterForEventRequest extends FormRequest
         $choices = $this->input('benefits', []);
 
         return is_array($choices) ? $choices : [];
+    }
+
+    /**
+     * Checked against the event's consents by ResolveGivenConsents.
+     *
+     * @return array<array-key, mixed>
+     */
+    public function consentIds(): array
+    {
+        $ids = $this->input('consents', []);
+
+        return is_array($ids) ? $ids : [];
     }
 
     public function attendance(): Attendance

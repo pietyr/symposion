@@ -34,6 +34,7 @@ use Illuminate\Support\Str;
  * @property-read Event $event
  * @property-read User $user
  * @property-read Collection<int, RegistrationBenefit> $benefits
+ * @property-read Collection<int, RegistrationConsent> $consents
  */
 #[Fillable(['attendance', 'amount', 'status', 'confirmed_at'])]
 final class Registration extends Model
@@ -79,6 +80,16 @@ final class Registration extends Model
     public function benefits(): HasMany
     {
         return $this->hasMany(RegistrationBenefit::class);
+    }
+
+    /**
+     * The consents given when registering.
+     *
+     * @return HasMany<RegistrationConsent, $this>
+     */
+    public function consents(): HasMany
+    {
+        return $this->hasMany(RegistrationConsent::class);
     }
 
     /**
