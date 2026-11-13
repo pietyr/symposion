@@ -28,8 +28,11 @@ final class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $gender = fake()->randomElement(['male', 'female']);
+
         return [
-            'name' => fake()->name(),
+            // Faker's name() sometimes puts an academic title in front, which does not belong in the name.
+            'name' => fake()->firstName($gender).' '.fake()->lastName($gender),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'profession' => null,

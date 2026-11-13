@@ -7,6 +7,7 @@ namespace App\Actions\Registrations;
 use App\Enums\Attendance;
 use App\Enums\RegistrationAvailability;
 use App\Mail\RegistrationConfirmation;
+use App\Models\BenefitOption;
 use App\Models\Event;
 use App\Models\Registration;
 use App\Models\User;
@@ -18,6 +19,8 @@ final class RegisterForEvent
     public function __construct(
         private readonly DetermineRegistrationAvailability $determineRegistrationAvailability,
         private readonly CreateRegistration $createRegistration,
+        private readonly ResolveBenefitChoices $resolveBenefitChoices,
+        private readonly ResolveGivenConsents $resolveGivenConsents,
     ) {}
 
     /**
@@ -25,9 +28,14 @@ final class RegisterForEvent
      * and the seats are checked here, unlike when the admin adds a registration by hand,
      * and only here the participant gets a confirmation email.
      *
-     * @throws ValidationException when registration is not available or the attendance is not offered
+     * The amount is the attendance price plus the chosen benefit options.
+     *
+     * @param  array<array-key, mixed>  $benefitChoices  as submitted, see ResolveBenefitChoices
+     * @param  array<array-key, mixed>  $consentIds  ids of the ticked consents, as submitted
+     *
+     * @throws ValidationException when registration is not available, the attendance is not offered or a choice is wrong
      */
-    public function handle(Event $event, User $participant, Attendance $attendance): Registration
+    public function handle(Event $event, User $participant, Attendance $attendance, array $benefitChoices = [], array $consentIds = []): Registration
     {
         $availability = $this->determineRegistrationAvailability->handle($event, $participant);
 
@@ -43,7 +51,11 @@ final class RegisterForEvent
             ]);
         }
 
-        $registration = $this->createRegistration->handle($event, $participant, $attendance, $price);
+        $options = $this->resolveBenefitChoices->handle($event, $attendance, $benefitChoices);
+        $consents = $this->resolveGivenConsents->handle($event, $consentIds);
+        $amount = $price + array_sum(array_map(fn (BenefitOption $option): int => $option->price, $options));
+
+        $registration = $this->createRegistration->handle($event, $participant, $attendance, $amount, $options, $consents);
         $registration->setRelation('event', $event);
 
         Mail::to($participant)->queue(new RegistrationConfirmation($registration));

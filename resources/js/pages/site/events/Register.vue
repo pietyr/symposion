@@ -1,14 +1,21 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, toRef } from 'vue';
 import EventPlaceBadges from '@/components/site/events/EventPlaceBadges.vue';
+import BenefitField from '@/components/registrations/BenefitField.vue';
+import ConsentField from '@/components/site/registrations/ConsentField.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import { useBenefitChoices } from '@/composables/useBenefitChoices';
 import { useDateTimeFormat } from '@/composables/useDateTimeFormat';
 import { usePriceFormat } from '@/composables/usePriceFormat';
 import { show } from '@/routes/events';
 import { store } from '@/routes/events/registration';
-import type { PublicEventResource } from '@/types';
+import type {
+    ConsentResource,
+    PublicBenefitResource,
+    PublicEventResource,
+} from '@/types';
 
 type AttendanceOption = {
     value: string;
@@ -20,6 +27,8 @@ type AttendanceOption = {
 const props = defineProps<{
     event: PublicEventResource;
     attendances: AttendanceOption[];
+    benefits: PublicBenefitResource[];
+    consents: ConsentResource[];
 }>();
 
 const { formatDateTimeRange } = useDateTimeFormat();
@@ -36,6 +45,15 @@ const attendance = ref(
 
 const selected = computed(() =>
     props.attendances.find((option) => option.value === attendance.value),
+);
+
+const { choices, visibleBenefits, optionsTotal } = useBenefitChoices(
+    toRef(props, 'benefits'),
+    attendance,
+);
+
+const total = computed(() =>
+    selected.value ? selected.value.price + optionsTotal.value : null,
 );
 </script>
 
@@ -110,14 +128,34 @@ const selected = computed(() =>
                 <InputError :message="errors.attendance" />
             </fieldset>
 
+            <BenefitField
+                v-for="benefit in visibleBenefits"
+                :key="benefit.id"
+                v-model="choices[benefit.id]"
+                :benefit="benefit"
+                :error="errors[`benefits.${benefit.id}`]"
+            />
+
+            <fieldset v-if="consents.length > 0" class="flex flex-col gap-3">
+                <legend class="mb-3 font-medium">{{ $t('Consents') }}</legend>
+                <ConsentField
+                    v-for="consent in consents"
+                    :key="consent.id"
+                    :consent="consent"
+                    :error="errors[`consents.${consent.id}`]"
+                />
+            </fieldset>
+
             <div
                 class="flex flex-wrap items-center justify-between gap-4 border-t pt-6"
             >
                 <p class="text-lg">
                     {{ $t('To pay') }}:
-                    <span class="font-semibold tabular-nums">{{
-                        selected ? formatPrice(selected.price) : '—'
-                    }}</span>
+                    <span
+                        class="font-semibold tabular-nums"
+                        data-test="registration-total"
+                        >{{ total === null ? '—' : formatPrice(total) }}</span
+                    >
                 </p>
                 <Button
                     size="lg"

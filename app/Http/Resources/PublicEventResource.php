@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Enums\Profession;
 use App\Models\Event;
 use App\Models\Specialization;
 use Illuminate\Http\Request;
@@ -40,10 +39,6 @@ final class PublicEventResource extends JsonResource
             'default_banner' => $this->default_banner,
             'primary_color' => $this->primary_color,
             'accent_color' => $this->accent_color,
-            'professions' => $this->whenLoaded('professionEntries', fn (): array => array_map(
-                fn (Profession $profession): string => $profession->label(),
-                $this->professions,
-            )),
             'specializations' => $this->whenLoaded('specializations', fn (): array => $this->specializations
                 ->map(fn (Specialization $specialization): string => $specialization->name)
                 ->values()

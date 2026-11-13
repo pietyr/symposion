@@ -37,6 +37,8 @@ final class RegistrationResource extends JsonResource
             'amount' => $this->amount,
             'status' => $this->status->value,
             'status_label' => $this->status->label(),
+            'benefits' => RegistrationBenefitResource::collection($this->whenLoaded('benefits')),
+            'consents' => RegistrationConsentResource::collection($this->whenLoaded('consents')),
             'confirmed_at' => $this->confirmed_at?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),
         ];

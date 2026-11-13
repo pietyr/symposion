@@ -1,5 +1,18 @@
 import type { SelectOption } from './ui';
 
+export type RegistrationBenefitResource = {
+    id: number;
+    benefit_name: string;
+    option_name: string;
+    price: number;
+};
+
+export type RegistrationConsentResource = {
+    id: number;
+    content: string;
+    given_at: string | null;
+};
+
 export type RegistrationStatus = 'pending' | 'paid' | 'cancelled';
 
 export type RegistrationResource = {
@@ -11,6 +24,8 @@ export type RegistrationResource = {
     amount: number;
     status: RegistrationStatus;
     status_label: string;
+    benefits?: RegistrationBenefitResource[];
+    consents?: RegistrationConsentResource[];
     confirmed_at: string | null;
     created_at: string | null;
 };
@@ -30,6 +45,7 @@ export type ParticipantResource = {
 
 export type MyRegistrationResource = {
     id: number;
+    benefits?: RegistrationBenefitResource[];
     event?: {
         id: number;
         slug: string;

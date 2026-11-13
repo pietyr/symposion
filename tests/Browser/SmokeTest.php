@@ -523,6 +523,30 @@ test('an administrator adds a registration by hand', function () {
         ->amount->toBe(10000);
 });
 
+test('an administrator chooses benefits when adding a registration by hand', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $event = Event::factory()->create(['title' => 'Forum Testowe', 'price_in_person' => 25000]);
+    $dinner = Benefit::factory()->for($event)->create(['name' => 'Kolacja galowa']);
+    $gala = BenefitOption::factory()->for($dinner)->create(['name' => 'Udział w kolacji', 'price' => 18000]);
+    User::factory()->create(['name' => 'Anna Grzmotowska', 'email' => 'anna.testowa@example.com']);
+
+    visit(route('admin.registrations.create', absolute: false))
+        ->click('@event-select')
+        ->click('[role="option"]:has-text("Forum Testowe")')
+        ->assertValue('#amount', '250,00')
+        ->click("@benefit-option-{$gala->id}")
+        ->assertValue('#amount', '430,00')
+        ->click('@participant-input')
+        ->type('@participant-input', 'grzmot')
+        ->click('[role="option"]:has-text("Anna Grzmotowska")')
+        ->click('@save-registration-button')
+        ->assertSee('Zapis został dodany')
+        ->assertSeeIn('@registration-benefits', 'Kolacja galowa: Udział w kolacji')
+        ->assertNoJavaScriptErrors();
+
+    expect(Registration::query()->sole())->amount->toBe(43000);
+});
+
 test('an administrator confirms a payment', function () {
     $this->actingAs(User::factory()->admin()->create());
     $registration = Registration::factory()->create(['amount' => 25000]);
@@ -578,7 +602,7 @@ test('a guest signs in from the event page and registers', function () {
         ->assertSee('Twój zapis')
         ->assertSee('Dane do przelewu')
         ->assertSee('PL46 9999 0000 0000 1234 5678 9012')
-        ->assertSee('Zapis nr '.Registration::query()->sole()->id)
+        ->assertSee($nurse->name.', '.$event->title)
         ->assertMissing('@register-button')
         ->assertNoJavaScriptErrors();
 
@@ -617,6 +641,50 @@ test('a participant cancels a pending registration', function () {
         ->assertNoJavaScriptErrors();
 
     expect($registration->fresh()->status)->toBe(RegistrationStatus::Cancelled);
+});
+
+test('a participant chooses benefits and sees the amount add up', function () {
+    $event = Event::factory()->visible()->create(['starts_at' => now()->addDays(10), 'ends_at' => now()->addDays(11), 'price_in_person' => 25000]);
+    $hotel = Benefit::factory()->for($event)->select()->create(['name' => 'Nocleg', 'position' => 1]);
+    $twoNights = BenefitOption::factory()->for($hotel)->create(['name' => '2 noce', 'price' => 55000]);
+    $dinner = Benefit::factory()->for($event)->create(['name' => 'Kolacja galowa', 'position' => 2]);
+    $gala = BenefitOption::factory()->for($dinner)->create(['name' => 'Udział w kolacji', 'price' => 18000]);
+    $this->actingAs(User::factory()->create(['profession' => 'doctor']));
+
+    visit(route('events.registration.create', ['event' => $event, 'slug' => $event->slug], absolute: false))
+        ->assertSeeIn('@registration-total', '250,00')
+        ->click("@benefit-{$hotel->id}-select")
+        ->click('[role="option"]:has-text("2 noce")')
+        ->assertSeeIn('@registration-total', '800,00')
+        ->click("@benefit-option-{$gala->id}")
+        ->assertSeeIn('@registration-total', '980,00')
+        ->click('@confirm-registration-button')
+        ->assertSee('Zapisano na wydarzenie')
+        ->assertSeeIn('@my-benefits', 'Nocleg: 2 noce')
+        ->assertSeeIn('@my-benefits', 'Kolacja galowa: Udział w kolacji')
+        ->assertNoJavaScriptErrors();
+
+    expect(Registration::query()->sole())
+        ->amount->toBe(98000)
+        ->benefits->pluck('option_name')->all()->toBe(['2 noce', 'Udział w kolacji']);
+});
+
+test('a participant has to give the required consent', function () {
+    $event = Event::factory()->visible()->create(['starts_at' => now()->addDays(10), 'ends_at' => now()->addDays(11)]);
+    $terms = Consent::factory()->for($event)->required()->create();
+    $this->actingAs(User::factory()->create(['profession' => 'doctor']));
+
+    visit(route('events.registration.create', ['event' => $event, 'slug' => $event->slug], absolute: false))
+        ->assertSee('regulamin wydarzenia')
+        ->assertAttribute('a[href="https://example.com/regulamin"]', 'target', '_blank')
+        ->click('@confirm-registration-button')
+        ->assertSee('Bez tej zgody nie można się zapisać')
+        ->click("[data-test=\"consent-{$terms->id}\"] input")
+        ->click('@confirm-registration-button')
+        ->assertSee('Zapisano na wydarzenie')
+        ->assertNoJavaScriptErrors();
+
+    expect(Registration::query()->sole()->consents)->toHaveCount(1);
 });
 
 test('the event page says why the visitor cannot register', function () {

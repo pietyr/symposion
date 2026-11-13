@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
-use App\Actions\Registrations\CreateRegistration;
+use App\Actions\Registrations\AddRegistrationByHand;
 use App\Enums\Attendance;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Registrations\ListRegistrationsRequest;
 use App\Http\Requests\Admin\Registrations\StoreRegistrationRequest;
 use App\Http\Resources\ParticipantResource;
+use App\Http\Resources\PublicBenefitResource;
 use App\Http\Resources\RegistrationResource;
 use App\Models\Event;
 use App\Models\Registration;
@@ -51,6 +52,7 @@ final class RegistrationController extends Controller
 
         return Inertia::render('admin/registrations/Create', [
             'events' => array_values(Event::query()
+                ->withBenefitsForRegistration()
                 ->latest('starts_at')
                 ->get()
                 ->map(fn (Event $event): array => [
@@ -62,6 +64,7 @@ final class RegistrationController extends Controller
                         'price' => $event->priceFor($attendance) ?? 0,
                         'seats_left' => $event->seatsLeft($attendance),
                     ], $event->attendances()),
+                    'benefits' => PublicBenefitResource::collection($event->benefitsForRegistration())->resolve(),
                 ])
                 ->all()),
         ]);
@@ -70,15 +73,16 @@ final class RegistrationController extends Controller
     /**
      * Store a registration added by hand.
      */
-    public function store(StoreRegistrationRequest $request, CreateRegistration $createRegistration): RedirectResponse
+    public function store(StoreRegistrationRequest $request, AddRegistrationByHand $addRegistrationByHand): RedirectResponse
     {
         Gate::authorize('create', Registration::class);
 
-        $registration = $createRegistration->handle(
+        $registration = $addRegistrationByHand->handle(
             $request->event(),
             $request->participant(),
             $request->attendance(),
             $request->amountInGrosze(),
+            $request->benefitChoices(),
         );
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Registration added.')]);
@@ -93,7 +97,7 @@ final class RegistrationController extends Controller
     {
         Gate::authorize('view', $registration);
 
-        $registration->load(['event', 'user.specializations']);
+        $registration->load(['event', 'user.specializations', 'benefits', 'consents']);
 
         return Inertia::render('admin/registrations/Show', [
             'registration' => RegistrationResource::make($registration),

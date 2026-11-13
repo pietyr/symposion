@@ -4,6 +4,7 @@ import BenefitOptionController from '@/actions/App/Http/Controllers/Admin/Benefi
 import MoveBenefitOptionController from '@/actions/App/Http/Controllers/Admin/MoveBenefitOptionController';
 import BenefitOptionDialog from '@/components/admin/benefits/BenefitOptionDialog.vue';
 import MoveButtons from '@/components/admin/MoveButtons.vue';
+import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -123,7 +124,7 @@ const route = (option: BenefitOptionResource) => ({
                                             preserveState: true,
                                         }"
                                         class="space-y-6"
-                                        v-slot="{ processing }"
+                                        v-slot="{ errors, processing }"
                                     >
                                         <DialogHeader>
                                             <DialogTitle>
@@ -135,6 +136,7 @@ const route = (option: BenefitOptionResource) => ({
                                                 }}
                                             </DialogTitle>
                                         </DialogHeader>
+                                        <InputError :message="errors.option" />
                                         <DialogFooter class="gap-2">
                                             <DialogClose as-child>
                                                 <Button variant="secondary">{{

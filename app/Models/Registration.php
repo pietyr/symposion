@@ -11,10 +11,13 @@ use Database\Factories\RegistrationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 
 /**
  * A registration for an event, also its "payment": taking part in a free event costs 0 (ADR-019).
@@ -30,12 +33,19 @@ use Illuminate\Support\Facades\Config;
  * @property CarbonImmutable|null $updated_at
  * @property-read Event $event
  * @property-read User $user
+ * @property-read Collection<int, RegistrationBenefit> $benefits
+ * @property-read Collection<int, RegistrationConsent> $consents
  */
 #[Fillable(['attendance', 'amount', 'status', 'confirmed_at'])]
 final class Registration extends Model
 {
     /** @use HasFactory<RegistrationFactory> */
     use HasFactory;
+
+    /**
+     * The longest transfer title Polish banks accept.
+     */
+    private const int TRANSFER_TITLE_LENGTH = 140;
 
     /**
      * Get the attributes that should be cast.
@@ -63,6 +73,26 @@ final class Registration extends Model
     }
 
     /**
+     * The benefit options chosen when registering.
+     *
+     * @return HasMany<RegistrationBenefit, $this>
+     */
+    public function benefits(): HasMany
+    {
+        return $this->hasMany(RegistrationBenefit::class)->orderBy('id');
+    }
+
+    /**
+     * The consents given when registering.
+     *
+     * @return HasMany<RegistrationConsent, $this>
+     */
+    public function consents(): HasMany
+    {
+        return $this->hasMany(RegistrationConsent::class)->orderBy('id');
+    }
+
+    /**
      * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
@@ -71,11 +101,21 @@ final class Registration extends Model
     }
 
     /**
-     * The registration number in the title lets the administrator match the transfer.
+     * "Jan Kowalski, Kongres Kardiologii, 2027, Kraków" lets the administrator match the transfer.
+     * Banks take up to 140 characters, so a long event title is shortened to fit.
      */
     public function transferTitle(): string
     {
-        return __('Registration no. :number', ['number' => $this->id]);
+        $place = $this->attendance === Attendance::Online ? __('Online') : ($this->event->city ?? __('Online'));
+        $before = $this->user->name.', ';
+        $after = ', '.$this->event->starts_at->year.', '.$place;
+
+        $room = self::TRANSFER_TITLE_LENGTH - mb_strlen($before.$after);
+        $title = mb_strlen($this->event->title) <= $room
+            ? $this->event->title
+            : Str::limit($this->event->title, $room - 1, '…');
+
+        return $before.$title.$after;
     }
 
     /**

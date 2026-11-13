@@ -4,6 +4,7 @@ import EventConsentController from '@/actions/App/Http/Controllers/Admin/EventCo
 import MoveEventConsentController from '@/actions/App/Http/Controllers/Admin/MoveEventConsentController';
 import ConsentDialog from '@/components/admin/consents/ConsentDialog.vue';
 import MoveButtons from '@/components/admin/MoveButtons.vue';
+import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -82,13 +83,14 @@ defineProps<{
                                     preserveState: true,
                                 }"
                                 class="space-y-6"
-                                v-slot="{ processing }"
+                                v-slot="{ errors, processing }"
                             >
                                 <DialogHeader>
                                     <DialogTitle>
                                         {{ $t('Delete this consent?') }}
                                     </DialogTitle>
                                 </DialogHeader>
+                                <InputError :message="errors.consent" />
                                 <DialogFooter class="gap-2">
                                     <DialogClose as-child>
                                         <Button variant="secondary">{{

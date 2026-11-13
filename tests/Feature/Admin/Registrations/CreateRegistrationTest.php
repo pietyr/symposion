@@ -3,8 +3,11 @@
 declare(strict_types=1);
 
 use App\Enums\RegistrationStatus;
+use App\Models\Benefit;
+use App\Models\BenefitOption;
 use App\Models\Event;
 use App\Models\Registration;
+use App\Models\RegistrationBenefit;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -50,6 +53,44 @@ describe('as an administrator', function () {
                 ])
                 ->missing('participants'),
             );
+    });
+
+    test('the form offers the benefit fields of each event without hidden options', function () {
+        $dinner = Benefit::factory()->for($this->event)->create(['name' => 'Kolacja']);
+        BenefitOption::factory()->for($dinner)->create(['name' => 'Udział', 'price' => 18000]);
+        BenefitOption::factory()->for($dinner)->create(['name' => 'Ukryta', 'is_hidden' => true]);
+
+        $this->get(route('admin.registrations.create'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('events.0.benefits.0.name', 'Kolacja')
+                ->has('events.0.benefits.0.options', 1)
+                ->where('events.0.benefits.0.options.0.price', 18000),
+            );
+    });
+
+    test('the chosen options are kept with the amount the admin set', function () {
+        $dinner = Benefit::factory()->for($this->event)->create(['name' => 'Kolacja']);
+        $option = BenefitOption::factory()->for($dinner)->create(['name' => 'Udział', 'price' => 18000]);
+
+        ($this->register)(['amount' => '300,00', 'benefits' => [$dinner->id => [$option->id]]])->assertSessionHasNoErrors();
+
+        expect(Registration::query()->sole())
+            ->amount->toBe(30000)
+            ->benefits->pluck('option_name')->all()->toBe(['Udział']);
+    });
+
+    test('the benefit rules apply to a registration by hand', function () {
+        $hotel = Benefit::factory()->for($this->event)->select()->create(['name' => 'Nocleg', 'is_required' => true]);
+        $full = BenefitOption::factory()->for($hotel)->create(['name' => '1 noc', 'seat_limit' => 1]);
+        BenefitOption::factory()->for($hotel)->create(['name' => '2 noce']);
+        RegistrationBenefit::factory()->for(Registration::factory()->for($this->event))->for($full, 'option')->create();
+
+        ($this->register)(['benefits' => [$hotel->id => $full->id]])
+            ->assertSessionHasErrors(["benefits.{$hotel->id}" => 'Brak miejsc: 1 noc.']);
+        ($this->register)()
+            ->assertSessionHasErrors(["benefits.{$hotel->id}" => 'Wybierz opcję.']);
+
+        expect(Registration::query()->whereBelongsTo($this->participant)->exists())->toBeFalse();
     });
 
     test('a paid event gets a pending registration with the amount', function () {

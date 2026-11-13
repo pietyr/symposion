@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Mail\RegistrationConfirmation;
 use App\Models\Event;
 use App\Models\Registration;
+use App\Models\RegistrationBenefit;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 
@@ -20,7 +21,7 @@ beforeEach(function () {
         'price_online' => 0,
         'price_in_person' => 25000,
     ]);
-    $this->participant = User::factory()->create(['profession' => 'doctor']);
+    $this->participant = User::factory()->create(['name' => 'Jan Kowalski', 'profession' => 'doctor']);
     $this->storeUrl = route('events.registration.store', ['event' => $this->event, 'slug' => $this->event->slug]);
 });
 
@@ -65,10 +66,17 @@ test('a pending registration comes with the transfer details', function () {
         'Dane do przelewu',
         'Symposion sp. z o.o.',
         'PL46 9999 0000 0000 1234 5678 9012',
-        "Zapis nr {$registration->id}",
+        'Jan Kowalski, Forum Kardiologiczne, '.$this->event->starts_at->year.', Katowice',
         'Przejdź do wydarzenia',
     ]);
     $mail->assertSeeInHtml(route('events.show', ['event' => $this->event, 'slug' => $this->event->slug]));
+});
+
+test('the chosen benefits are listed with their prices', function () {
+    $registration = Registration::factory()->for($this->event)->for($this->participant)->create(['amount' => 80000]);
+    RegistrationBenefit::factory()->for($registration)->create(['benefit_name' => 'Nocleg', 'option_name' => '2 noce', 'price' => 55000]);
+
+    (new RegistrationConfirmation($registration))->assertSeeInOrderInHtml(['Stacjonarnie', 'Nocleg: 2 noce', '550,00', '800,00']);
 });
 
 test('a free online registration is confirmed without transfer details', function () {

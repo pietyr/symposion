@@ -21,3 +21,20 @@ export type BenefitResource = {
     options?: BenefitOptionResource[];
     updated_at: string | null;
 };
+
+export type PublicBenefitOptionResource = {
+    id: number;
+    name: string;
+    price: number;
+    is_disabled: boolean;
+    seats_left: number | null;
+};
+
+export type PublicBenefitResource = {
+    id: number;
+    name: string;
+    type: BenefitType;
+    is_required: boolean;
+    attendance: 'online' | 'in_person' | null;
+    options: PublicBenefitOptionResource[];
+};
