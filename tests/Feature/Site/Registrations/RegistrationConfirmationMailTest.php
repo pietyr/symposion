@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Mail\RegistrationConfirmation;
 use App\Models\Event;
 use App\Models\Registration;
+use App\Models\RegistrationBenefit;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 
@@ -69,6 +70,13 @@ test('a pending registration comes with the transfer details', function () {
         'Przejdź do wydarzenia',
     ]);
     $mail->assertSeeInHtml(route('events.show', ['event' => $this->event, 'slug' => $this->event->slug]));
+});
+
+test('the chosen benefits are listed with their prices', function () {
+    $registration = Registration::factory()->for($this->event)->for($this->participant)->create(['amount' => 80000]);
+    RegistrationBenefit::factory()->for($registration)->create(['benefit_name' => 'Nocleg', 'option_name' => '2 noce', 'price' => 55000]);
+
+    (new RegistrationConfirmation($registration))->assertSeeInOrderInHtml(['Stacjonarnie', 'Nocleg: 2 noce', '550,00', '800,00']);
 });
 
 test('a free online registration is confirmed without transfer details', function () {

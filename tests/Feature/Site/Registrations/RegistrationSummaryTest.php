@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Event;
 use App\Models\Registration;
+use App\Models\RegistrationBenefit;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -41,6 +42,17 @@ test('a paid or free registration needs no transfer', function (array $attribute
     'paid' => [['status' => 'paid', 'confirmed_at' => now()]],
     'free' => [['amount' => 0, 'status' => 'paid']],
 ]);
+
+test('the summary lists the chosen benefits', function () {
+    $registration = Registration::factory()->for($this->event)->for($this->participant)->create();
+    $chosen = RegistrationBenefit::factory()->for($registration)->create(['benefit_name' => 'Nocleg', 'option_name' => '2 noce', 'price' => 55000]);
+
+    $this->actingAs($this->participant)
+        ->get($this->url)
+        ->assertInertia(fn (Assert $page) => $page->where('myRegistration.benefits', [
+            ['id' => $chosen->id, 'benefit_name' => 'Nocleg', 'option_name' => '2 noce', 'price' => 55000],
+        ]));
+});
 
 test('the summary stays after registration closes', function () {
     Registration::factory()->for($this->event)->for($this->participant)->create();

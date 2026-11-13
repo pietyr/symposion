@@ -37,6 +37,23 @@ const { copy, copied } = useClipboard();
         <dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
             <dt class="text-muted-foreground">{{ $t('Attendance') }}</dt>
             <dd>{{ registration.attendance_label }}</dd>
+            <template v-if="registration.benefits?.length">
+                <dt class="text-muted-foreground">{{ $t('Benefits') }}</dt>
+                <dd>
+                    <ul class="flex flex-col gap-1" data-test="my-benefits">
+                        <li
+                            v-for="benefit in registration.benefits"
+                            :key="benefit.id"
+                        >
+                            {{ benefit.benefit_name }}:
+                            {{ benefit.option_name }}
+                            <span class="text-muted-foreground tabular-nums"
+                                >({{ formatPrice(benefit.price) }})</span
+                            >
+                        </li>
+                    </ul>
+                </dd>
+            </template>
             <dt class="text-muted-foreground">{{ $t('Amount') }}</dt>
             <dd class="tabular-nums">{{ formatPrice(registration.amount) }}</dd>
             <template v-if="registration.created_at">

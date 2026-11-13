@@ -8,6 +8,7 @@ use App\Enums\Attendance;
 use App\Enums\RegistrationStatus;
 use App\Models\Event;
 use App\Models\Registration;
+use App\Models\RegistrationBenefit;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -53,6 +54,12 @@ final class RegistrationConfirmation extends Mailable implements ShouldQueue
                     ? implode(', ', array_filter([$event->city, $event->venue]))
                     : null,
                 'attendance' => $registration->attendance->label(),
+                'benefits' => $registration->loadMissing('benefits')->benefits
+                    ->map(fn (RegistrationBenefit $benefit): array => [
+                        'label' => "{$benefit->benefit_name}: {$benefit->option_name}",
+                        'price' => $this->price($benefit->price),
+                    ])
+                    ->all(),
                 'amount' => $this->price($registration->amount),
                 'confirmed' => $registration->status === RegistrationStatus::Paid,
                 'transfer' => $registration->transferDetails(),

@@ -79,7 +79,7 @@ final class Registration extends Model
      */
     public function benefits(): HasMany
     {
-        return $this->hasMany(RegistrationBenefit::class);
+        return $this->hasMany(RegistrationBenefit::class)->orderBy('id');
     }
 
     /**
@@ -89,7 +89,7 @@ final class Registration extends Model
      */
     public function consents(): HasMany
     {
-        return $this->hasMany(RegistrationConsent::class);
+        return $this->hasMany(RegistrationConsent::class)->orderBy('id');
     }
 
     /**

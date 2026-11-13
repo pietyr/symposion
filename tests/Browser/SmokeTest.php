@@ -636,6 +636,8 @@ test('a participant chooses benefits and sees the amount add up', function () {
         ->assertSeeIn('@registration-total', '980,00')
         ->click('@confirm-registration-button')
         ->assertSee('Zapisano na wydarzenie')
+        ->assertSeeIn('@my-benefits', 'Nocleg: 2 noce')
+        ->assertSeeIn('@my-benefits', 'Kolacja galowa: Udział w kolacji')
         ->assertNoJavaScriptErrors();
 
     expect(Registration::query()->sole())

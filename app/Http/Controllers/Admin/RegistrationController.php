@@ -93,7 +93,7 @@ final class RegistrationController extends Controller
     {
         Gate::authorize('view', $registration);
 
-        $registration->load(['event', 'user.specializations']);
+        $registration->load(['event', 'user.specializations', 'benefits', 'consents']);
 
         return Inertia::render('admin/registrations/Show', [
             'registration' => RegistrationResource::make($registration),

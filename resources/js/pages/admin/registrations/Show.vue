@@ -146,6 +146,31 @@ const profileRows = computed(() =>
                             {{ $t('Attendance') }}
                         </dt>
                         <dd>{{ registration.attendance_label }}</dd>
+                        <template v-if="registration.benefits?.length">
+                            <dt class="text-muted-foreground">
+                                {{ $t('Benefits') }}
+                            </dt>
+                            <dd>
+                                <ul
+                                    class="flex flex-col gap-1"
+                                    data-test="registration-benefits"
+                                >
+                                    <li
+                                        v-for="benefit in registration.benefits"
+                                        :key="benefit.id"
+                                    >
+                                        {{ benefit.benefit_name }}:
+                                        {{ benefit.option_name }}
+                                        <span
+                                            class="text-muted-foreground tabular-nums"
+                                            >({{
+                                                formatPrice(benefit.price)
+                                            }})</span
+                                        >
+                                    </li>
+                                </ul>
+                            </dd>
+                        </template>
                         <dt class="text-muted-foreground">
                             {{ $t('Amount') }}
                         </dt>
@@ -204,6 +229,44 @@ const profileRows = computed(() =>
                             </dd>
                         </template>
                     </dl>
+                </CardContent>
+            </Card>
+
+            <Card v-if="registration.consents" class="lg:col-span-2">
+                <CardHeader>
+                    <CardTitle>{{ $t('Given consents') }}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p
+                        v-if="registration.consents.length === 0"
+                        class="text-sm text-muted-foreground"
+                    >
+                        {{ $t('No consents given.') }}
+                    </p>
+                    <ul
+                        v-else
+                        class="flex flex-col gap-3 text-sm"
+                        data-test="registration-consents"
+                    >
+                        <li
+                            v-for="consent in registration.consents"
+                            :key="consent.id"
+                            class="flex flex-col gap-1"
+                        >
+                            <!-- eslint-disable-next-line vue/no-v-html -- sanitized when saved (SanitizeEventContent) -->
+                            <div
+                                class="[&_a]:underline [&_a]:underline-offset-2"
+                                v-html="consent.content"
+                            />
+                            <span class="text-muted-foreground">
+                                {{
+                                    $t('Given :date', {
+                                        date: formatDate(consent.given_at),
+                                    })
+                                }}
+                            </span>
+                        </li>
+                    </ul>
                 </CardContent>
             </Card>
         </div>

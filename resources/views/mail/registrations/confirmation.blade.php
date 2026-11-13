@@ -12,6 +12,9 @@
 | {{ __('Venue') }} | {{ $place }} |
 @endif
 | {{ __('Attendance') }} | {{ $attendance }} |
+@foreach ($benefits as $benefit)
+| {{ $benefit['label'] }} | {{ $benefit['price'] }} |
+@endforeach
 | {{ __('Amount') }} | {{ $amount }} |
 </x-mail::table>
 

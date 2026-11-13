@@ -51,7 +51,7 @@ final class EventController extends Controller
         }
 
         $user = $request->user();
-        $myRegistration = $user === null ? null : $event->activeRegistrationOf($user);
+        $myRegistration = $user === null ? null : $event->activeRegistrationOf($user)?->load('benefits');
 
         $response = Inertia::render('site/events/Show', [
             'event' => PublicEventResource::make($event->load([

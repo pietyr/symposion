@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Models\Registration;
+use App\Models\RegistrationBenefit;
+use App\Models\RegistrationConsent;
 use App\Models\Specialization;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -39,6 +41,20 @@ describe('as an administrator', function () {
                 ->where('participant.license_number', $doctor->license_number)
                 ->where('participant.specializations', ['Kardiologia', 'Urologia'])
                 ->where('participant.university', null),
+            );
+    });
+
+    test('the registration comes with the chosen benefits and the given consents', function () {
+        $registration = Registration::factory()->create();
+        RegistrationBenefit::factory()->for($registration)->create(['benefit_name' => 'Nocleg', 'option_name' => '2 noce', 'price' => 55000]);
+        $consent = RegistrationConsent::factory()->for($registration)->create(['content' => '<p>Akceptuję regulamin.</p>']);
+
+        $this->get(route('admin.registrations.show', $registration))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('registration.benefits.0.option_name', '2 noce')
+                ->where('registration.benefits.0.price', 55000)
+                ->where('registration.consents.0.content', '<p>Akceptuję regulamin.</p>')
+                ->where('registration.consents.0.given_at', $consent->created_at->toIso8601String()),
             );
     });
 

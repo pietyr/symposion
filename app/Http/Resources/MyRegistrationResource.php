@@ -32,6 +32,7 @@ final class MyRegistrationResource extends JsonResource
                 'ends_at' => $this->event->ends_at->toIso8601String(),
             ]),
             'attendance_label' => $this->attendance->label(),
+            'benefits' => RegistrationBenefitResource::collection($this->whenLoaded('benefits')),
             'amount' => $this->amount,
             'status' => $this->status->value,
             'status_label' => $this->status->label(),
