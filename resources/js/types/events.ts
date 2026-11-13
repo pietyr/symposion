@@ -62,7 +62,6 @@ export type PublicEventResource = {
     default_banner: number;
     primary_color: string | null;
     accent_color: string | null;
-    professions?: string[];
     specializations?: string[];
     sections?: EventSectionResource[];
 };

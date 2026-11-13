@@ -64,9 +64,9 @@ test('a non-numeric id is not found', function () {
     $this->get('/wydarzenie/kongres/kongres')->assertNotFound();
 });
 
-test('the event page lists its professions and specializations', function () {
+test('the event page lists its specializations but leaves the professions to the registration panel', function () {
     $event = Event::factory()->visible()->create();
-    $event->professionEntries()->createMany([['profession' => 'doctor'], ['profession' => 'retired_profession']]);
+    $event->professionEntries()->create(['profession' => 'doctor']);
     $event->specializations()->attach([
         Specialization::factory()->create(['name' => 'Urologia'])->id,
         Specialization::factory()->create(['name' => 'Alergologia'])->id,
@@ -74,7 +74,7 @@ test('the event page lists its professions and specializations', function () {
 
     $this->get(route('events.show', ['event' => $event, 'slug' => $event->slug]))
         ->assertInertia(fn (Assert $page) => $page
-            ->where('event.professions', ['Lekarz'])
+            ->missing('event.professions')
             ->where('event.specializations', ['Alergologia', 'Urologia']),
         );
 });

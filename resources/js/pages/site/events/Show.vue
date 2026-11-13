@@ -154,27 +154,8 @@ const { formatPrice } = usePriceFormat();
                     />
 
                     <section
-                        v-if="event.professions?.length"
-                        class="flex flex-col gap-2 pt-2"
-                    >
-                        <h2 class="text-sm font-medium">
-                            {{ $t('For professions') }}
-                        </h2>
-                        <ul class="flex flex-wrap gap-2">
-                            <li
-                                v-for="profession in event.professions"
-                                :key="profession"
-                            >
-                                <Badge variant="outline">{{
-                                    profession
-                                }}</Badge>
-                            </li>
-                        </ul>
-                    </section>
-
-                    <section
                         v-if="event.specializations?.length"
-                        class="flex flex-col gap-2"
+                        class="flex flex-col gap-2 pt-2"
                     >
                         <h2 class="text-sm font-medium">
                             {{ $t('Specializations') }}
