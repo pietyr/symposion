@@ -89,7 +89,7 @@ final class User extends Authenticatable implements MustVerifyEmail
      */
     public function registrations(): HasMany
     {
-        return $this->hasMany(Registration::class);
+        return $this->hasMany(Registration::class)->chaperone();
     }
 
     /**

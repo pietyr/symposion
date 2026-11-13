@@ -578,7 +578,7 @@ test('a guest signs in from the event page and registers', function () {
         ->assertSee('Twój zapis')
         ->assertSee('Dane do przelewu')
         ->assertSee('PL46 9999 0000 0000 1234 5678 9012')
-        ->assertSee('Zapis nr '.Registration::query()->sole()->id)
+        ->assertSee($nurse->name.', '.$event->title)
         ->assertMissing('@register-button')
         ->assertNoJavaScriptErrors();
 

@@ -20,7 +20,7 @@ beforeEach(function () {
         'price_online' => 0,
         'price_in_person' => 25000,
     ]);
-    $this->participant = User::factory()->create(['profession' => 'doctor']);
+    $this->participant = User::factory()->create(['name' => 'Jan Kowalski', 'profession' => 'doctor']);
     $this->storeUrl = route('events.registration.store', ['event' => $this->event, 'slug' => $this->event->slug]);
 });
 
@@ -65,7 +65,7 @@ test('a pending registration comes with the transfer details', function () {
         'Dane do przelewu',
         'Symposion sp. z o.o.',
         'PL46 9999 0000 0000 1234 5678 9012',
-        "Zapis nr {$registration->id}",
+        'Jan Kowalski, Forum Kardiologiczne, '.$this->event->starts_at->year.', Katowice',
         'Przejdź do wydarzenia',
     ]);
     $mail->assertSeeInHtml(route('events.show', ['event' => $this->event, 'slug' => $this->event->slug]));

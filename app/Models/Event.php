@@ -136,7 +136,7 @@ final class Event extends Model
      */
     public function registrations(): HasMany
     {
-        return $this->hasMany(Registration::class);
+        return $this->hasMany(Registration::class)->chaperone();
     }
 
     /**
@@ -209,7 +209,8 @@ final class Event extends Model
             ->whereBelongsTo($user)
             ->whereIn('status', RegistrationStatus::seatTaking())
             ->latest()
-            ->first();
+            ->first()
+            ?->setRelation('user', $user);
     }
 
     /**

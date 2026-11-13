@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 
 /**
  * A registration for an event, also its "payment": taking part in a free event costs 0 (ADR-019).
@@ -36,6 +37,11 @@ final class Registration extends Model
 {
     /** @use HasFactory<RegistrationFactory> */
     use HasFactory;
+
+    /**
+     * The longest transfer title Polish banks accept.
+     */
+    private const int TRANSFER_TITLE_LENGTH = 140;
 
     /**
      * Get the attributes that should be cast.
@@ -71,11 +77,21 @@ final class Registration extends Model
     }
 
     /**
-     * The registration number in the title lets the administrator match the transfer.
+     * "Jan Kowalski, Kongres Kardiologii, 2027, Kraków" lets the administrator match the transfer.
+     * Banks take up to 140 characters, so a long event title is shortened to fit.
      */
     public function transferTitle(): string
     {
-        return __('Registration no. :number', ['number' => $this->id]);
+        $place = $this->attendance === Attendance::Online ? __('Online') : ($this->event->city ?? __('Online'));
+        $before = $this->user->name.', ';
+        $after = ', '.$this->event->starts_at->year.', '.$place;
+
+        $room = self::TRANSFER_TITLE_LENGTH - mb_strlen($before.$after);
+        $title = mb_strlen($this->event->title) <= $room
+            ? $this->event->title
+            : Str::limit($this->event->title, $room - 1, '…');
+
+        return $before.$title.$after;
     }
 
     /**
