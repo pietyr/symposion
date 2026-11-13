@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Attendance;
+use App\Enums\Profession;
 use App\Enums\RegistrationStatus;
 use Carbon\CarbonImmutable;
 use Database\Factories\RegistrationFactory;
@@ -138,6 +139,34 @@ final class Registration extends Model
     }
 
     /**
+     * Pending and paid registrations, the ones that take a seat (ADR-019).
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function takingSeats(Builder $query): void
+    {
+        $query->whereIn('status', RegistrationStatus::seatTaking());
+    }
+
+    /**
+     * Alphabetically by the participant's surname, then the whole name. The name is stored
+     * as one field, so the surname is taken as its last word.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function orderedByParticipantSurname(Builder $query): void
+    {
+        $name = User::query()->select('name')->whereColumn('users.id', 'registrations.user_id');
+
+        $query
+            ->orderBy(User::query()->selectRaw("SUBSTRING_INDEX(name, ' ', -1)")->whereColumn('users.id', 'registrations.user_id'))
+            ->orderBy($name)
+            ->orderBy('registrations.id');
+    }
+
+    /**
      * Narrow the list down by whichever filters are set; the search goes through User::matchingSearch().
      *
      * @param  Builder<self>  $query
@@ -149,11 +178,13 @@ final class Registration extends Model
         ?RegistrationStatus $status = null,
         ?Attendance $attendance = null,
         string $search = '',
+        ?Profession $profession = null,
     ): void {
         $query
             ->when($eventId, fn (Builder $query, int $eventId) => $query->where('event_id', $eventId))
             ->when($status, fn (Builder $query, RegistrationStatus $status) => $query->where('status', $status))
             ->when($attendance, fn (Builder $query, Attendance $attendance) => $query->where('attendance', $attendance))
+            ->when($profession, fn (Builder $query, Profession $profession) => $query->whereRelation('user', 'profession', $profession->value))
             ->when($search !== '', fn (Builder $query) => $query->whereHas(
                 'user',
                 fn (Builder $user) => $user->matchingSearch($search),

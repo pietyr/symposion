@@ -18,7 +18,12 @@ export type RegistrationStatus = 'pending' | 'paid' | 'cancelled';
 export type RegistrationResource = {
     id: number;
     event: { id: number; title: string; is_deleted: boolean };
-    user: { id: number; name: string; email: string };
+    user: {
+        id: number;
+        name: string;
+        email: string;
+        profession_label: string | null;
+    };
     attendance: 'online' | 'in_person';
     attendance_label: string;
     amount: number;
@@ -86,6 +91,19 @@ export type RegistrationFilters = {
     status: string;
     attendance: string;
     search: string;
+};
+
+export type ParticipantFilters = {
+    status: string;
+    attendance: string;
+    profession: string;
+    search: string;
+};
+
+export type ParticipantFilterOptions = {
+    statuses: SelectOption[];
+    attendances: SelectOption[];
+    professions: SelectOption[];
 };
 
 export type RegistrationFilterOptions = {

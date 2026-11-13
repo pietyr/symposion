@@ -14,7 +14,8 @@ use Inertia\Inertia;
 final class CancelRegistrationController extends Controller
 {
     /**
-     * Cancel a registration.
+     * Cancel a registration and go back where the administrator came from:
+     * the registration's page or the participant list of its event (ADR-023).
      */
     public function __invoke(Registration $registration, CancelRegistration $cancelRegistration): RedirectResponse
     {
@@ -24,6 +25,6 @@ final class CancelRegistrationController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Registration cancelled.')]);
 
-        return to_route('admin.registrations.show', $registration);
+        return back();
     }
 }

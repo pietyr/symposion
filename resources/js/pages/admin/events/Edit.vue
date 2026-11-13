@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
-import { ExternalLink } from '@lucide/vue';
+import { Head, Link } from '@inertiajs/vue3';
+import { ExternalLink, Users } from '@lucide/vue';
 import EventController from '@/actions/App/Http/Controllers/Admin/EventController';
+import EventParticipantController from '@/actions/App/Http/Controllers/Admin/EventParticipantController';
 import EventBenefits from '@/components/admin/benefits/EventBenefits.vue';
 import EventConsents from '@/components/admin/consents/EventConsents.vue';
 import DeleteEventDialog from '@/components/admin/events/DeleteEventDialog.vue';
@@ -47,17 +48,28 @@ defineProps<{
     <div class="p-4">
         <div class="flex flex-wrap items-start justify-between gap-4">
             <Heading :title="event.title" :description="$t('Edit event')" />
-            <Button variant="outline" as-child>
-                <a
-                    :href="show.url({ event: event.id, slug: event.slug })"
-                    target="_blank"
-                    rel="noopener"
-                    data-test="view-event-link"
-                >
-                    <ExternalLink class="size-4" />
-                    {{ $t('View on website') }}
-                </a>
-            </Button>
+            <div class="flex flex-wrap gap-2">
+                <Button variant="outline" as-child>
+                    <Link
+                        :href="EventParticipantController.index(event.id)"
+                        data-test="event-participants-link"
+                    >
+                        <Users class="size-4" />
+                        {{ $t('Participants') }}
+                    </Link>
+                </Button>
+                <Button variant="outline" as-child>
+                    <a
+                        :href="show.url({ event: event.id, slug: event.slug })"
+                        target="_blank"
+                        rel="noopener"
+                        data-test="view-event-link"
+                    >
+                        <ExternalLink class="size-4" />
+                        {{ $t('View on website') }}
+                    </a>
+                </Button>
+            </div>
         </div>
 
         <EventForm

@@ -467,7 +467,7 @@ test('an administrator opens the registrations from the sidebar and filters them
         ->assertNoJavaScriptErrors();
 });
 
-test('an administrator goes from the event list to the registrations of an event', function () {
+test('an administrator goes from the event list to the participants of an event', function () {
     $this->actingAs(User::factory()->admin()->create());
     $event = Event::factory()->create(['title' => 'Forum Testowe']);
     Registration::factory()->for($event)->for(User::factory()->create(['name' => 'Anna Nowak', 'email' => 'anna.nowak@example.com']))->create();
@@ -475,10 +475,51 @@ test('an administrator goes from the event list to the registrations of an event
 
     visit(route('admin.events.index', absolute: false))
         ->click('tr:has-text("Forum Testowe") [data-test="event-registrations-link"]')
-        ->assertQueryStringHas('event', (string) $event->id)
+        ->assertPathIs(route('admin.events.participants.index', $event, absolute: false))
         ->assertSee('Anna Nowak')
         ->assertDontSee('Jan Kowalski')
         ->assertNoJavaScriptErrors();
+});
+
+test('an administrator opens the participants from the event form', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $registration = Registration::factory()->for(User::factory()->create(['name' => 'Anna Nowak', 'email' => 'anna.nowak@example.com']))->create();
+
+    visit(route('admin.events.edit', $registration->event, absolute: false))
+        ->click('@event-participants-link')
+        ->assertSeeIn('@participant-row', 'Anna Nowak')
+        ->click('Anna Nowak')
+        ->assertPathIs(route('admin.registrations.show', $registration, absolute: false))
+        ->assertNoJavaScriptErrors();
+});
+
+test('an administrator searches the participants of an event', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $event = Event::factory()->create();
+    Registration::factory()->for($event)->for(User::factory()->create(['name' => 'Jan Kowalski', 'email' => 'jan.kowalski@example.com']))->create();
+    Registration::factory()->for($event)->for(User::factory()->create(['name' => 'Anna Nowak', 'email' => 'anna.nowak@example.com']))->create();
+
+    visit(route('admin.events.participants.index', $event, absolute: false))
+        ->assertSee('Jan Kowalski')
+        ->fill('@participant-search', 'nowak')
+        ->assertSee('Anna Nowak')
+        ->assertDontSee('Jan Kowalski')
+        ->assertNoJavaScriptErrors();
+});
+
+test('an administrator cancels a registration from the participant list', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $registration = Registration::factory()->for(User::factory()->create(['name' => 'Anna Nowak']))->create();
+
+    visit(route('admin.events.participants.index', $registration->event, absolute: false))
+        ->click('@cancel-participant')
+        ->click('@cancel-participant-confirm')
+        ->assertSee('Zapis został anulowany')
+        ->assertPathIs(route('admin.events.participants.index', $registration->event, absolute: false))
+        ->assertSee('Brak uczestników')
+        ->assertNoJavaScriptErrors();
+
+    expect($registration->fresh()->status)->toBe(RegistrationStatus::Cancelled);
 });
 
 test('an administrator opens a registration from the list', function () {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Enums\Profession;
 use App\Models\Registration;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -31,6 +32,7 @@ final class RegistrationResource extends JsonResource
                 'id' => $this->user->id,
                 'name' => $this->user->name,
                 'email' => $this->user->email,
+                'profession_label' => Profession::tryFrom((string) $this->user->profession)?->label(),
             ],
             'attendance' => $this->attendance->value,
             'attendance_label' => $this->attendance->label(),

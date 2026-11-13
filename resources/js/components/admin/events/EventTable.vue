@@ -3,7 +3,7 @@ import { Form, Link } from '@inertiajs/vue3';
 import { RotateCcw } from '@lucide/vue';
 import EventController from '@/actions/App/Http/Controllers/Admin/EventController';
 import RestoreEventController from '@/actions/App/Http/Controllers/Admin/RestoreEventController';
-import { index as registrations } from '@/routes/admin/registrations';
+import EventParticipantController from '@/actions/App/Http/Controllers/Admin/EventParticipantController';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -89,9 +89,7 @@ const startsSection = (index: number): boolean =>
                     <TableCell class="text-right tabular-nums">
                         <Link
                             v-if="event.registrations_count"
-                            :href="
-                                registrations({ query: { event: event.id } })
-                            "
+                            :href="EventParticipantController.index(event.id)"
                             class="hover:underline"
                             data-test="event-registrations-link"
                         >
