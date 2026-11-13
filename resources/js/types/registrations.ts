@@ -93,6 +93,19 @@ export type RegistrationFilters = {
     search: string;
 };
 
+export type ParticipantFilters = {
+    status: string;
+    attendance: string;
+    profession: string;
+    search: string;
+};
+
+export type ParticipantFilterOptions = {
+    statuses: SelectOption[];
+    attendances: SelectOption[];
+    professions: SelectOption[];
+};
+
 export type RegistrationFilterOptions = {
     events: SelectOption[];
     statuses: SelectOption[];

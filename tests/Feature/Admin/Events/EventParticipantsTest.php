@@ -60,6 +60,39 @@ describe('as an administrator', function () {
             );
     });
 
+    test('the participants can be searched and filtered', function (array $query, array $expected) {
+        $this->event->update(['format' => 'hybrid', 'price_online' => 9900]);
+        $registrations = [
+            'nurse online' => Registration::factory()->for($this->event)->online()->for(User::factory()->create(['name' => 'Anna Brzęczyszczykiewicz', 'email' => 'anna.b@example.com', 'profession' => 'nurse']))->create(),
+            'doctor paid' => Registration::factory()->for($this->event)->paid()->for(User::factory()->create(['name' => 'Jan Grzmotowski', 'email' => 'jan.g@example.com', 'profession' => 'doctor']))->create(),
+            'cancelled' => Registration::factory()->for($this->event)->cancelled()->for(User::factory()->create(['name' => 'Ewa Testowa', 'email' => 'ewa.t@example.com', 'profession' => 'doctor']))->create(),
+        ];
+
+        $this->get(route('admin.events.participants.index', [$this->event, ...$query]))
+            ->assertInertia(fn (Assert $page) => $page->where(
+                'registrations.data',
+                fn ($data) => collect($data)->pluck('id')->sort()->values()->all() === collect($expected)->map(fn (string $key) => $registrations[$key]->id)->sort()->values()->all(),
+            ));
+    })->with([
+        'no filter' => [[], ['nurse online', 'doctor paid']],
+        'status' => [['status' => 'cancelled'], ['cancelled']],
+        'attendance' => [['attendance' => 'online'], ['nurse online']],
+        'profession' => [['profession' => 'doctor'], ['doctor paid']],
+        'search by name' => [['search' => 'brzęcz'], ['nurse online']],
+        'search by email' => [['search' => 'jan.g@'], ['doctor paid']],
+        'unknown values are ignored' => [['status' => 'lost', 'profession' => 'astronaut'], ['nurse online', 'doctor paid']],
+    ]);
+
+    test('the filters and their options come back to the page', function () {
+        $this->get(route('admin.events.participants.index', [$this->event, 'status' => 'paid', 'search' => 'jan']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('filters', ['status' => 'paid', 'attendance' => '', 'profession' => '', 'search' => 'jan'])
+                ->has('filterOptions.statuses', 3)
+                ->where('filterOptions.attendances', [])
+                ->has('filterOptions.professions'),
+            );
+    });
+
     test('the list is paginated by fifty', function () {
         Registration::factory()->for($this->event)->count(51)->create();
 

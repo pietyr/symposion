@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Attendance;
+use App\Enums\Profession;
 use App\Enums\RegistrationStatus;
 use Carbon\CarbonImmutable;
 use Database\Factories\RegistrationFactory;
@@ -177,11 +178,13 @@ final class Registration extends Model
         ?RegistrationStatus $status = null,
         ?Attendance $attendance = null,
         string $search = '',
+        ?Profession $profession = null,
     ): void {
         $query
             ->when($eventId, fn (Builder $query, int $eventId) => $query->where('event_id', $eventId))
             ->when($status, fn (Builder $query, RegistrationStatus $status) => $query->where('status', $status))
             ->when($attendance, fn (Builder $query, Attendance $attendance) => $query->where('attendance', $attendance))
+            ->when($profession, fn (Builder $query, Profession $profession) => $query->whereRelation('user', 'profession', $profession->value))
             ->when($search !== '', fn (Builder $query) => $query->whereHas(
                 'user',
                 fn (Builder $user) => $user->matchingSearch($search),

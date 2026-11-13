@@ -493,6 +493,20 @@ test('an administrator opens the participants from the event form', function () 
         ->assertNoJavaScriptErrors();
 });
 
+test('an administrator searches the participants of an event', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $event = Event::factory()->create();
+    Registration::factory()->for($event)->for(User::factory()->create(['name' => 'Jan Kowalski', 'email' => 'jan.kowalski@example.com']))->create();
+    Registration::factory()->for($event)->for(User::factory()->create(['name' => 'Anna Nowak', 'email' => 'anna.nowak@example.com']))->create();
+
+    visit(route('admin.events.participants.index', $event, absolute: false))
+        ->assertSee('Jan Kowalski')
+        ->fill('@participant-search', 'nowak')
+        ->assertSee('Anna Nowak')
+        ->assertDontSee('Jan Kowalski')
+        ->assertNoJavaScriptErrors();
+});
+
 test('an administrator opens a registration from the list', function () {
     $this->actingAs(User::factory()->admin()->create());
     $student = User::factory()->create(['name' => 'Anna Nowak', 'profession' => 'student', 'university' => 'UMED Łódź', 'student_number' => '123456']);
