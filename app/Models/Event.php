@@ -124,16 +124,38 @@ final class Event extends Model
     /**
      * The benefit fields of the registration form with the options a participant can see,
      * their taken seats counted; a field whose options are all hidden is left out.
+     * Benefits already loaded have to come from withBenefitsForRegistration().
      *
      * @return Collection<int, Benefit>
      */
     public function benefitsForRegistration(): Collection
     {
-        return $this->benefits()
-            ->with(['options' => fn ($options) => $options->where('is_hidden', false)->withTakenSeats()])
-            ->get()
+        if (! $this->relationLoaded('benefits')) {
+            $this->load(['benefits.options' => self::visibleOptions(...)]);
+        }
+
+        return $this->benefits
             ->filter(fn (Benefit $benefit): bool => $benefit->options->isNotEmpty())
             ->values();
+    }
+
+    /**
+     * Load what benefitsForRegistration() needs for many events at once.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withBenefitsForRegistration(Builder $query): void
+    {
+        $query->with(['benefits.options' => self::visibleOptions(...)]);
+    }
+
+    /**
+     * @param  HasMany<BenefitOption, Benefit>  $options
+     */
+    private static function visibleOptions(HasMany $options): void
+    {
+        $options->where('is_hidden', false)->withTakenSeats();
     }
 
     /**

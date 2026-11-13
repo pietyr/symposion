@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, toRef } from 'vue';
 import EventPlaceBadges from '@/components/site/events/EventPlaceBadges.vue';
-import BenefitField from '@/components/site/registrations/BenefitField.vue';
+import BenefitField from '@/components/registrations/BenefitField.vue';
 import ConsentField from '@/components/site/registrations/ConsentField.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import { useBenefitChoices } from '@/composables/useBenefitChoices';
 import { useDateTimeFormat } from '@/composables/useDateTimeFormat';
 import { usePriceFormat } from '@/composables/usePriceFormat';
 import { show } from '@/routes/events';
@@ -46,40 +47,14 @@ const selected = computed(() =>
     props.attendances.find((option) => option.value === attendance.value),
 );
 
-const choices = ref<Record<number, string | string[]>>(
-    Object.fromEntries(
-        props.benefits.map((benefit) => [
-            benefit.id,
-            benefit.type === 'checkbox' ? [] : '',
-        ]),
-    ),
+const { choices, visibleBenefits, optionsTotal } = useBenefitChoices(
+    toRef(props, 'benefits'),
+    attendance,
 );
 
-// A field meant for one kind of attendance shows up once that one is chosen.
-const visibleBenefits = computed(() =>
-    props.benefits.filter(
-        (benefit) =>
-            benefit.attendance === null ||
-            benefit.attendance === attendance.value,
-    ),
+const total = computed(() =>
+    selected.value ? selected.value.price + optionsTotal.value : null,
 );
-
-const total = computed(() => {
-    if (!selected.value) {
-        return null;
-    }
-
-    return visibleBenefits.value.reduce((sum, benefit) => {
-        const chosen = ([] as string[]).concat(choices.value[benefit.id]);
-
-        return (
-            sum +
-            benefit.options
-                .filter((option) => chosen.includes(String(option.id)))
-                .reduce((optionSum, option) => optionSum + option.price, 0)
-        );
-    }, selected.value.price);
-});
 </script>
 
 <template>

@@ -53,7 +53,20 @@ final class StoreRegistrationRequest extends FormRequest
                 },
             ],
             'amount' => ['required', 'decimal:0,2', 'min:0', 'max:100000'],
+            'benefits' => ['nullable', 'array'],
         ];
+    }
+
+    /**
+     * Checked against the event's fields by ResolveBenefitChoices.
+     *
+     * @return array<array-key, mixed>
+     */
+    public function benefitChoices(): array
+    {
+        $choices = $this->input('benefits', []);
+
+        return is_array($choices) ? $choices : [];
     }
 
     public function event(): Event

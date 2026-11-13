@@ -3,6 +3,7 @@ import { Form, Head } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import RegistrationController from '@/actions/App/Http/Controllers/Admin/RegistrationController';
 import ParticipantCombobox from '@/components/admin/registrations/ParticipantCombobox.vue';
+import BenefitField from '@/components/registrations/BenefitField.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -15,9 +16,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { useBenefitChoices } from '@/composables/useBenefitChoices';
 import { usePriceFormat } from '@/composables/usePriceFormat';
 import { trans } from 'laravel-vue-i18n';
 import { index } from '@/routes/admin/registrations';
+import type { PublicBenefitResource } from '@/types';
 
 type AttendanceOption = {
     value: string;
@@ -45,6 +48,7 @@ const props = defineProps<{
         value: string;
         label: string;
         attendances: AttendanceOption[];
+        benefits: PublicBenefitResource[];
     }[];
 }>();
 
@@ -54,10 +58,15 @@ const eventId = ref('');
 const attendance = ref('');
 const amount = ref('');
 
-const attendances = computed(
-    () =>
-        props.events.find((event) => event.value === eventId.value)
-            ?.attendances ?? [],
+const selectedEvent = computed(() =>
+    props.events.find((event) => event.value === eventId.value),
+);
+
+const attendances = computed(() => selectedEvent.value?.attendances ?? []);
+
+const { choices, visibleBenefits, optionsTotal } = useBenefitChoices(
+    computed(() => selectedEvent.value?.benefits ?? []),
+    attendance,
 );
 
 const attendanceLabel = (option: AttendanceOption): string =>
@@ -77,13 +86,14 @@ watch(eventId, () => {
         attendances.value.length === 1 ? attendances.value[0].value : '';
 });
 
-// The amount starts from the price; the admin may change it, e.g. for an invited guest.
-watch(attendance, () => {
+// The amount follows the price and the chosen options; the admin may change it, e.g. for an invited guest.
+watch([attendance, optionsTotal], () => {
     const price = attendances.value.find(
         (option) => option.value === attendance.value,
     )?.price;
 
-    amount.value = toPriceInput(price);
+    amount.value =
+        price === undefined ? '' : toPriceInput(price + optionsTotal.value);
 });
 </script>
 
@@ -169,6 +179,14 @@ watch(attendance, () => {
                     <InputError :message="errors.amount" />
                 </div>
             </div>
+
+            <BenefitField
+                v-for="benefit in visibleBenefits"
+                :key="benefit.id"
+                v-model="choices[benefit.id]"
+                :benefit="benefit"
+                :error="errors[`benefits.${benefit.id}`]"
+            />
 
             <Button :disabled="processing" data-test="save-registration-button">
                 {{ $t('Add registration') }}
