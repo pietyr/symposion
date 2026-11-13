@@ -18,7 +18,12 @@ export type RegistrationStatus = 'pending' | 'paid' | 'cancelled';
 export type RegistrationResource = {
     id: number;
     event: { id: number; title: string; is_deleted: boolean };
-    user: { id: number; name: string; email: string };
+    user: {
+        id: number;
+        name: string;
+        email: string;
+        profession_label: string | null;
+    };
     attendance: 'online' | 'in_person';
     attendance_label: string;
     amount: number;

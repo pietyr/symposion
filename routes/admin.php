@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\ConfirmRegistrationController;
 use App\Http\Controllers\Admin\EventBenefitController;
 use App\Http\Controllers\Admin\EventConsentController;
 use App\Http\Controllers\Admin\EventController;
+use App\Http\Controllers\Admin\EventParticipantController;
 use App\Http\Controllers\Admin\EventSectionController;
 use App\Http\Controllers\Admin\MoveBenefitOptionController;
 use App\Http\Controllers\Admin\MoveEventBenefitController;
@@ -25,6 +26,9 @@ Route::resource('events', EventController::class)->except('show');
 Route::patch('events/{event}/restore', RestoreEventController::class)
     ->withTrashed()
     ->name('events.restore');
+Route::resource('events.participants', EventParticipantController::class)
+    ->only('index')
+    ->withTrashed(['index']);
 Route::resource('events.sections', EventSectionController::class)
     ->only(['store', 'update', 'destroy'])
     ->scoped();

@@ -138,6 +138,34 @@ final class Registration extends Model
     }
 
     /**
+     * Pending and paid registrations, the ones that take a seat (ADR-019).
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function takingSeats(Builder $query): void
+    {
+        $query->whereIn('status', RegistrationStatus::seatTaking());
+    }
+
+    /**
+     * Alphabetically by the participant's surname, then the whole name. The name is stored
+     * as one field, so the surname is taken as its last word.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function orderedByParticipantSurname(Builder $query): void
+    {
+        $name = User::query()->select('name')->whereColumn('users.id', 'registrations.user_id');
+
+        $query
+            ->orderBy(User::query()->selectRaw("SUBSTRING_INDEX(name, ' ', -1)")->whereColumn('users.id', 'registrations.user_id'))
+            ->orderBy($name)
+            ->orderBy('registrations.id');
+    }
+
+    /**
      * Narrow the list down by whichever filters are set; the search goes through User::matchingSearch().
      *
      * @param  Builder<self>  $query
