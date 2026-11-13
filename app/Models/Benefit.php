@@ -67,6 +67,14 @@ final class Benefit extends Model
     }
 
     /**
+     * Whether a participant attending this way sees the field.
+     */
+    public function isFor(Attendance $attendance): bool
+    {
+        return $this->attendance === null || $this->attendance === $attendance;
+    }
+
+    /**
      * The benefit fields of the same event, this one among them.
      *
      * @return Builder<self>

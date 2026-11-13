@@ -26,7 +26,20 @@ final class RegisterForEventRequest extends FormRequest
     {
         return [
             'attendance' => ['required', Rule::enum(Attendance::class)],
+            'benefits' => ['nullable', 'array'],
         ];
+    }
+
+    /**
+     * Checked against the event's fields by ResolveBenefitChoices.
+     *
+     * @return array<array-key, mixed>
+     */
+    public function benefitChoices(): array
+    {
+        $choices = $this->input('benefits', []);
+
+        return is_array($choices) ? $choices : [];
     }
 
     public function attendance(): Attendance

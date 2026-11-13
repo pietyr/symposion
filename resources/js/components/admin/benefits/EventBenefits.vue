@@ -5,6 +5,7 @@ import MoveEventBenefitController from '@/actions/App/Http/Controllers/Admin/Mov
 import BenefitFieldDialog from '@/components/admin/benefits/BenefitFieldDialog.vue';
 import BenefitOptions from '@/components/admin/benefits/BenefitOptions.vue';
 import MoveButtons from '@/components/admin/MoveButtons.vue';
+import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -93,7 +94,7 @@ defineProps<{
                                     preserveState: true,
                                 }"
                                 class="space-y-6"
-                                v-slot="{ processing }"
+                                v-slot="{ errors, processing }"
                             >
                                 <DialogHeader>
                                     <DialogTitle>
@@ -113,6 +114,7 @@ defineProps<{
                                         }}
                                     </DialogDescription>
                                 </DialogHeader>
+                                <InputError :message="errors.benefit" />
                                 <DialogFooter class="gap-2">
                                     <DialogClose as-child>
                                         <Button variant="secondary">{{

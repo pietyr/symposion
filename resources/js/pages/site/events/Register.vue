@@ -2,13 +2,14 @@
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import EventPlaceBadges from '@/components/site/events/EventPlaceBadges.vue';
+import BenefitField from '@/components/site/registrations/BenefitField.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { useDateTimeFormat } from '@/composables/useDateTimeFormat';
 import { usePriceFormat } from '@/composables/usePriceFormat';
 import { show } from '@/routes/events';
 import { store } from '@/routes/events/registration';
-import type { PublicEventResource } from '@/types';
+import type { PublicBenefitResource, PublicEventResource } from '@/types';
 
 type AttendanceOption = {
     value: string;
@@ -20,6 +21,7 @@ type AttendanceOption = {
 const props = defineProps<{
     event: PublicEventResource;
     attendances: AttendanceOption[];
+    benefits: PublicBenefitResource[];
 }>();
 
 const { formatDateTimeRange } = useDateTimeFormat();
@@ -37,6 +39,41 @@ const attendance = ref(
 const selected = computed(() =>
     props.attendances.find((option) => option.value === attendance.value),
 );
+
+const choices = ref<Record<number, string | string[]>>(
+    Object.fromEntries(
+        props.benefits.map((benefit) => [
+            benefit.id,
+            benefit.type === 'checkbox' ? [] : '',
+        ]),
+    ),
+);
+
+// A field meant for one kind of attendance shows up once that one is chosen.
+const visibleBenefits = computed(() =>
+    props.benefits.filter(
+        (benefit) =>
+            benefit.attendance === null ||
+            benefit.attendance === attendance.value,
+    ),
+);
+
+const total = computed(() => {
+    if (!selected.value) {
+        return null;
+    }
+
+    return visibleBenefits.value.reduce((sum, benefit) => {
+        const chosen = ([] as string[]).concat(choices.value[benefit.id]);
+
+        return (
+            sum +
+            benefit.options
+                .filter((option) => chosen.includes(String(option.id)))
+                .reduce((optionSum, option) => optionSum + option.price, 0)
+        );
+    }, selected.value.price);
+});
 </script>
 
 <template>
@@ -110,14 +147,24 @@ const selected = computed(() =>
                 <InputError :message="errors.attendance" />
             </fieldset>
 
+            <BenefitField
+                v-for="benefit in visibleBenefits"
+                :key="benefit.id"
+                v-model="choices[benefit.id]"
+                :benefit="benefit"
+                :error="errors[`benefits.${benefit.id}`]"
+            />
+
             <div
                 class="flex flex-wrap items-center justify-between gap-4 border-t pt-6"
             >
                 <p class="text-lg">
                     {{ $t('To pay') }}:
-                    <span class="font-semibold tabular-nums">{{
-                        selected ? formatPrice(selected.price) : '—'
-                    }}</span>
+                    <span
+                        class="font-semibold tabular-nums"
+                        data-test="registration-total"
+                        >{{ total === null ? '—' : formatPrice(total) }}</span
+                    >
                 </p>
                 <Button
                     size="lg"

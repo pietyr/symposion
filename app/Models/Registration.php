@@ -11,9 +11,11 @@ use Database\Factories\RegistrationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 
@@ -31,6 +33,7 @@ use Illuminate\Support\Str;
  * @property CarbonImmutable|null $updated_at
  * @property-read Event $event
  * @property-read User $user
+ * @property-read Collection<int, RegistrationBenefit> $benefits
  */
 #[Fillable(['attendance', 'amount', 'status', 'confirmed_at'])]
 final class Registration extends Model
@@ -66,6 +69,16 @@ final class Registration extends Model
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class)->withTrashed();
+    }
+
+    /**
+     * The benefit options chosen when registering.
+     *
+     * @return HasMany<RegistrationBenefit, $this>
+     */
+    public function benefits(): HasMany
+    {
+        return $this->hasMany(RegistrationBenefit::class);
     }
 
     /**

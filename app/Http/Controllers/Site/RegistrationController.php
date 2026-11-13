@@ -10,6 +10,7 @@ use App\Enums\Attendance;
 use App\Enums\RegistrationAvailability;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Site\Events\RegisterForEventRequest;
+use App\Http\Resources\PublicBenefitResource;
 use App\Http\Resources\PublicEventResource;
 use App\Models\Event;
 use App\Models\User;
@@ -45,6 +46,7 @@ final class RegistrationController extends Controller
                 'price' => $event->priceFor($attendance) ?? 0,
                 'seats_left' => $event->seatsLeft($attendance),
             ], $event->attendances()),
+            'benefits' => PublicBenefitResource::collection($event->benefitsForRegistration()),
         ]);
     }
 
@@ -53,7 +55,7 @@ final class RegistrationController extends Controller
      */
     public function store(RegisterForEventRequest $request, Event $event, #[CurrentUser] User $user, RegisterForEvent $registerForEvent): RedirectResponse
     {
-        $registerForEvent->handle($event, $user, $request->attendance());
+        $registerForEvent->handle($event, $user, $request->attendance(), $request->benefitChoices());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('You are registered for the event.')]);
 

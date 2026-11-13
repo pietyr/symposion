@@ -122,6 +122,21 @@ final class Event extends Model
     }
 
     /**
+     * The benefit fields of the registration form with the options a participant can see,
+     * their taken seats counted; a field whose options are all hidden is left out.
+     *
+     * @return Collection<int, Benefit>
+     */
+    public function benefitsForRegistration(): Collection
+    {
+        return $this->benefits()
+            ->with(['options' => fn ($options) => $options->where('is_hidden', false)->withTakenSeats()])
+            ->get()
+            ->filter(fn (Benefit $benefit): bool => $benefit->options->isNotEmpty())
+            ->values();
+    }
+
+    /**
      * Consents the participant gives in the registration form (ADR-021).
      *
      * @return HasMany<Consent, $this>

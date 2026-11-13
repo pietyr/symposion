@@ -619,6 +619,30 @@ test('a participant cancels a pending registration', function () {
     expect($registration->fresh()->status)->toBe(RegistrationStatus::Cancelled);
 });
 
+test('a participant chooses benefits and sees the amount add up', function () {
+    $event = Event::factory()->visible()->create(['starts_at' => now()->addDays(10), 'ends_at' => now()->addDays(11), 'price_in_person' => 25000]);
+    $hotel = Benefit::factory()->for($event)->select()->create(['name' => 'Nocleg', 'position' => 1]);
+    $twoNights = BenefitOption::factory()->for($hotel)->create(['name' => '2 noce', 'price' => 55000]);
+    $dinner = Benefit::factory()->for($event)->create(['name' => 'Kolacja galowa', 'position' => 2]);
+    $gala = BenefitOption::factory()->for($dinner)->create(['name' => 'Udział w kolacji', 'price' => 18000]);
+    $this->actingAs(User::factory()->create(['profession' => 'doctor']));
+
+    visit(route('events.registration.create', ['event' => $event, 'slug' => $event->slug], absolute: false))
+        ->assertSeeIn('@registration-total', '250,00')
+        ->click("@benefit-{$hotel->id}-select")
+        ->click('[role="option"]:has-text("2 noce")')
+        ->assertSeeIn('@registration-total', '800,00')
+        ->click("@benefit-option-{$gala->id}")
+        ->assertSeeIn('@registration-total', '980,00')
+        ->click('@confirm-registration-button')
+        ->assertSee('Zapisano na wydarzenie')
+        ->assertNoJavaScriptErrors();
+
+    expect(Registration::query()->sole())
+        ->amount->toBe(98000)
+        ->benefits->pluck('option_name')->all()->toBe(['2 noce', 'Udział w kolacji']);
+});
+
 test('the event page says why the visitor cannot register', function () {
     $event = Event::factory()->visible()->create(['starts_at' => now()->addDays(10), 'ends_at' => now()->addDays(10)]);
     $event->professionEntries()->create(['profession' => 'doctor']);
