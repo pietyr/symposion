@@ -4,11 +4,22 @@ import { computed } from 'vue';
 import EventController from '@/actions/App/Http/Controllers/Admin/EventController';
 import CancelRegistrationController from '@/actions/App/Http/Controllers/Admin/CancelRegistrationController';
 import ConfirmRegistrationController from '@/actions/App/Http/Controllers/Admin/ConfirmRegistrationController';
-import RegistrationActionDialog from '@/components/registrations/RegistrationActionDialog.vue';
+import UserController from '@/actions/App/Http/Controllers/Admin/UserController';
+import AccountDetails from '@/components/admin/users/AccountDetails.vue';
+import ActionDialog from '@/components/ActionDialog.vue';
+import ProfileDetails from '@/components/admin/users/ProfileDetails.vue';
 import RegistrationStatusBadge from '@/components/registrations/RegistrationStatusBadge.vue';
 import Heading from '@/components/Heading.vue';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardAction,
+    CardContent,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { usePriceFormat } from '@/composables/usePriceFormat';
 import { index } from '@/routes/admin/registrations';
 import type { ParticipantResource, RegistrationResource } from '@/types';
@@ -47,24 +58,6 @@ const titledName = computed(() =>
         .filter(Boolean)
         .join(' '),
 );
-
-// Only the fields the participant's profession uses are filled in.
-const profileRows = computed(() =>
-    [
-        { label: 'Profession', value: props.participant.profession_label },
-        { label: 'Your profession', value: props.participant.profession_name },
-        {
-            label: 'License number (PWZ)',
-            value: props.participant.license_number,
-        },
-        { label: 'University', value: props.participant.university },
-        {
-            label: 'Student ID number',
-            value: props.participant.student_number,
-        },
-        { label: 'Company', value: props.participant.company },
-    ].filter((row) => row.value),
-);
 </script>
 
 <template>
@@ -83,7 +76,7 @@ const profileRows = computed(() =>
                 data-test="registration-status"
             />
             <div class="mb-8 flex flex-wrap gap-2 sm:ml-auto">
-                <RegistrationActionDialog
+                <ActionDialog
                     v-if="registration.status === 'pending'"
                     :action="
                         ConfirmRegistrationController.form(registration.id)
@@ -99,7 +92,7 @@ const profileRows = computed(() =>
                     "
                     test-id="confirm-payment"
                 />
-                <RegistrationActionDialog
+                <ActionDialog
                     v-if="registration.status !== 'cancelled'"
                     :action="CancelRegistrationController.form(registration.id)"
                     :label="$t('Cancel registration')"
@@ -198,43 +191,36 @@ const profileRows = computed(() =>
             <Card>
                 <CardHeader>
                     <CardTitle>{{ $t('Participant') }}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <dl
-                        class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm"
-                        data-test="participant-profile"
-                    >
-                        <dt class="text-muted-foreground">
-                            {{ $t('Email address') }}
-                        </dt>
-                        <dd>
-                            <a
-                                :href="`mailto:${participant.email}`"
-                                class="underline underline-offset-4"
-                                >{{ participant.email }}</a
+                    <CardAction class="flex flex-wrap justify-end gap-2">
+                        <Button variant="outline" size="sm" as-child>
+                            <Link
+                                :href="UserController.show(participant.id)"
+                                data-test="participant-account-link"
                             >
-                        </dd>
-                        <template v-for="row in profileRows" :key="row.label">
-                            <dt class="text-muted-foreground">
-                                {{ $t(row.label) }}
-                            </dt>
-                            <dd>{{ row.value }}</dd>
-                        </template>
-                        <template v-if="participant.specializations.length">
-                            <dt class="text-muted-foreground">
-                                {{ $t('Specializations') }}
-                            </dt>
-                            <dd class="flex flex-wrap gap-1">
-                                <Badge
-                                    v-for="specialization in participant.specializations"
-                                    :key="specialization"
-                                    variant="outline"
-                                >
-                                    {{ specialization }}
-                                </Badge>
-                            </dd>
-                        </template>
-                    </dl>
+                                {{ $t('User details') }}
+                            </Link>
+                        </Button>
+                        <Button
+                            v-if="
+                                !participant.is_admin && !participant.deleted_at
+                            "
+                            variant="outline"
+                            size="sm"
+                            as-child
+                        >
+                            <Link
+                                :href="UserController.edit(participant.id)"
+                                data-test="participant-edit-link"
+                            >
+                                {{ $t('Edit') }}
+                            </Link>
+                        </Button>
+                    </CardAction>
+                </CardHeader>
+                <CardContent class="flex flex-col gap-4">
+                    <ProfileDetails :participant="participant" />
+                    <Separator />
+                    <AccountDetails :account="participant" />
                 </CardContent>
             </Card>
 

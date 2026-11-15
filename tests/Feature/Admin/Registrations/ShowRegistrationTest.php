@@ -41,7 +41,20 @@ describe('as an administrator', function () {
                 ->where('participant.profession_label', 'Lekarz')
                 ->where('participant.license_number', $doctor->license_number)
                 ->where('participant.specializations', ['Kardiologia', 'Urologia'])
-                ->where('participant.university', null),
+                ->where('participant.university', null)
+                ->where('participant.email_verified_at', $doctor->email_verified_at?->toIso8601String())
+                ->where('participant.created_at', $doctor->created_at?->toIso8601String()),
+            );
+    });
+
+    test('the registration of a deleted account is still shown', function () {
+        $registration = Registration::factory()->create();
+        $registration->user->delete();
+
+        $this->get(route('admin.registrations.show', $registration))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('participant.id', $registration->user_id)
+                ->where('participant.deleted_at', fn (?string $deletedAt) => $deletedAt !== null),
             );
     });
 

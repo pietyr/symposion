@@ -453,6 +453,169 @@ test('an administrator adds a consent to an event', function () {
     expect(Consent::query()->sole())->is_required->toBeTrue();
 });
 
+test('an administrator opens the users from the sidebar and searches them', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    User::factory()->create(['first_name' => 'Jan', 'last_name' => 'Kowalski', 'email' => 'jan.kowalski@example.com']);
+    User::factory()->unverified()->create(['first_name' => 'Anna', 'last_name' => 'Nowak', 'email' => 'anna.nowak@example.com']);
+
+    visit(route('admin.dashboard', absolute: false))
+        ->click('Użytkownicy')
+        ->assertPathIs(route('admin.users.index', absolute: false))
+        ->assertSee('Jan Kowalski')
+        ->assertSee('Niepotwierdzone')
+        ->fill('@user-search', 'nowak')
+        ->wait(1)
+        ->assertSee('Anna Nowak')
+        ->assertDontSee('Jan Kowalski')
+        ->assertNoJavaScriptErrors();
+});
+
+test('an administrator goes from the user list to a registration of the user', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $user = User::factory()->doctor()->create(['academic_title' => 'lek.', 'first_name' => 'Jan', 'last_name' => 'Kowalski']);
+    $registration = Registration::factory()->for($user)->for(Event::factory()->create(['title' => 'Forum Testowe']))->create();
+
+    visit(route('admin.users.index', absolute: false))
+        ->click('Jan Kowalski')
+        ->assertPathIs(route('admin.users.show', $user, absolute: false))
+        ->assertSee('lek. Jan Kowalski')
+        ->assertSeeIn('@participant-profile', 'Lekarz')
+        ->click('Forum Testowe')
+        ->assertPathIs(route('admin.registrations.show', $registration, absolute: false))
+        ->assertNoJavaScriptErrors();
+});
+
+test('an administrator goes from a registration to the account of the participant', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $user = User::factory()->unverified()->create(['first_name' => 'Anna', 'last_name' => 'Nowak']);
+    $registration = Registration::factory()->for($user)->create();
+
+    visit(route('admin.registrations.show', $registration, absolute: false))
+        ->assertSeeIn('@account-details', 'Niepotwierdzone')
+        ->click('@participant-account-link')
+        ->assertPathIs(route('admin.users.show', $user, absolute: false))
+        ->assertSee('Anna Nowak')
+        ->assertNoJavaScriptErrors();
+});
+
+test('an administrator edits a user', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $user = User::factory()->create(['first_name' => 'Anna', 'last_name' => 'Nowak', 'profession' => 'laboratory_technician']);
+
+    visit(route('admin.users.show', $user, absolute: false))
+        ->click('@edit-user-link')
+        ->assertPathIs(route('admin.users.edit', $user, absolute: false))
+        ->clear('last_name')
+        ->fill('last_name', 'Kowalska')
+        ->fill('academic_title', 'mgr')
+        ->click('@save-user-button')
+        ->assertPathIs(route('admin.users.show', $user, absolute: false))
+        ->assertSee('Dane użytkownika zostały zaktualizowane')
+        ->assertSee('mgr Anna Kowalska')
+        ->assertNoJavaScriptErrors();
+});
+
+test('administrator accounts have no edit link', function () {
+    $admin = User::factory()->admin()->create();
+    $this->actingAs($admin);
+
+    visit(route('admin.users.show', $admin, absolute: false))
+        ->assertMissing('@edit-user-link')
+        ->assertNoJavaScriptErrors();
+});
+
+test('an administrator verifies an account', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $user = User::factory()->unverified()->create();
+
+    visit(route('admin.users.show', $user, absolute: false))
+        ->assertVisible('@account-unverified')
+        ->click('@verify-account')
+        ->click('@verify-account-confirm')
+        ->assertSee('Konto zostało potwierdzone')
+        ->assertMissing('@account-unverified')
+        ->assertMissing('@verify-account')
+        ->assertNoJavaScriptErrors();
+});
+
+test('an administrator blocks and unblocks a user', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $user = User::factory()->create();
+
+    visit(route('admin.users.show', $user, absolute: false))
+        ->click('@block-user')
+        ->assertSee('oczekujące zapisy zostaną anulowane')
+        ->click('@block-user-confirm')
+        ->assertSee('Użytkownik został zablokowany')
+        ->assertVisible('@account-blocked')
+        ->assertSeeIn('@account-details', 'Data blokady')
+        ->click('@unblock-user')
+        ->click('@unblock-user-confirm')
+        ->assertSee('Użytkownik został odblokowany')
+        ->assertMissing('@account-blocked')
+        ->assertNoJavaScriptErrors();
+});
+
+test('a blocked user is sent back to the login page', function () {
+    User::factory()->blocked()->create(['email' => 'anna@example.com']);
+
+    visit(route('login', absolute: false))
+        ->fill('email', 'anna@example.com')
+        ->fill('password', 'password')
+        ->click('@login-button')
+        ->assertPathIs(route('login', absolute: false))
+        ->assertSee('To konto zostało zablokowane')
+        ->assertNoJavaScriptErrors();
+
+    $this->assertGuest();
+});
+
+test('a participant deletes their account and the administrator still sees the registration', function () {
+    $user = User::factory()->create(['first_name' => 'Anna', 'last_name' => 'Nowak']);
+    $registration = Registration::factory()->for($user)->paid()->create();
+    $this->actingAs($user);
+
+    visit(route('account.profile.edit', absolute: false))
+        ->click('@delete-user-button')
+        ->assertSee('nieopłacone zapisy zostaną anulowane')
+        ->fill('password', 'password')
+        ->click('@confirm-delete-user-button')
+        ->assertPathIs(route('home', absolute: false))
+        ->assertNoJavaScriptErrors();
+
+    $this->actingAs(User::factory()->admin()->create());
+
+    visit(route('admin.registrations.show', $registration, absolute: false))
+        ->assertSee('Anna Nowak')
+        ->assertSeeIn('@account-details', 'Data usunięcia')
+        ->assertMissing('@participant-edit-link')
+        ->click('@participant-account-link')
+        ->assertVisible('@account-deleted')
+        ->assertMissing('@edit-user-link')
+        ->assertNoJavaScriptErrors();
+});
+
+test('an administrator deletes a user and restores them from the deleted list', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $user = User::factory()->create(['first_name' => 'Anna', 'last_name' => 'Nowak']);
+
+    visit(route('admin.users.show', $user, absolute: false))
+        ->click('@delete-user')
+        ->assertSee('Konto można przywrócić')
+        ->click('@delete-user-confirm')
+        ->assertPathIs(route('admin.users.index', absolute: false))
+        ->assertSee('Konto użytkownika zostało usunięte')
+        ->assertDontSee('Anna Nowak')
+        ->click('@deleted-users-link')
+        ->click('Anna Nowak')
+        ->click('@restore-user')
+        ->click('@restore-user-confirm')
+        ->assertSee('Konto użytkownika zostało przywrócone')
+        ->assertMissing('@account-deleted')
+        ->assertVisible('@edit-user-link')
+        ->assertNoJavaScriptErrors();
+});
+
 test('an administrator opens the registrations from the sidebar and filters them', function () {
     $this->actingAs(User::factory()->admin()->create());
     Registration::factory()->for(User::factory()->create(['first_name' => 'Jan', 'last_name' => 'Kowalski', 'email' => 'jan.kowalski@example.com']))->paid()->create();

@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * A participant with the professional profile, as the admin sees it on a registration.
+ * A user with the professional profile and the account state, as the admin sees them.
  *
  * @mixin User
  */
@@ -40,6 +40,11 @@ final class ParticipantResource extends JsonResource
                 ->map(fn (Specialization $specialization): string => $specialization->name)
                 ->values()
                 ->all(),
+            'is_admin' => $this->isAdmin(),
+            'email_verified_at' => $this->email_verified_at?->toIso8601String(),
+            'blocked_at' => $this->blocked_at?->toIso8601String(),
+            'deleted_at' => $this->deleted_at?->toIso8601String(),
+            'created_at' => $this->created_at?->toIso8601String(),
         ];
     }
 }

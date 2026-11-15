@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Account\Settings;
 
+use App\Actions\Users\DeleteAccount;
 use App\Actions\Users\UpdateProfile;
 use App\Enums\Profession;
 use App\Http\Controllers\Controller;
@@ -49,13 +50,13 @@ final class ProfileController extends Controller
     }
 
     /**
-     * Delete the user's profile.
+     * Delete the user's account; the registrations stay with the administrator (ADR-025).
      */
-    public function destroy(ProfileDeleteRequest $request, #[CurrentUser] User $user): RedirectResponse
+    public function destroy(ProfileDeleteRequest $request, #[CurrentUser] User $user, DeleteAccount $deleteAccount): RedirectResponse
     {
         Auth::logout();
 
-        $user->delete();
+        $deleteAccount->handle($user);
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

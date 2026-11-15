@@ -5,7 +5,7 @@ import { computed, ref, watch } from 'vue';
 import EventParticipantController from '@/actions/App/Http/Controllers/Admin/EventParticipantController';
 import CancelRegistrationController from '@/actions/App/Http/Controllers/Admin/CancelRegistrationController';
 import RegistrationController from '@/actions/App/Http/Controllers/Admin/RegistrationController';
-import RegistrationActionDialog from '@/components/registrations/RegistrationActionDialog.vue';
+import ActionDialog from '@/components/ActionDialog.vue';
 import RegistrationStatusBadge from '@/components/registrations/RegistrationStatusBadge.vue';
 import FilterSelect from '@/components/FilterSelect.vue';
 import Heading from '@/components/Heading.vue';
@@ -172,6 +172,13 @@ const filterFields = computed(() =>
                         >
                             {{ registration.user.name }}
                         </Link>
+                        <Badge
+                            v-if="registration.user.is_deleted"
+                            variant="secondary"
+                            class="ml-1"
+                        >
+                            {{ $t('Account deleted') }}
+                        </Badge>
                         <div class="text-xs text-muted-foreground">
                             {{ registration.user.email }}
                         </div>
@@ -198,7 +205,7 @@ const filterFields = computed(() =>
                         />
                     </TableCell>
                     <TableCell class="text-right">
-                        <RegistrationActionDialog
+                        <ActionDialog
                             v-if="registration.status !== 'cancelled'"
                             :action="
                                 CancelRegistrationController.form(

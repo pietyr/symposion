@@ -47,7 +47,7 @@ defineProps<{
                     <DialogTitle>{{ title }}</DialogTitle>
                     <DialogDescription>{{ description }}</DialogDescription>
                 </DialogHeader>
-                <InputError :message="errors.status" />
+                <InputError :message="Object.values(errors)[0]" />
 
                 <DialogFooter class="gap-2">
                     <DialogClose as-child>

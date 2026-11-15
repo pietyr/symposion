@@ -169,6 +169,13 @@ const filterFields = computed(() => [
                         >
                             {{ registration.user.name }}
                         </Link>
+                        <Badge
+                            v-if="registration.user.is_deleted"
+                            variant="secondary"
+                            class="ml-1"
+                        >
+                            {{ $t('Account deleted') }}
+                        </Badge>
                         <div class="text-xs text-muted-foreground">
                             {{ registration.user.email }}
                         </div>

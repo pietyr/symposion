@@ -23,6 +23,7 @@ export type RegistrationResource = {
         name: string;
         email: string;
         profession_label: string | null;
+        is_deleted: boolean;
     };
     attendance: 'online' | 'in_person';
     attendance_label: string;
@@ -47,6 +48,11 @@ export type ParticipantResource = {
     company: string | null;
     profession_name: string | null;
     specializations: string[];
+    is_admin: boolean;
+    email_verified_at: string | null;
+    blocked_at: string | null;
+    deleted_at: string | null;
+    created_at: string | null;
 };
 
 export type MyRegistrationResource = {

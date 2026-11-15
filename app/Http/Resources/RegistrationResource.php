@@ -33,6 +33,7 @@ final class RegistrationResource extends JsonResource
                 'name' => $this->user->name,
                 'email' => $this->user->email,
                 'profession_label' => Profession::tryFrom((string) $this->user->profession)?->label(),
+                'is_deleted' => $this->user->trashed(),
             ],
             'attendance' => $this->attendance->value,
             'attendance_label' => $this->attendance->label(),

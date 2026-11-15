@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\AccountStateFilter;
+use App\Enums\Profession;
+use App\Enums\RegistrationStatus;
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -16,6 +19,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -37,6 +41,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string|null $profession_name the profession of someone who chose "other"
  * @property UserRole $role
  * @property Carbon|null $email_verified_at
+ * @property Carbon|null $blocked_at a blocked user cannot sign in (ADR-025)
  * @property string $password
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
@@ -44,6 +49,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at accounts are only soft deleted (ADR-025)
  * @property-read Collection<int, Specialization> $specializations
  * @property-read Collection<int, Registration> $registrations
  */
@@ -52,7 +58,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 final class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use HasFactory, Notifiable, SoftDeletes, TwoFactorAuthenticatable;
 
     /**
      * Role is deliberately not mass assignable; it is set explicitly.
@@ -72,6 +78,7 @@ final class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'blocked_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
             'two_factor_confirmed_at' => 'datetime',
@@ -122,8 +129,57 @@ final class User extends Authenticatable implements MustVerifyEmail
         }
     }
 
+    /**
+     * Narrow the admin user list down by whichever filters are set.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function filteredBy(
+        Builder $query,
+        ?Profession $profession = null,
+        ?AccountStateFilter $state = null,
+        string $search = '',
+    ): void {
+        $query
+            ->when($profession, fn (Builder $query, Profession $profession) => $query->where('profession', $profession->value))
+            ->when($state, fn (Builder $query, AccountStateFilter $state) => match ($state) {
+                AccountStateFilter::Verified => $query->whereNotNull('email_verified_at'),
+                AccountStateFilter::Unverified => $query->whereNull('email_verified_at'),
+                AccountStateFilter::Blocked => $query->whereNotNull('blocked_at'),
+            })
+            ->when($search !== '', fn (Builder $query) => $query->matchingSearch($search));
+    }
+
+    /**
+     * Count the registrations that take a seat (ADR-019) into registrations_count.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withRegistrationsCount(Builder $query): void
+    {
+        $query->withCount([
+            'registrations' => fn (Builder $registrations) => $registrations->whereIn('status', RegistrationStatus::seatTaking()),
+        ]);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function notBlocked(Builder $query): void
+    {
+        $query->whereNull('blocked_at');
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;
+    }
+
+    public function isBlocked(): bool
+    {
+        return $this->blocked_at !== null;
     }
 }

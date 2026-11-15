@@ -23,6 +23,7 @@ final class SearchParticipantsController extends Controller
 
         return ParticipantOptionResource::collection(
             User::query()
+                ->notBlocked()
                 ->matchingSearch($request->search())
                 ->orderBy('last_name')
                 ->orderBy('first_name')
