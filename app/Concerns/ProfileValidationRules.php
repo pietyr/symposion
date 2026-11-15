@@ -22,6 +22,7 @@ trait ProfileValidationRules
     protected function profileRules(?int $userId = null): array
     {
         return [
+            'academic_title' => ['nullable', 'string', 'max:50'],
             'first_name' => $this->nameRules(),
             'last_name' => $this->nameRules(),
             'email' => $this->emailRules($userId),

@@ -200,6 +200,7 @@ return [
     */
 
     'attributes' => [
+        'academic_title' => 'tytuł naukowy',
         'accent_color' => 'kolor akcentu',
         'amount' => 'kwota',
         'attendance' => 'forma udziału',

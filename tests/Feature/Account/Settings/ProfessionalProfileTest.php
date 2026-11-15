@@ -22,13 +22,14 @@ function updateProfile(User $user, array $data): void
 
 test('the profile page shows the professional details', function () {
     $specialization = Specialization::factory()->create();
-    $user = User::factory()->doctor()->create();
+    $user = User::factory()->doctor()->create(['academic_title' => 'lek.']);
     $user->specializations()->attach($specialization);
 
     $this->actingAs($user)
         ->get(route('account.profile.edit'))
         ->assertInertia(fn (Assert $page) => $page
             ->component('account/settings/Profile')
+            ->where('profile.academic_title', 'lek.')
             ->where('profile.profession', 'doctor')
             ->where('profile.license_number', $user->license_number)
             ->where('profile.specializations', [(string) $specialization->id])

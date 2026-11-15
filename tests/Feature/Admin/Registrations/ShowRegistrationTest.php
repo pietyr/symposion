@@ -25,7 +25,7 @@ describe('as an administrator', function () {
     });
 
     test('the registration comes with the professional profile of the participant', function () {
-        $doctor = User::factory()->doctor()->create();
+        $doctor = User::factory()->doctor()->create(['academic_title' => 'dr n. med.']);
         $doctor->specializations()->attach([
             Specialization::factory()->create(['name' => 'Urologia'])->id,
             Specialization::factory()->create(['name' => 'Kardiologia'])->id,
@@ -37,6 +37,7 @@ describe('as an administrator', function () {
                 ->component('admin/registrations/Show')
                 ->where('registration.id', $registration->id)
                 ->where('registration.status', 'paid')
+                ->where('participant.academic_title', 'dr n. med.')
                 ->where('participant.profession_label', 'Lekarz')
                 ->where('participant.license_number', $doctor->license_number)
                 ->where('participant.specializations', ['Kardiologia', 'Urologia'])

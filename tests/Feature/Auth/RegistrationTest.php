@@ -111,6 +111,37 @@ test('the first and the last name are stored apart', function () {
         ->and($user->name)->toBe('Anna Maria Nowak-Kowalska');
 });
 
+test('the academic title is optional', function (?string $academicTitle) {
+    $this->post(route('register.store'), [
+        'academic_title' => $academicTitle,
+        'first_name' => 'Test',
+        'last_name' => 'User',
+        'email' => 'test@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'profession' => 'laboratory_technician',
+    ])->assertSessionHasNoErrors();
+
+    expect(User::query()->sole()->academic_title)->toBe($academicTitle);
+})->with([
+    'given' => ['dr n. med.'],
+    'left empty' => [null],
+]);
+
+test('the academic title fits in fifty characters', function () {
+    $this->post(route('register.store'), [
+        'academic_title' => str_repeat('a', 51),
+        'first_name' => 'Test',
+        'last_name' => 'User',
+        'email' => 'test@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'profession' => 'laboratory_technician',
+    ])->assertSessionHasErrors('academic_title');
+
+    $this->assertGuest();
+});
+
 test('a known profession is required', function (?string $profession) {
     $this->post(route('register.store'), [
         'first_name' => 'Test',

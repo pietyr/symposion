@@ -26,6 +26,7 @@ final class ParticipantResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'academic_title' => $this->academic_title,
             'name' => $this->name,
             'email' => $this->email,
             'profession_label' => Profession::tryFrom((string) $this->profession)?->label(),

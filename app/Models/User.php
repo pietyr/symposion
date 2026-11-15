@@ -24,6 +24,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 
 /**
  * @property int $id
+ * @property string|null $academic_title shown before the name, e.g. "dr n. med."
  * @property string $first_name
  * @property string $last_name
  * @property-read string $name the first and last name together
@@ -46,7 +47,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property-read Collection<int, Specialization> $specializations
  * @property-read Collection<int, Registration> $registrations
  */
-#[Fillable(['first_name', 'last_name', 'email', 'password', 'profession', 'license_number', 'university', 'student_number', 'company', 'profession_name'])]
+#[Fillable(['academic_title', 'first_name', 'last_name', 'email', 'password', 'profession', 'license_number', 'university', 'student_number', 'company', 'profession_name'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 final class User extends Authenticatable implements MustVerifyEmail
 {

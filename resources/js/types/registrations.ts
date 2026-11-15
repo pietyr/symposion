@@ -37,6 +37,7 @@ export type RegistrationResource = {
 
 export type ParticipantResource = {
     id: number;
+    academic_title: string | null;
     name: string;
     email: string;
     profession_label: string | null;

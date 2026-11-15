@@ -35,6 +35,7 @@ final class DevelopmentSeeder extends Seeder
         ]);
 
         User::factory()->doctor()->create([
+            'academic_title' => 'lek.',
             'first_name' => 'Jan',
             'last_name' => 'Kowalski',
             'email' => 'user@example.com',

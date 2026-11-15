@@ -5,6 +5,7 @@ import ProfileController from '@/actions/App/Http/Controllers/Account/Settings/P
 import DeleteUser from '@/components/DeleteUser.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import AcademicTitleField from '@/components/profile/AcademicTitleField.vue';
 import ProfessionFields from '@/components/profile/ProfessionFields.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -85,6 +86,11 @@ const user = useAuthenticatedUser();
                     <InputError class="mt-2" :message="errors.last_name" />
                 </div>
             </div>
+
+            <AcademicTitleField
+                :default-value="profile.academic_title"
+                :error="errors.academic_title"
+            />
 
             <div class="grid gap-2">
                 <Label for="email">{{ $t('Email address') }}</Label>

@@ -2,6 +2,7 @@
 import { Form, Head } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
+import AcademicTitleField from '@/components/profile/AcademicTitleField.vue';
 import ProfessionFields from '@/components/profile/ProfessionFields.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
@@ -64,6 +65,8 @@ defineOptions({
                     <InputError :message="errors.last_name" />
                 </div>
             </div>
+
+            <AcademicTitleField :error="errors.academic_title" />
 
             <div class="grid gap-2">
                 <Label for="email">{{ $t('Email address') }}</Label>
