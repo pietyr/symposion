@@ -5,6 +5,7 @@ import EventController from '@/actions/App/Http/Controllers/Admin/EventControlle
 import CancelRegistrationController from '@/actions/App/Http/Controllers/Admin/CancelRegistrationController';
 import ConfirmRegistrationController from '@/actions/App/Http/Controllers/Admin/ConfirmRegistrationController';
 import RegistrationActionDialog from '@/components/registrations/RegistrationActionDialog.vue';
+import ProfileDetails from '@/components/admin/users/ProfileDetails.vue';
 import RegistrationStatusBadge from '@/components/registrations/RegistrationStatusBadge.vue';
 import Heading from '@/components/Heading.vue';
 import { Badge } from '@/components/ui/badge';
@@ -46,24 +47,6 @@ const titledName = computed(() =>
     [props.participant.academic_title, props.participant.name]
         .filter(Boolean)
         .join(' '),
-);
-
-// Only the fields the participant's profession uses are filled in.
-const profileRows = computed(() =>
-    [
-        { label: 'Profession', value: props.participant.profession_label },
-        { label: 'Your profession', value: props.participant.profession_name },
-        {
-            label: 'License number (PWZ)',
-            value: props.participant.license_number,
-        },
-        { label: 'University', value: props.participant.university },
-        {
-            label: 'Student ID number',
-            value: props.participant.student_number,
-        },
-        { label: 'Company', value: props.participant.company },
-    ].filter((row) => row.value),
 );
 </script>
 
@@ -200,41 +183,7 @@ const profileRows = computed(() =>
                     <CardTitle>{{ $t('Participant') }}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <dl
-                        class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm"
-                        data-test="participant-profile"
-                    >
-                        <dt class="text-muted-foreground">
-                            {{ $t('Email address') }}
-                        </dt>
-                        <dd>
-                            <a
-                                :href="`mailto:${participant.email}`"
-                                class="underline underline-offset-4"
-                                >{{ participant.email }}</a
-                            >
-                        </dd>
-                        <template v-for="row in profileRows" :key="row.label">
-                            <dt class="text-muted-foreground">
-                                {{ $t(row.label) }}
-                            </dt>
-                            <dd>{{ row.value }}</dd>
-                        </template>
-                        <template v-if="participant.specializations.length">
-                            <dt class="text-muted-foreground">
-                                {{ $t('Specializations') }}
-                            </dt>
-                            <dd class="flex flex-wrap gap-1">
-                                <Badge
-                                    v-for="specialization in participant.specializations"
-                                    :key="specialization"
-                                    variant="outline"
-                                >
-                                    {{ specialization }}
-                                </Badge>
-                            </dd>
-                        </template>
-                    </dl>
+                    <ProfileDetails :participant="participant" />
                 </CardContent>
             </Card>
 
