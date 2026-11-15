@@ -524,6 +524,20 @@ test('administrator accounts have no edit link', function () {
         ->assertNoJavaScriptErrors();
 });
 
+test('an administrator verifies an account', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $user = User::factory()->unverified()->create();
+
+    visit(route('admin.users.show', $user, absolute: false))
+        ->assertVisible('@account-unverified')
+        ->click('@verify-account')
+        ->click('@verify-account-confirm')
+        ->assertSee('Konto zostało potwierdzone')
+        ->assertMissing('@account-unverified')
+        ->assertMissing('@verify-account')
+        ->assertNoJavaScriptErrors();
+});
+
 test('an administrator opens the registrations from the sidebar and filters them', function () {
     $this->actingAs(User::factory()->admin()->create());
     Registration::factory()->for(User::factory()->create(['first_name' => 'Jan', 'last_name' => 'Kowalski', 'email' => 'jan.kowalski@example.com']))->paid()->create();

@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\RestoreEventController;
 use App\Http\Controllers\Admin\SearchParticipantsController;
 use App\Http\Controllers\Admin\SpecializationController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\VerifyUserController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'admin/Dashboard')->name('dashboard');
@@ -62,5 +63,7 @@ Route::patch('registrations/{registration}/confirm', ConfirmRegistrationControll
 Route::patch('registrations/{registration}/cancel', CancelRegistrationController::class)
     ->name('registrations.cancel');
 Route::resource('registrations', RegistrationController::class)->only(['index', 'create', 'store', 'show']);
+Route::patch('users/{user}/verify', VerifyUserController::class)
+    ->name('users.verify');
 Route::resource('users', UserController::class)->only(['index', 'show', 'edit', 'update']);
 Route::resource('specializations', SpecializationController::class)->except('show');

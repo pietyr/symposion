@@ -3,6 +3,8 @@ import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import RegistrationController from '@/actions/App/Http/Controllers/Admin/RegistrationController';
 import UserController from '@/actions/App/Http/Controllers/Admin/UserController';
+import VerifyUserController from '@/actions/App/Http/Controllers/Admin/VerifyUserController';
+import ActionDialog from '@/components/ActionDialog.vue';
 import AccountDetails from '@/components/admin/users/AccountDetails.vue';
 import ProfileDetails from '@/components/admin/users/ProfileDetails.vue';
 import Heading from '@/components/Heading.vue';
@@ -78,7 +80,24 @@ const titledName = computed(() =>
             >
                 {{ $t('Unverified') }}
             </Badge>
-            <div v-if="!account.is_admin" class="mb-8 sm:ml-auto">
+            <div
+                v-if="!account.is_admin"
+                class="mb-8 flex flex-wrap gap-2 sm:ml-auto"
+            >
+                <ActionDialog
+                    v-if="!account.email_verified_at"
+                    :action="VerifyUserController.form(account.id)"
+                    :label="$t('Verify account')"
+                    :title="
+                        $t('Verify the account of :name?', {
+                            name: account.name,
+                        })
+                    "
+                    :description="
+                        $t('The email address will be marked as verified.')
+                    "
+                    test-id="verify-account"
+                />
                 <Button variant="outline" as-child>
                     <Link
                         :href="UserController.edit(account.id)"
