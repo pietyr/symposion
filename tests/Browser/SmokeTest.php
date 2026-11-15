@@ -239,7 +239,8 @@ test('the app logo appears on the site, in the panels and on the auth pages', fu
 
 test('a visitor registers with a profession', function () {
     visit(route('register', absolute: false))
-        ->fill('name', 'Anna Nowak')
+        ->fill('first_name', 'Anna')
+        ->fill('last_name', 'Nowak')
         ->fill('email', 'anna@example.com')
         ->click('@profession-select')
         ->click('[role="option"]:has-text("Student")')
@@ -272,7 +273,8 @@ test('the license number field follows the chosen profession', function () {
 
     $page->click('@profession-select')
         ->click('[role="option"]:has-text("Pielęgniarka")')
-        ->fill('name', 'Anna Nowak')
+        ->fill('first_name', 'Anna')
+        ->fill('last_name', 'Nowak')
         ->fill('email', 'anna@example.com')
         ->fill('license_number', '1234567A')
         ->fill('password', 'password')
@@ -302,7 +304,8 @@ test('a doctor picks specializations by typing', function () {
         ->type('#specializations', 'ogol')
         ->click('[role="option"]:has-text("Chirurgia ogólna")');
 
-    $page->fill('name', 'Jan Kowalski')
+    $page->fill('first_name', 'Jan')
+        ->fill('last_name', 'Kowalski')
         ->fill('email', 'jan@example.com')
         ->fill('license_number', '5425740')
         ->fill('password', 'password')
@@ -452,8 +455,8 @@ test('an administrator adds a consent to an event', function () {
 
 test('an administrator opens the registrations from the sidebar and filters them', function () {
     $this->actingAs(User::factory()->admin()->create());
-    Registration::factory()->for(User::factory()->create(['name' => 'Jan Kowalski', 'email' => 'jan.kowalski@example.com']))->paid()->create();
-    Registration::factory()->for(User::factory()->create(['name' => 'Anna Nowak', 'email' => 'anna.nowak@example.com']))->create();
+    Registration::factory()->for(User::factory()->create(['first_name' => 'Jan', 'last_name' => 'Kowalski', 'email' => 'jan.kowalski@example.com']))->paid()->create();
+    Registration::factory()->for(User::factory()->create(['first_name' => 'Anna', 'last_name' => 'Nowak', 'email' => 'anna.nowak@example.com']))->create();
 
     visit(route('admin.dashboard', absolute: false))
         ->click('Zapisy')
@@ -470,8 +473,8 @@ test('an administrator opens the registrations from the sidebar and filters them
 test('an administrator goes from the event list to the participants of an event', function () {
     $this->actingAs(User::factory()->admin()->create());
     $event = Event::factory()->create(['title' => 'Forum Testowe']);
-    Registration::factory()->for($event)->for(User::factory()->create(['name' => 'Anna Nowak', 'email' => 'anna.nowak@example.com']))->create();
-    Registration::factory()->for(User::factory()->create(['name' => 'Jan Kowalski', 'email' => 'jan.kowalski@example.com']))->create();
+    Registration::factory()->for($event)->for(User::factory()->create(['first_name' => 'Anna', 'last_name' => 'Nowak', 'email' => 'anna.nowak@example.com']))->create();
+    Registration::factory()->for(User::factory()->create(['first_name' => 'Jan', 'last_name' => 'Kowalski', 'email' => 'jan.kowalski@example.com']))->create();
 
     visit(route('admin.events.index', absolute: false))
         ->click('tr:has-text("Forum Testowe") [data-test="event-registrations-link"]')
@@ -483,7 +486,7 @@ test('an administrator goes from the event list to the participants of an event'
 
 test('an administrator opens the participants from the event form', function () {
     $this->actingAs(User::factory()->admin()->create());
-    $registration = Registration::factory()->for(User::factory()->create(['name' => 'Anna Nowak', 'email' => 'anna.nowak@example.com']))->create();
+    $registration = Registration::factory()->for(User::factory()->create(['first_name' => 'Anna', 'last_name' => 'Nowak', 'email' => 'anna.nowak@example.com']))->create();
 
     visit(route('admin.events.edit', $registration->event, absolute: false))
         ->click('@event-participants-link')
@@ -496,8 +499,8 @@ test('an administrator opens the participants from the event form', function () 
 test('an administrator searches the participants of an event', function () {
     $this->actingAs(User::factory()->admin()->create());
     $event = Event::factory()->create();
-    Registration::factory()->for($event)->for(User::factory()->create(['name' => 'Jan Kowalski', 'email' => 'jan.kowalski@example.com']))->create();
-    Registration::factory()->for($event)->for(User::factory()->create(['name' => 'Anna Nowak', 'email' => 'anna.nowak@example.com']))->create();
+    Registration::factory()->for($event)->for(User::factory()->create(['first_name' => 'Jan', 'last_name' => 'Kowalski', 'email' => 'jan.kowalski@example.com']))->create();
+    Registration::factory()->for($event)->for(User::factory()->create(['first_name' => 'Anna', 'last_name' => 'Nowak', 'email' => 'anna.nowak@example.com']))->create();
 
     visit(route('admin.events.participants.index', $event, absolute: false))
         ->assertSee('Jan Kowalski')
@@ -509,7 +512,7 @@ test('an administrator searches the participants of an event', function () {
 
 test('an administrator cancels a registration from the participant list', function () {
     $this->actingAs(User::factory()->admin()->create());
-    $registration = Registration::factory()->for(User::factory()->create(['name' => 'Anna Nowak']))->create();
+    $registration = Registration::factory()->for(User::factory()->create(['first_name' => 'Anna', 'last_name' => 'Nowak']))->create();
 
     visit(route('admin.events.participants.index', $registration->event, absolute: false))
         ->click('@cancel-participant')
@@ -524,7 +527,7 @@ test('an administrator cancels a registration from the participant list', functi
 
 test('an administrator opens a registration from the list', function () {
     $this->actingAs(User::factory()->admin()->create());
-    $student = User::factory()->create(['name' => 'Anna Nowak', 'profession' => 'student', 'university' => 'UMED Łódź', 'student_number' => '123456']);
+    $student = User::factory()->create(['first_name' => 'Anna', 'last_name' => 'Nowak', 'profession' => 'student', 'university' => 'UMED Łódź', 'student_number' => '123456']);
     Registration::factory()->for($student)->create();
 
     visit(route('admin.registrations.index', absolute: false))
@@ -539,8 +542,8 @@ test('an administrator opens a registration from the list', function () {
 test('an administrator adds a registration by hand', function () {
     $this->actingAs(User::factory()->admin()->create());
     $event = Event::factory()->create(['title' => 'Forum Testowe', 'price_in_person' => 25000]);
-    User::factory()->create(['name' => 'Anna Grzmotowska', 'email' => 'anna.testowa@example.com']);
-    User::factory()->create(['name' => 'Jan Brzęczyszczykiewicz']);
+    User::factory()->create(['first_name' => 'Anna', 'last_name' => 'Grzmotowska', 'email' => 'anna.testowa@example.com']);
+    User::factory()->create(['first_name' => 'Jan', 'last_name' => 'Brzęczyszczykiewicz']);
 
     visit(route('admin.registrations.index', absolute: false))
         ->click('Dodaj zapis')
@@ -569,7 +572,7 @@ test('an administrator chooses benefits when adding a registration by hand', fun
     $event = Event::factory()->create(['title' => 'Forum Testowe', 'price_in_person' => 25000]);
     $dinner = Benefit::factory()->for($event)->create(['name' => 'Kolacja galowa']);
     $gala = BenefitOption::factory()->for($dinner)->create(['name' => 'Udział w kolacji', 'price' => 18000]);
-    User::factory()->create(['name' => 'Anna Grzmotowska', 'email' => 'anna.testowa@example.com']);
+    User::factory()->create(['first_name' => 'Anna', 'last_name' => 'Grzmotowska', 'email' => 'anna.testowa@example.com']);
 
     visit(route('admin.registrations.create', absolute: false))
         ->click('@event-select')

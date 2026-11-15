@@ -150,19 +150,18 @@ final class Registration extends Model
     }
 
     /**
-     * Alphabetically by the participant's surname, then the whole name. The name is stored
-     * as one field, so the surname is taken as its last word.
+     * Alphabetically by the participant's surname, then the first name.
      *
      * @param  Builder<self>  $query
      */
     #[Scope]
     protected function orderedByParticipantSurname(Builder $query): void
     {
-        $name = User::query()->select('name')->whereColumn('users.id', 'registrations.user_id');
+        $participant = fn (string $column) => User::query()->select($column)->whereColumn('users.id', 'registrations.user_id');
 
         $query
-            ->orderBy(User::query()->selectRaw("SUBSTRING_INDEX(name, ' ', -1)")->whereColumn('users.id', 'registrations.user_id'))
-            ->orderBy($name)
+            ->orderBy($participant('last_name'))
+            ->orderBy($participant('first_name'))
             ->orderBy('registrations.id');
     }
 

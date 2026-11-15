@@ -1,6 +1,8 @@
 export type User = {
     id: number;
     name: string;
+    first_name: string;
+    last_name: string;
     email: string;
     email_verified_at: string | null;
     is_admin: boolean;
@@ -15,6 +17,7 @@ export type ProfessionOption = {
 };
 
 export type ProfessionalProfile = {
+    academic_title: string | null;
     profession: string | null;
     license_number: string | null;
     university: string | null;

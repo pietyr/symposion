@@ -2,6 +2,7 @@
 import { Form, Head } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
+import AcademicTitleField from '@/components/profile/AcademicTitleField.vue';
 import ProfessionFields from '@/components/profile/ProfessionFields.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
@@ -36,19 +37,36 @@ defineOptions({
         class="flex flex-col gap-6"
     >
         <div class="grid gap-6">
-            <div class="grid gap-2">
-                <Label for="name">{{ $t('Name') }}</Label>
-                <Input
-                    id="name"
-                    type="text"
-                    required
-                    v-focus
-                    autocomplete="name"
-                    name="name"
-                    :placeholder="$t('Full name')"
-                />
-                <InputError :message="errors.name" />
+            <div class="grid gap-6 sm:grid-cols-2">
+                <div class="grid gap-2">
+                    <Label for="first_name">{{ $t('First name') }}</Label>
+                    <Input
+                        id="first_name"
+                        type="text"
+                        required
+                        v-focus
+                        autocomplete="given-name"
+                        name="first_name"
+                        :placeholder="$t('First name')"
+                    />
+                    <InputError :message="errors.first_name" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="last_name">{{ $t('Last name') }}</Label>
+                    <Input
+                        id="last_name"
+                        type="text"
+                        required
+                        autocomplete="family-name"
+                        name="last_name"
+                        :placeholder="$t('Last name')"
+                    />
+                    <InputError :message="errors.last_name" />
+                </div>
             </div>
+
+            <AcademicTitleField :error="errors.academic_title" />
 
             <div class="grid gap-2">
                 <Label for="email">{{ $t('Email address') }}</Label>

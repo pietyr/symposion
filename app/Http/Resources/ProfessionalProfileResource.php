@@ -24,6 +24,7 @@ final class ProfessionalProfileResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'academic_title' => $this->academic_title,
             'profession' => $this->profession,
             'license_number' => $this->license_number,
             'university' => $this->university,

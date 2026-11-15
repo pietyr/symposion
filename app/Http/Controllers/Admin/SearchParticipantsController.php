@@ -24,7 +24,8 @@ final class SearchParticipantsController extends Controller
         return ParticipantOptionResource::collection(
             User::query()
                 ->matchingSearch($request->search())
-                ->orderBy('name')
+                ->orderBy('last_name')
+                ->orderBy('first_name')
                 ->limit(20)
                 ->get(),
         );

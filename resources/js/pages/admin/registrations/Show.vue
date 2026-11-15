@@ -42,6 +42,12 @@ const dateFormatter = new Intl.DateTimeFormat('pl', {
 const formatDate = (iso: string | null): string =>
     iso ? dateFormatter.format(new Date(iso)) : '—';
 
+const titledName = computed(() =>
+    [props.participant.academic_title, props.participant.name]
+        .filter(Boolean)
+        .join(' '),
+);
+
 // Only the fields the participant's profession uses are filled in.
 const profileRows = computed(() =>
     [
@@ -67,7 +73,7 @@ const profileRows = computed(() =>
     <div class="flex flex-col gap-6 p-4">
         <div class="flex flex-wrap items-center gap-3">
             <Heading
-                :title="participant.name"
+                :title="titledName"
                 :description="registration.event.title"
             />
             <RegistrationStatusBadge

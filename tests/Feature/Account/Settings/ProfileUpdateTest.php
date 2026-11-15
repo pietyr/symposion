@@ -20,7 +20,8 @@ test('profile information can be updated', function () {
     $response = $this
         ->actingAs($user)
         ->patch(route('account.profile.update'), [
-            'name' => 'Test User',
+            'first_name' => 'Test',
+            'last_name' => 'User',
             'email' => 'test@example.com',
             'profession' => 'laboratory_technician',
         ]);
@@ -36,13 +37,38 @@ test('profile information can be updated', function () {
     expect($user->email_verified_at)->toBeNull();
 });
 
+test('the academic title can be changed and removed', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->patch(route('account.profile.update'), [
+        'academic_title' => 'dr n. med.',
+        'first_name' => 'Test',
+        'last_name' => 'User',
+        'email' => $user->email,
+        'profession' => 'laboratory_technician',
+    ])->assertSessionHasNoErrors();
+
+    expect($user->refresh()->academic_title)->toBe('dr n. med.');
+
+    $this->actingAs($user)->patch(route('account.profile.update'), [
+        'academic_title' => '',
+        'first_name' => 'Test',
+        'last_name' => 'User',
+        'email' => $user->email,
+        'profession' => 'laboratory_technician',
+    ])->assertSessionHasNoErrors();
+
+    expect($user->refresh()->academic_title)->toBeNull();
+});
+
 test('email verification status is unchanged when the email address is unchanged', function () {
     $user = User::factory()->create();
 
     $response = $this
         ->actingAs($user)
         ->patch(route('account.profile.update'), [
-            'name' => 'Test User',
+            'first_name' => 'Test',
+            'last_name' => 'User',
             'email' => $user->email,
             'profession' => 'laboratory_technician',
         ]);

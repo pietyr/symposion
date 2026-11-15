@@ -200,6 +200,7 @@ return [
     */
 
     'attributes' => [
+        'academic_title' => 'tytuł naukowy',
         'accent_color' => 'kolor akcentu',
         'amount' => 'kwota',
         'attendance' => 'forma udziału',
@@ -210,11 +211,12 @@ return [
         'email' => 'adres e-mail',
         'ends_at' => 'zakończenie',
         'event_id' => 'wydarzenie',
+        'first_name' => 'imię',
         'format' => 'forma udziału',
         'invoice_title' => 'tytuł na fakturze',
         'large_banner' => 'duży baner',
+        'last_name' => 'nazwisko',
         'license_number' => 'numer PWZ',
-        'name' => 'imię i nazwisko',
         'password' => 'hasło',
         'password_confirmation' => 'potwierdzenie hasła',
         'primary_color' => 'kolor wiodący',

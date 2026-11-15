@@ -21,7 +21,7 @@ beforeEach(function () {
         'price_online' => 0,
         'price_in_person' => 25000,
     ]);
-    $this->participant = User::factory()->create(['name' => 'Jan Kowalski', 'profession' => 'doctor']);
+    $this->participant = User::factory()->create(['first_name' => 'Jan', 'last_name' => 'Kowalski', 'profession' => 'doctor']);
     $this->storeUrl = route('events.registration.store', ['event' => $this->event, 'slug' => $this->event->slug]);
 });
 

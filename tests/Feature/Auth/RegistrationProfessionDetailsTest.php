@@ -10,7 +10,8 @@ use App\Models\User;
 function registerWithDetails(string $profession, array $details): void
 {
     test()->post(route('register.store'), [
-        'name' => 'Test User',
+        'first_name' => 'Test',
+        'last_name' => 'User',
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',

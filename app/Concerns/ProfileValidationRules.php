@@ -22,7 +22,9 @@ trait ProfileValidationRules
     protected function profileRules(?int $userId = null): array
     {
         return [
-            'name' => $this->nameRules(),
+            'academic_title' => ['nullable', 'string', 'max:50'],
+            'first_name' => $this->nameRules(),
+            'last_name' => $this->nameRules(),
             'email' => $this->emailRules($userId),
         ];
     }
@@ -108,7 +110,7 @@ trait ProfileValidationRules
     }
 
     /**
-     * Get the validation rules used to validate user names.
+     * Get the validation rules used to validate the first and the last name.
      *
      * @return array<int, ValidationRule|array<mixed>|string>
      */

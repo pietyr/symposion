@@ -12,10 +12,11 @@ final class CreateAdministrator
     /**
      * Create an administrator account with a verified email address.
      */
-    public function handle(string $name, string $email, string $password): User
+    public function handle(string $firstName, string $lastName, string $email, string $password): User
     {
         $user = new User([
-            'name' => $name,
+            'first_name' => $firstName,
+            'last_name' => $lastName,
             'email' => $email,
             'password' => $password,
         ]);

@@ -29,12 +29,15 @@ final class DevelopmentSeeder extends Seeder
     public function run(): void
     {
         User::factory()->admin()->create([
-            'name' => 'Admin',
+            'first_name' => 'Anna',
+            'last_name' => 'Nowak',
             'email' => 'admin@example.com',
         ]);
 
         User::factory()->doctor()->create([
-            'name' => 'Jan Kowalski',
+            'academic_title' => 'lek.',
+            'first_name' => 'Jan',
+            'last_name' => 'Kowalski',
             'email' => 'user@example.com',
         ])->specializations()->attach(Specialization::query()->inRandomOrder()->limit(2)->pluck('id'));
 

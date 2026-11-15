@@ -16,13 +16,15 @@ final class UserResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @return array{id: int, name: string, email: string, email_verified_at: string|null, is_admin: bool}
+     * @return array{id: int, name: string, first_name: string, last_name: string, email: string, email_verified_at: string|null, is_admin: bool}
      */
     public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'first_name' => $this->first_name,
+            'last_name' => $this->last_name,
             'email' => $this->email,
             'email_verified_at' => $this->email_verified_at?->toIso8601String(),
             'is_admin' => $this->isAdmin(),
