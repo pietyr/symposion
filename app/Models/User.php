@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -23,7 +24,9 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 
 /**
  * @property int $id
- * @property string $name
+ * @property string $first_name
+ * @property string $last_name
+ * @property-read string $name the first and last name together
  * @property string $email
  * @property string|null $profession a Profession value, kept as text (ADR-017)
  * @property string|null $license_number number of the right to practise (PWZ)
@@ -43,7 +46,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property-read Collection<int, Specialization> $specializations
  * @property-read Collection<int, Registration> $registrations
  */
-#[Fillable(['name', 'email', 'password', 'profession', 'license_number', 'university', 'student_number', 'company', 'profession_name'])]
+#[Fillable(['first_name', 'last_name', 'email', 'password', 'profession', 'license_number', 'university', 'student_number', 'company', 'profession_name'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 final class User extends Authenticatable implements MustVerifyEmail
 {
@@ -75,6 +78,14 @@ final class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * @return Attribute<string, never>
+     */
+    protected function name(): Attribute
+    {
+        return Attribute::get(fn (): string => trim($this->first_name.' '.$this->last_name));
+    }
+
+    /**
      * Specializations a doctor holds.
      *
      * @return BelongsToMany<Specialization, $this>
@@ -93,7 +104,7 @@ final class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Match every word of the term in the name or the email address. The collation already
+     * Match every word of the term in the first name, the last name or the email address. The collation already
      * ignores case and most Polish diacritics, but treats "ł" as a separate letter, so it is folded here.
      *
      * @param  Builder<self>  $query
@@ -105,7 +116,7 @@ final class User extends Authenticatable implements MustVerifyEmail
             $pattern = '%'.addcslashes(str_replace(['ł', 'Ł'], 'l', $word), '%_\\').'%';
 
             $query->where(fn (Builder $wordQuery) => $wordQuery
-                ->whereRaw("REPLACE(REPLACE(name, 'ł', 'l'), 'Ł', 'l') LIKE ?", [$pattern])
+                ->whereRaw("REPLACE(REPLACE(CONCAT(first_name, ' ', last_name), 'ł', 'l'), 'Ł', 'l') LIKE ?", [$pattern])
                 ->orWhere('email', 'like', $pattern));
         }
     }

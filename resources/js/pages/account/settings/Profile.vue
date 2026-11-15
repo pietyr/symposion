@@ -56,18 +56,34 @@ const user = useAuthenticatedUser();
             class="space-y-6"
             v-slot="{ errors, processing }"
         >
-            <div class="grid gap-2">
-                <Label for="name">{{ $t('Name') }}</Label>
-                <Input
-                    id="name"
-                    class="mt-1 block w-full"
-                    name="name"
-                    :default-value="user.name"
-                    required
-                    autocomplete="name"
-                    :placeholder="$t('Full name')"
-                />
-                <InputError class="mt-2" :message="errors.name" />
+            <div class="grid gap-6 sm:grid-cols-2">
+                <div class="grid gap-2">
+                    <Label for="first_name">{{ $t('First name') }}</Label>
+                    <Input
+                        id="first_name"
+                        class="mt-1 block w-full"
+                        name="first_name"
+                        :default-value="user.first_name"
+                        required
+                        autocomplete="given-name"
+                        :placeholder="$t('First name')"
+                    />
+                    <InputError class="mt-2" :message="errors.first_name" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="last_name">{{ $t('Last name') }}</Label>
+                    <Input
+                        id="last_name"
+                        class="mt-1 block w-full"
+                        name="last_name"
+                        :default-value="user.last_name"
+                        required
+                        autocomplete="family-name"
+                        :placeholder="$t('Last name')"
+                    />
+                    <InputError class="mt-2" :message="errors.last_name" />
+                </div>
             </div>
 
             <div class="grid gap-2">

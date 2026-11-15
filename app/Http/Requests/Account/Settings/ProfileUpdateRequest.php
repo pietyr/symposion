@@ -31,7 +31,7 @@ final class ProfileUpdateRequest extends FormRequest
     public function profileAttributes(): array
     {
         return [
-            ...$this->safe()->only(['name', 'email']),
+            ...$this->safe()->only(['first_name', 'last_name', 'email']),
             ...$this->professionAttributes($this->validated()),
         ];
     }

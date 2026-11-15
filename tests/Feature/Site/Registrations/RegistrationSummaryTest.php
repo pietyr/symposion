@@ -10,7 +10,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     $this->event = Event::factory()->visible()->create(['starts_at' => now()->addDays(10), 'ends_at' => now()->addDays(10)]);
-    $this->participant = User::factory()->create(['name' => 'Jan Kowalski', 'profession' => 'doctor']);
+    $this->participant = User::factory()->create(['first_name' => 'Jan', 'last_name' => 'Kowalski', 'profession' => 'doctor']);
     $this->url = route('events.show', ['event' => $this->event, 'slug' => $this->event->slug]);
 });
 

@@ -30,7 +30,8 @@ final class CreateNewUser implements CreatesNewUsers
 
         return DB::transaction(function () use ($input, $validated): User {
             $user = User::create([
-                'name' => $input['name'],
+                'first_name' => $input['first_name'],
+                'last_name' => $input['last_name'],
                 'email' => $input['email'],
                 'password' => $input['password'],
                 ...$this->professionAttributes($validated),

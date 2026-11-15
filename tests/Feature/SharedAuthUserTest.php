@@ -19,6 +19,8 @@ test('the authenticated user is shared with only the public fields', function ()
             ->has('auth.user', fn (Assert $sharedUser) => $sharedUser
                 ->where('id', $user->id)
                 ->where('name', $user->name)
+                ->where('first_name', $user->first_name)
+                ->where('last_name', $user->last_name)
                 ->where('email', $user->email)
                 ->where('email_verified_at', $user->email_verified_at?->toIso8601String())
                 ->where('is_admin', false),

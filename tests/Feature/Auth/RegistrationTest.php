@@ -19,7 +19,8 @@ test('registration screen can be rendered', function () {
 
 test('new users can register', function () {
     $response = $this->post(route('register.store'), [
-        'name' => 'Test User',
+        'first_name' => 'Test',
+        'last_name' => 'User',
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
@@ -32,7 +33,8 @@ test('new users can register', function () {
 
 test('new users are registered with the user role', function () {
     $this->post(route('register.store'), [
-        'name' => 'Test User',
+        'first_name' => 'Test',
+        'last_name' => 'User',
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
@@ -44,7 +46,8 @@ test('new users are registered with the user role', function () {
 
 test('the role cannot be set during registration', function () {
     $this->post(route('register.store'), [
-        'name' => 'Test User',
+        'first_name' => 'Test',
+        'last_name' => 'User',
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
@@ -66,7 +69,8 @@ test('the registration form offers the professions', function () {
 
 test('the profession is stored with the new account', function () {
     $this->post(route('register.store'), [
-        'name' => 'Test User',
+        'first_name' => 'Test',
+        'last_name' => 'User',
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
@@ -76,9 +80,41 @@ test('the profession is stored with the new account', function () {
     expect(User::query()->sole()->profession)->toBe('laboratory_technician');
 });
 
+test('the first and the last name are required', function (string $field) {
+    $this->post(route('register.store'), [
+        'first_name' => 'Test',
+        'last_name' => 'User',
+        'email' => 'test@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'profession' => 'laboratory_technician',
+        $field => '',
+    ])->assertSessionHasErrors($field);
+
+    $this->assertGuest();
+})->with(['first_name', 'last_name']);
+
+test('the first and the last name are stored apart', function () {
+    $this->post(route('register.store'), [
+        'first_name' => 'Anna Maria',
+        'last_name' => 'Nowak-Kowalska',
+        'email' => 'test@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'profession' => 'laboratory_technician',
+    ]);
+
+    $user = User::query()->sole();
+
+    expect($user->first_name)->toBe('Anna Maria')
+        ->and($user->last_name)->toBe('Nowak-Kowalska')
+        ->and($user->name)->toBe('Anna Maria Nowak-Kowalska');
+});
+
 test('a known profession is required', function (?string $profession) {
     $this->post(route('register.store'), [
-        'name' => 'Test User',
+        'first_name' => 'Test',
+        'last_name' => 'User',
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',

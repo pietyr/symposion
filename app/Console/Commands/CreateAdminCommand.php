@@ -24,10 +24,16 @@ final class CreateAdminCommand extends Command
      */
     public function handle(CreateAdministrator $createAdministrator): int
     {
-        $name = text(
-            label: 'Name',
+        $firstName = text(
+            label: 'First name',
             required: true,
-            validate: ['name' => ['max:255']],
+            validate: ['first_name' => ['max:255']],
+        );
+
+        $lastName = text(
+            label: 'Last name',
+            required: true,
+            validate: ['last_name' => ['max:255']],
         );
 
         $email = text(
@@ -42,7 +48,7 @@ final class CreateAdminCommand extends Command
             validate: ['password' => [Password::defaults()]],
         );
 
-        $user = $createAdministrator->handle($name, $email, $password);
+        $user = $createAdministrator->handle($firstName, $lastName, $email, $password);
 
         $this->info("Administrator {$user->email} has been created.");
 

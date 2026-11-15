@@ -12,7 +12,8 @@ use Inertia\Testing\AssertableInertia as Assert;
 function registerWith(string $profession, ?string $licenseNumber, array $details = []): void
 {
     test()->post(route('register.store'), [
-        'name' => 'Test User',
+        'first_name' => 'Test',
+        'last_name' => 'User',
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',

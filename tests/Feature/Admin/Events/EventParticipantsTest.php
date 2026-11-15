@@ -24,8 +24,10 @@ describe('as an administrator', function () {
     });
 
     test('the participants come by surname with their profession and benefits', function () {
-        $zielinska = Registration::factory()->for($this->event)->for(User::factory()->create(['name' => 'Anna Zielińska', 'profession' => 'nurse']))->paid()->create();
-        $adamski = Registration::factory()->for($this->event)->for(User::factory()->create(['name' => 'Piotr Adamski', 'profession' => 'doctor']))->create();
+        $zielinska = Registration::factory()->for($this->event)->for(User::factory()->create(['first_name' => 'Anna', 'last_name' => 'Zielińska', 'profession' => 'nurse']))->paid()->create();
+        $adamski = Registration::factory()->for($this->event)->for(User::factory()->create(['first_name' => 'Piotr', 'last_name' => 'Adamski', 'profession' => 'doctor']))->create();
+        // Sorting by the last word of the whole name would put her last.
+        $deZwaan = Registration::factory()->for($this->event)->for(User::factory()->create(['first_name' => 'Ewa', 'last_name' => 'de Zwaan']))->create();
         RegistrationBenefit::factory()->for($adamski)->create(['benefit_name' => 'Nocleg', 'option_name' => '2 noce']);
         Registration::factory()->create();
 
@@ -33,12 +35,13 @@ describe('as an administrator', function () {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/events/Participants')
                 ->where('event', ['id' => $this->event->id, 'title' => 'Forum', 'is_deleted' => false])
-                ->has('registrations.data', 2)
+                ->has('registrations.data', 3)
                 ->where('registrations.data.0.id', $adamski->id)
                 ->where('registrations.data.0.user.profession_label', 'Lekarz')
                 ->where('registrations.data.0.benefits.0.option_name', '2 noce')
-                ->where('registrations.data.1.id', $zielinska->id)
-                ->where('registrations.meta.total', 2),
+                ->where('registrations.data.1.id', $deZwaan->id)
+                ->where('registrations.data.2.id', $zielinska->id)
+                ->where('registrations.meta.total', 3),
             );
     });
 
@@ -63,9 +66,9 @@ describe('as an administrator', function () {
     test('the participants can be searched and filtered', function (array $query, array $expected) {
         $this->event->update(['format' => 'hybrid', 'price_online' => 9900]);
         $registrations = [
-            'nurse online' => Registration::factory()->for($this->event)->online()->for(User::factory()->create(['name' => 'Anna Brzęczyszczykiewicz', 'email' => 'anna.b@example.com', 'profession' => 'nurse']))->create(),
-            'doctor paid' => Registration::factory()->for($this->event)->paid()->for(User::factory()->create(['name' => 'Jan Grzmotowski', 'email' => 'jan.g@example.com', 'profession' => 'doctor']))->create(),
-            'cancelled' => Registration::factory()->for($this->event)->cancelled()->for(User::factory()->create(['name' => 'Ewa Testowa', 'email' => 'ewa.t@example.com', 'profession' => 'doctor']))->create(),
+            'nurse online' => Registration::factory()->for($this->event)->online()->for(User::factory()->create(['first_name' => 'Anna', 'last_name' => 'Brzęczyszczykiewicz', 'email' => 'anna.b@example.com', 'profession' => 'nurse']))->create(),
+            'doctor paid' => Registration::factory()->for($this->event)->paid()->for(User::factory()->create(['first_name' => 'Jan', 'last_name' => 'Grzmotowski', 'email' => 'jan.g@example.com', 'profession' => 'doctor']))->create(),
+            'cancelled' => Registration::factory()->for($this->event)->cancelled()->for(User::factory()->create(['first_name' => 'Ewa', 'last_name' => 'Testowa', 'email' => 'ewa.t@example.com', 'profession' => 'doctor']))->create(),
         ];
 
         $this->get(route('admin.events.participants.index', [$this->event, ...$query]))

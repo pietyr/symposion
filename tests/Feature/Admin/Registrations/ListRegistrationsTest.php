@@ -53,8 +53,8 @@ describe('as an administrator', function () {
     test('the list can be narrowed down', function (Closure $query, Closure $expected) {
         $event = Event::factory()->hybrid()->create();
         $registrations = [
-            'kowalski' => Registration::factory()->for($event)->for(User::factory()->create(['name' => 'Jan Brzęczyszczykiewicz', 'email' => 'jan.testowy@example.com']))->paid()->create(),
-            'nowak' => Registration::factory()->for($event)->for(User::factory()->create(['name' => 'Anna Grzmotowska', 'email' => 'anna.testowa@example.com']))->online()->create(),
+            'kowalski' => Registration::factory()->for($event)->for(User::factory()->create(['first_name' => 'Jan', 'last_name' => 'Brzęczyszczykiewicz', 'email' => 'jan.testowy@example.com']))->paid()->create(),
+            'nowak' => Registration::factory()->for($event)->for(User::factory()->create(['first_name' => 'Anna', 'last_name' => 'Grzmotowska', 'email' => 'anna.testowa@example.com']))->online()->create(),
             'other event' => Registration::factory()->cancelled()->create(),
         ];
 

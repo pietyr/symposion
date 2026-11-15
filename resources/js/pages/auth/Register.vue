@@ -36,18 +36,33 @@ defineOptions({
         class="flex flex-col gap-6"
     >
         <div class="grid gap-6">
-            <div class="grid gap-2">
-                <Label for="name">{{ $t('Name') }}</Label>
-                <Input
-                    id="name"
-                    type="text"
-                    required
-                    v-focus
-                    autocomplete="name"
-                    name="name"
-                    :placeholder="$t('Full name')"
-                />
-                <InputError :message="errors.name" />
+            <div class="grid gap-6 sm:grid-cols-2">
+                <div class="grid gap-2">
+                    <Label for="first_name">{{ $t('First name') }}</Label>
+                    <Input
+                        id="first_name"
+                        type="text"
+                        required
+                        v-focus
+                        autocomplete="given-name"
+                        name="first_name"
+                        :placeholder="$t('First name')"
+                    />
+                    <InputError :message="errors.first_name" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="last_name">{{ $t('Last name') }}</Label>
+                    <Input
+                        id="last_name"
+                        type="text"
+                        required
+                        autocomplete="family-name"
+                        name="last_name"
+                        :placeholder="$t('Last name')"
+                    />
+                    <InputError :message="errors.last_name" />
+                </div>
             </div>
 
             <div class="grid gap-2">

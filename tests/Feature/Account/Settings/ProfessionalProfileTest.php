@@ -13,7 +13,8 @@ use Inertia\Testing\AssertableInertia as Assert;
 function updateProfile(User $user, array $data): void
 {
     test()->actingAs($user)->patch(route('account.profile.update'), [
-        'name' => $user->name,
+        'first_name' => $user->first_name,
+        'last_name' => $user->last_name,
         'email' => $user->email,
         ...$data,
     ]);
@@ -71,7 +72,7 @@ test('the same rules apply as at registration', function () {
     $licenseNumber = $user->license_number;
 
     $this->actingAs($user)
-        ->patch(route('account.profile.update'), ['name' => $user->name, 'email' => $user->email, 'profession' => 'doctor', 'license_number' => '5425741'])
+        ->patch(route('account.profile.update'), ['first_name' => $user->first_name, 'last_name' => $user->last_name, 'email' => $user->email, 'profession' => 'doctor', 'license_number' => '5425741'])
         ->assertSessionHasErrors('license_number');
 
     expect($user->fresh()->license_number)->toBe($licenseNumber);
@@ -79,13 +80,13 @@ test('the same rules apply as at registration', function () {
 
 test('users must have a profession, administrators may have none', function () {
     $this->actingAs(User::factory()->create())
-        ->patch(route('account.profile.update'), ['name' => 'Jan', 'email' => 'jan@example.com'])
+        ->patch(route('account.profile.update'), ['first_name' => 'Jan', 'last_name' => 'Kowalski', 'email' => 'jan@example.com'])
         ->assertSessionHasErrors('profession');
 
     $admin = User::factory()->admin()->create();
 
     $this->actingAs($admin)
-        ->patch(route('account.profile.update'), ['name' => 'Admin', 'email' => $admin->email])
+        ->patch(route('account.profile.update'), ['first_name' => 'Anna', 'last_name' => 'Nowak', 'email' => $admin->email])
         ->assertSessionHasNoErrors();
 
     expect($admin->fresh()->profession)->toBeNull();
