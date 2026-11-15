@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Actions\Users\BlockUser;
+use App\Actions\Users\DeleteAccount;
 use App\Enums\Attendance;
 use App\Enums\BenefitType;
 use App\Enums\EventFormat;
@@ -17,6 +19,7 @@ use App\Models\Registration;
 use App\Models\Specialization;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 
 final class DevelopmentSeeder extends Seeder
@@ -26,7 +29,7 @@ final class DevelopmentSeeder extends Seeder
     /**
      * Seed ready-to-use local accounts (password: "password") and sample events.
      */
-    public function run(): void
+    public function run(BlockUser $blockUser, DeleteAccount $deleteAccount): void
     {
         User::factory()->admin()->create([
             'first_name' => 'Anna',
@@ -51,8 +54,49 @@ final class DevelopmentSeeder extends Seeder
         Event::factory()->withProfessions()->withSpecializations()->withSections()->withBrandColors()->count(3)->create();
         Event::factory()->withProfessions()->withSpecializations()->withSections()->withBrandColors()->visible()->count(2)->create()->each->delete();
 
-        $this->seedRegistrations();
+        $participants = $this->seedParticipants();
+        $this->seedRegistrations($participants);
         $this->seedBenefitsAndConsents();
+        $this->seedAccountStates($participants, $blockUser, $deleteAccount);
+    }
+
+    /**
+     * Doctors and laboratory technicians who signed up over the last months, some of them with an academic title.
+     *
+     * @return Collection<int, User>
+     */
+    private function seedParticipants(): Collection
+    {
+        $signedUp = fn (): array => ['created_at' => fake()->dateTimeBetween('-6 months', '-2 months')];
+
+        return User::factory()->doctor()->count(15)
+            ->state($signedUp)
+            ->state(fn (): array => ['academic_title' => fake()->randomElement(['lek.', 'lek.', 'dr n. med.', 'dr hab. n. med.', 'prof. dr hab. n. med.', null])])
+            ->create()
+            ->concat(User::factory()->count(15)
+                ->state($signedUp)
+                ->state(fn (): array => ['academic_title' => fake()->randomElement(['mgr', 'lic.', null])])
+                ->create(['profession' => Profession::LaboratoryTechnician->value]));
+    }
+
+    /**
+     * Accounts in every state the user list tells apart: new and unverified nurses, blocked and deleted
+     * participants, whose pending registrations get cancelled as in the admin panel (ADR-025).
+     *
+     * @param  Collection<int, User>  $participants
+     */
+    private function seedAccountStates(Collection $participants, BlockUser $blockUser, DeleteAccount $deleteAccount): void
+    {
+        User::factory()->unverified()->count(3)->create([
+            'academic_title' => 'mgr piel.',
+            'profession' => Profession::Nurse->value,
+            'license_number' => fn (): string => fake()->numerify('#######P'),
+        ]);
+
+        $picked = $participants->shuffle()->take(4);
+
+        $picked->take(2)->each(fn (User $user) => $blockUser->handle($user));
+        $picked->skip(2)->each(fn (User $user) => $deleteAccount->handle($user));
     }
 
     /**
@@ -111,12 +155,11 @@ final class DevelopmentSeeder extends Seeder
 
     /**
      * A few participants on most events, including deleted ones, whose registrations the admin still sees.
+     *
+     * @param  Collection<int, User>  $participants
      */
-    private function seedRegistrations(): void
+    private function seedRegistrations(Collection $participants): void
     {
-        $participants = User::factory()->doctor()->count(15)->create()
-            ->concat(User::factory()->count(15)->create(['profession' => Profession::LaboratoryTechnician->value]));
-
         foreach (Event::withTrashed()->get() as $event) {
             foreach ($participants->random(fake()->numberBetween(0, 8)) as $participant) {
                 $attendance = collect($event->attendances())->random();
