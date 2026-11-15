@@ -4,12 +4,22 @@ import { computed } from 'vue';
 import EventController from '@/actions/App/Http/Controllers/Admin/EventController';
 import CancelRegistrationController from '@/actions/App/Http/Controllers/Admin/CancelRegistrationController';
 import ConfirmRegistrationController from '@/actions/App/Http/Controllers/Admin/ConfirmRegistrationController';
+import UserController from '@/actions/App/Http/Controllers/Admin/UserController';
+import AccountDetails from '@/components/admin/users/AccountDetails.vue';
 import RegistrationActionDialog from '@/components/registrations/RegistrationActionDialog.vue';
 import ProfileDetails from '@/components/admin/users/ProfileDetails.vue';
 import RegistrationStatusBadge from '@/components/registrations/RegistrationStatusBadge.vue';
 import Heading from '@/components/Heading.vue';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardAction,
+    CardContent,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { usePriceFormat } from '@/composables/usePriceFormat';
 import { index } from '@/routes/admin/registrations';
 import type { ParticipantResource, RegistrationResource } from '@/types';
@@ -181,9 +191,21 @@ const titledName = computed(() =>
             <Card>
                 <CardHeader>
                     <CardTitle>{{ $t('Participant') }}</CardTitle>
+                    <CardAction>
+                        <Button variant="outline" size="sm" as-child>
+                            <Link
+                                :href="UserController.show(participant.id)"
+                                data-test="participant-account-link"
+                            >
+                                {{ $t('User details') }}
+                            </Link>
+                        </Button>
+                    </CardAction>
                 </CardHeader>
-                <CardContent>
+                <CardContent class="flex flex-col gap-4">
                     <ProfileDetails :participant="participant" />
+                    <Separator />
+                    <AccountDetails :account="participant" />
                 </CardContent>
             </Card>
 

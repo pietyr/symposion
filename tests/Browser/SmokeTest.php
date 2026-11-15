@@ -485,6 +485,19 @@ test('an administrator goes from the user list to a registration of the user', f
         ->assertNoJavaScriptErrors();
 });
 
+test('an administrator goes from a registration to the account of the participant', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $user = User::factory()->unverified()->create(['first_name' => 'Anna', 'last_name' => 'Nowak']);
+    $registration = Registration::factory()->for($user)->create();
+
+    visit(route('admin.registrations.show', $registration, absolute: false))
+        ->assertSeeIn('@account-details', 'Niepotwierdzone')
+        ->click('@participant-account-link')
+        ->assertPathIs(route('admin.users.show', $user, absolute: false))
+        ->assertSee('Anna Nowak')
+        ->assertNoJavaScriptErrors();
+});
+
 test('an administrator opens the registrations from the sidebar and filters them', function () {
     $this->actingAs(User::factory()->admin()->create());
     Registration::factory()->for(User::factory()->create(['first_name' => 'Jan', 'last_name' => 'Kowalski', 'email' => 'jan.kowalski@example.com']))->paid()->create();

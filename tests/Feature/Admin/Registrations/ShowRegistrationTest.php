@@ -41,7 +41,9 @@ describe('as an administrator', function () {
                 ->where('participant.profession_label', 'Lekarz')
                 ->where('participant.license_number', $doctor->license_number)
                 ->where('participant.specializations', ['Kardiologia', 'Urologia'])
-                ->where('participant.university', null),
+                ->where('participant.university', null)
+                ->where('participant.email_verified_at', $doctor->email_verified_at?->toIso8601String())
+                ->where('participant.created_at', $doctor->created_at?->toIso8601String()),
             );
     });
 
