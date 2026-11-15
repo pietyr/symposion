@@ -23,7 +23,7 @@ describe('as an administrator', function () {
     });
 
     test('the user comes with the professional profile and the account state', function () {
-        $doctor = User::factory()->doctor()->unverified()->create(['academic_title' => 'dr n. med.']);
+        $doctor = User::factory()->doctor()->unverified()->blocked()->create(['academic_title' => 'dr n. med.']);
         $doctor->specializations()->attach([
             Specialization::factory()->create(['name' => 'Urologia'])->id,
             Specialization::factory()->create(['name' => 'Kardiologia'])->id,
@@ -40,6 +40,7 @@ describe('as an administrator', function () {
                 ->where('account.specializations', ['Kardiologia', 'Urologia'])
                 ->where('account.is_admin', false)
                 ->where('account.email_verified_at', null)
+                ->where('account.blocked_at', $doctor->blocked_at?->toIso8601String())
                 ->where('account.created_at', $doctor->created_at?->toIso8601String()),
             );
     });

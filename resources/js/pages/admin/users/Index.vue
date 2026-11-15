@@ -165,6 +165,9 @@ const filterFields = computed(() => [
                             <Badge v-if="!user.is_verified" variant="outline">
                                 {{ $t('Unverified') }}
                             </Badge>
+                            <Badge v-if="user.is_blocked" variant="destructive">
+                                {{ $t('Blocked') }}
+                            </Badge>
                         </div>
                     </TableCell>
                     <TableCell class="text-muted-foreground tabular-nums">

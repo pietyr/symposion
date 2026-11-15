@@ -22,7 +22,7 @@ describe('as an administrator', function () {
 
     test('users are listed newest first with their profession and account state', function () {
         $older = User::factory()->doctor()->create(['created_at' => now()->subDay()]);
-        $newer = User::factory()->unverified()->create(['profession' => 'nurse']);
+        $newer = User::factory()->unverified()->blocked()->create(['profession' => 'nurse']);
 
         $this->get(route('admin.users.index'))
             ->assertInertia(fn (Assert $page) => $page
@@ -31,11 +31,13 @@ describe('as an administrator', function () {
                 ->where('users.data.0.id', $newer->id)
                 ->where('users.data.0.profession_label', 'Pielęgniarka')
                 ->where('users.data.0.is_verified', false)
+                ->where('users.data.0.is_blocked', true)
                 ->where('users.data.1.id', $older->id)
                 ->where('users.data.1.name', $older->name)
                 ->where('users.data.1.email', $older->email)
                 ->where('users.data.1.is_verified', true)
                 ->where('users.data.1.is_admin', false)
+                ->where('users.data.1.is_blocked', false)
                 ->where('users.data.2.id', $this->admin->id)
                 ->where('users.data.2.is_admin', true)
                 ->where('users.data.2.profession_label', null),
@@ -56,6 +58,7 @@ describe('as an administrator', function () {
         $users = [
             'doctor' => User::factory()->doctor()->create(['first_name' => 'Jan', 'last_name' => 'Brzęczyszczykiewicz', 'email' => 'jan.testowy@example.com']),
             'nurse' => User::factory()->unverified()->create(['first_name' => 'Anna', 'last_name' => 'Grzmotowska', 'email' => 'anna.testowa@example.com', 'profession' => 'nurse']),
+            'blocked' => User::factory()->blocked()->create(['first_name' => 'Ewa', 'last_name' => 'Testowa', 'email' => 'ewa.testowa@example.com', 'profession' => 'midwife']),
         ];
 
         $this->get(route('admin.users.index', $query))
@@ -66,7 +69,8 @@ describe('as an administrator', function () {
         'name' => [['search' => 'brzęcz'], fn (array $users) => [$users['doctor']]],
         'email' => [['search' => 'anna.testowa'], fn (array $users) => [$users['nurse']]],
         'profession' => [['profession' => 'nurse'], fn (array $users) => [$users['nurse']]],
-        'verified accounts' => [['state' => 'verified'], fn (array $users, User $admin) => [$users['doctor'], $admin]],
+        'verified accounts' => [['state' => 'verified'], fn (array $users, User $admin) => [$users['doctor'], $users['blocked'], $admin]],
+        'blocked accounts' => [['state' => 'blocked'], fn (array $users) => [$users['blocked']]],
         'unverified accounts' => [['state' => 'unverified'], fn (array $users) => [$users['nurse']]],
         'unknown values are ignored' => [['profession' => 'astronaut', 'state' => 'sleeping'], fn (array $users, User $admin) => [...array_values($users), $admin]],
     ]);
@@ -79,6 +83,7 @@ describe('as an administrator', function () {
                 ->where('filterOptions.states', [
                     ['value' => 'verified', 'label' => 'Potwierdzone konta'],
                     ['value' => 'unverified', 'label' => 'Niepotwierdzone konta'],
+                    ['value' => 'blocked', 'label' => 'Zablokowane konta'],
                 ]),
             );
     });

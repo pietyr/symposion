@@ -30,6 +30,7 @@ final class AdminUserResource extends JsonResource
             'profession_label' => Profession::tryFrom((string) $this->profession)?->label(),
             'is_admin' => $this->isAdmin(),
             'is_verified' => $this->email_verified_at !== null,
+            'is_blocked' => $this->isBlocked(),
             'registrations_count' => $this->whenCounted('registrations'),
             'created_at' => $this->created_at?->toIso8601String(),
         ];

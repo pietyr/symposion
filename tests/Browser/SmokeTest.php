@@ -538,6 +538,38 @@ test('an administrator verifies an account', function () {
         ->assertNoJavaScriptErrors();
 });
 
+test('an administrator blocks and unblocks a user', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $user = User::factory()->create();
+
+    visit(route('admin.users.show', $user, absolute: false))
+        ->click('@block-user')
+        ->assertSee('oczekujące zapisy zostaną anulowane')
+        ->click('@block-user-confirm')
+        ->assertSee('Użytkownik został zablokowany')
+        ->assertVisible('@account-blocked')
+        ->assertSeeIn('@account-details', 'Data blokady')
+        ->click('@unblock-user')
+        ->click('@unblock-user-confirm')
+        ->assertSee('Użytkownik został odblokowany')
+        ->assertMissing('@account-blocked')
+        ->assertNoJavaScriptErrors();
+});
+
+test('a blocked user is sent back to the login page', function () {
+    User::factory()->blocked()->create(['email' => 'anna@example.com']);
+
+    visit(route('login', absolute: false))
+        ->fill('email', 'anna@example.com')
+        ->fill('password', 'password')
+        ->click('@login-button')
+        ->assertPathIs(route('login', absolute: false))
+        ->assertSee('To konto zostało zablokowane')
+        ->assertNoJavaScriptErrors();
+
+    $this->assertGuest();
+});
+
 test('an administrator opens the registrations from the sidebar and filters them', function () {
     $this->actingAs(User::factory()->admin()->create());
     Registration::factory()->for(User::factory()->create(['first_name' => 'Jan', 'last_name' => 'Kowalski', 'email' => 'jan.kowalski@example.com']))->paid()->create();

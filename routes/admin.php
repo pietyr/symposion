@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Admin\BenefitOptionController;
+use App\Http\Controllers\Admin\BlockUserController;
 use App\Http\Controllers\Admin\CancelRegistrationController;
 use App\Http\Controllers\Admin\ConfirmRegistrationController;
 use App\Http\Controllers\Admin\EventBenefitController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Admin\RegistrationController;
 use App\Http\Controllers\Admin\RestoreEventController;
 use App\Http\Controllers\Admin\SearchParticipantsController;
 use App\Http\Controllers\Admin\SpecializationController;
+use App\Http\Controllers\Admin\UnblockUserController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\VerifyUserController;
 use Illuminate\Support\Facades\Route;
@@ -65,5 +67,9 @@ Route::patch('registrations/{registration}/cancel', CancelRegistrationController
 Route::resource('registrations', RegistrationController::class)->only(['index', 'create', 'store', 'show']);
 Route::patch('users/{user}/verify', VerifyUserController::class)
     ->name('users.verify');
+Route::patch('users/{user}/block', BlockUserController::class)
+    ->name('users.block');
+Route::patch('users/{user}/unblock', UnblockUserController::class)
+    ->name('users.unblock');
 Route::resource('users', UserController::class)->only(['index', 'show', 'edit', 'update']);
 Route::resource('specializations', SpecializationController::class)->except('show');

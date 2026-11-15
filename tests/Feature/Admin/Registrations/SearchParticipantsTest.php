@@ -34,6 +34,13 @@ describe('as an administrator', function () {
         'nothing matches' => ['xyzzy', []],
     ]);
 
+    test('blocked users cannot be picked', function () {
+        User::factory()->blocked()->create(['first_name' => 'Anna', 'last_name' => 'Grzmotowska']);
+
+        $this->getJson(route('admin.registrations.participants', ['search' => 'grzmot']))
+            ->assertExactJson([]);
+    });
+
     test('an option carries the id, the name and the email address', function () {
         $user = User::factory()->create(['first_name' => 'Anna', 'last_name' => 'Grzmotowska', 'email' => 'anna.testowa@example.com']);
 

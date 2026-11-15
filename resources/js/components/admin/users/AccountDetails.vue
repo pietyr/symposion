@@ -2,7 +2,10 @@
 import type { ParticipantResource } from '@/types';
 
 defineProps<{
-    account: Pick<ParticipantResource, 'created_at' | 'email_verified_at'>;
+    account: Pick<
+        ParticipantResource,
+        'created_at' | 'email_verified_at' | 'blocked_at'
+    >;
 }>();
 
 const dateTimeFormatter = new Intl.DateTimeFormat('pl', {
@@ -34,5 +37,11 @@ const formatDateTime = (iso: string | null): string =>
                     : $t('Unverified')
             }}
         </dd>
+        <template v-if="account.blocked_at">
+            <dt class="text-muted-foreground">
+                {{ $t('Blocked at') }}
+            </dt>
+            <dd>{{ formatDateTime(account.blocked_at) }}</dd>
+        </template>
     </dl>
 </template>

@@ -2,6 +2,8 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import RegistrationController from '@/actions/App/Http/Controllers/Admin/RegistrationController';
+import BlockUserController from '@/actions/App/Http/Controllers/Admin/BlockUserController';
+import UnblockUserController from '@/actions/App/Http/Controllers/Admin/UnblockUserController';
 import UserController from '@/actions/App/Http/Controllers/Admin/UserController';
 import VerifyUserController from '@/actions/App/Http/Controllers/Admin/VerifyUserController';
 import ActionDialog from '@/components/ActionDialog.vue';
@@ -80,6 +82,14 @@ const titledName = computed(() =>
             >
                 {{ $t('Unverified') }}
             </Badge>
+            <Badge
+                v-if="account.blocked_at"
+                variant="destructive"
+                class="mb-8"
+                data-test="account-blocked"
+            >
+                {{ $t('Blocked') }}
+            </Badge>
             <div
                 v-if="!account.is_admin"
                 class="mb-8 flex flex-wrap gap-2 sm:ml-auto"
@@ -106,6 +116,39 @@ const titledName = computed(() =>
                         {{ $t('Edit') }}
                     </Link>
                 </Button>
+                <ActionDialog
+                    v-if="account.blocked_at"
+                    :action="UnblockUserController.form(account.id)"
+                    :label="$t('Unblock')"
+                    :title="
+                        $t('Unblock :name?', {
+                            name: account.name,
+                        })
+                    "
+                    :description="
+                        $t(
+                            'The user will be able to sign in again. Cancelled registrations stay cancelled.',
+                        )
+                    "
+                    test-id="unblock-user"
+                />
+                <ActionDialog
+                    v-else
+                    :action="BlockUserController.form(account.id)"
+                    :label="$t('Block')"
+                    :title="
+                        $t('Block :name?', {
+                            name: account.name,
+                        })
+                    "
+                    :description="
+                        $t(
+                            'The user will not be able to sign in, and their pending registrations will be cancelled.',
+                        )
+                    "
+                    variant="destructive"
+                    test-id="block-user"
+                />
             </div>
         </div>
 

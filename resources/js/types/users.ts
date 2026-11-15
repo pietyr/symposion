@@ -7,6 +7,7 @@ export type AdminUserResource = {
     profession_label: string | null;
     is_admin: boolean;
     is_verified: boolean;
+    is_blocked: boolean;
     registrations_count: number;
     created_at: string | null;
 };

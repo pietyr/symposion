@@ -40,6 +40,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string|null $profession_name the profession of someone who chose "other"
  * @property UserRole $role
  * @property Carbon|null $email_verified_at
+ * @property Carbon|null $blocked_at a blocked user cannot sign in (ADR-025)
  * @property string $password
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
@@ -75,6 +76,7 @@ final class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'blocked_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
             'two_factor_confirmed_at' => 'datetime',
@@ -142,6 +144,7 @@ final class User extends Authenticatable implements MustVerifyEmail
             ->when($state, fn (Builder $query, AccountStateFilter $state) => match ($state) {
                 AccountStateFilter::Verified => $query->whereNotNull('email_verified_at'),
                 AccountStateFilter::Unverified => $query->whereNull('email_verified_at'),
+                AccountStateFilter::Blocked => $query->whereNotNull('blocked_at'),
             })
             ->when($search !== '', fn (Builder $query) => $query->matchingSearch($search));
     }
@@ -159,8 +162,22 @@ final class User extends Authenticatable implements MustVerifyEmail
         ]);
     }
 
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function notBlocked(Builder $query): void
+    {
+        $query->whereNull('blocked_at');
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;
+    }
+
+    public function isBlocked(): bool
+    {
+        return $this->blocked_at !== null;
     }
 }

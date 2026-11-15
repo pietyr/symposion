@@ -35,6 +35,7 @@ final class UserFactory extends Factory
             'last_name' => fake()->lastName($gender),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
+            'blocked_at' => null,
             'profession' => null,
             'license_number' => null,
             'university' => null,
@@ -91,6 +92,16 @@ final class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * Indicate that the user has been blocked by an administrator.
+     */
+    public function blocked(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'blocked_at' => now(),
         ]);
     }
 

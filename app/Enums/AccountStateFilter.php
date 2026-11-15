@@ -8,12 +8,14 @@ enum AccountStateFilter: string
 {
     case Verified = 'verified';
     case Unverified = 'unverified';
+    case Blocked = 'blocked';
 
     public function label(): string
     {
         return match ($this) {
             self::Verified => __('Verified accounts'),
             self::Unverified => __('Unverified accounts'),
+            self::Blocked => __('Blocked accounts'),
         };
     }
 
