@@ -453,6 +453,23 @@ test('an administrator adds a consent to an event', function () {
     expect(Consent::query()->sole())->is_required->toBeTrue();
 });
 
+test('an administrator opens the users from the sidebar and searches them', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    User::factory()->create(['first_name' => 'Jan', 'last_name' => 'Kowalski', 'email' => 'jan.kowalski@example.com']);
+    User::factory()->unverified()->create(['first_name' => 'Anna', 'last_name' => 'Nowak', 'email' => 'anna.nowak@example.com']);
+
+    visit(route('admin.dashboard', absolute: false))
+        ->click('Użytkownicy')
+        ->assertPathIs(route('admin.users.index', absolute: false))
+        ->assertSee('Jan Kowalski')
+        ->assertSee('Niepotwierdzone')
+        ->fill('@user-search', 'nowak')
+        ->wait(1)
+        ->assertSee('Anna Nowak')
+        ->assertDontSee('Jan Kowalski')
+        ->assertNoJavaScriptErrors();
+});
+
 test('an administrator opens the registrations from the sidebar and filters them', function () {
     $this->actingAs(User::factory()->admin()->create());
     Registration::factory()->for(User::factory()->create(['first_name' => 'Jan', 'last_name' => 'Kowalski', 'email' => 'jan.kowalski@example.com']))->paid()->create();

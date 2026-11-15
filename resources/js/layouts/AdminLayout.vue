@@ -6,6 +6,7 @@ import {
     LayoutGrid,
     Stethoscope,
     UserRound,
+    Users,
 } from '@lucide/vue';
 import { trans } from 'laravel-vue-i18n';
 import { computed } from 'vue';
@@ -16,6 +17,7 @@ import { dashboard } from '@/routes/admin';
 import { index as events } from '@/routes/admin/events';
 import { index as registrations } from '@/routes/admin/registrations';
 import { index as specializations } from '@/routes/admin/specializations';
+import { index as users } from '@/routes/admin/users';
 import type { BreadcrumbItem, SidebarNavigation } from '@/types';
 
 const { breadcrumbs = [] } = defineProps<{
@@ -45,6 +47,11 @@ const navigation = computed<SidebarNavigation>(() => ({
                     title: trans('Registrations'),
                     href: registrations(),
                     icon: ClipboardList,
+                },
+                {
+                    title: trans('Users'),
+                    href: users(),
+                    icon: Users,
                 },
             ],
         },

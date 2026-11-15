@@ -7,3 +7,4 @@ export * from './pagination';
 export * from './registrations';
 export * from './specializations';
 export * from './ui';
+export * from './users';

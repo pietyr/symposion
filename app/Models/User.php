@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\AccountStateFilter;
+use App\Enums\Profession;
+use App\Enums\RegistrationStatus;
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -120,6 +123,40 @@ final class User extends Authenticatable implements MustVerifyEmail
                 ->whereRaw("REPLACE(REPLACE(CONCAT(first_name, ' ', last_name), 'ł', 'l'), 'Ł', 'l') LIKE ?", [$pattern])
                 ->orWhere('email', 'like', $pattern));
         }
+    }
+
+    /**
+     * Narrow the admin user list down by whichever filters are set.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function filteredBy(
+        Builder $query,
+        ?Profession $profession = null,
+        ?AccountStateFilter $state = null,
+        string $search = '',
+    ): void {
+        $query
+            ->when($profession, fn (Builder $query, Profession $profession) => $query->where('profession', $profession->value))
+            ->when($state, fn (Builder $query, AccountStateFilter $state) => match ($state) {
+                AccountStateFilter::Verified => $query->whereNotNull('email_verified_at'),
+                AccountStateFilter::Unverified => $query->whereNull('email_verified_at'),
+            })
+            ->when($search !== '', fn (Builder $query) => $query->matchingSearch($search));
+    }
+
+    /**
+     * Count the registrations that take a seat (ADR-019) into registrations_count.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withRegistrationsCount(Builder $query): void
+    {
+        $query->withCount([
+            'registrations' => fn (Builder $registrations) => $registrations->whereIn('status', RegistrationStatus::seatTaking()),
+        ]);
     }
 
     public function isAdmin(): bool
