@@ -470,6 +470,21 @@ test('an administrator opens the users from the sidebar and searches them', func
         ->assertNoJavaScriptErrors();
 });
 
+test('an administrator goes from the user list to a registration of the user', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $user = User::factory()->doctor()->create(['academic_title' => 'lek.', 'first_name' => 'Jan', 'last_name' => 'Kowalski']);
+    $registration = Registration::factory()->for($user)->for(Event::factory()->create(['title' => 'Forum Testowe']))->create();
+
+    visit(route('admin.users.index', absolute: false))
+        ->click('Jan Kowalski')
+        ->assertPathIs(route('admin.users.show', $user, absolute: false))
+        ->assertSee('lek. Jan Kowalski')
+        ->assertSeeIn('@participant-profile', 'Lekarz')
+        ->click('Forum Testowe')
+        ->assertPathIs(route('admin.registrations.show', $registration, absolute: false))
+        ->assertNoJavaScriptErrors();
+});
+
 test('an administrator opens the registrations from the sidebar and filters them', function () {
     $this->actingAs(User::factory()->admin()->create());
     Registration::factory()->for(User::factory()->create(['first_name' => 'Jan', 'last_name' => 'Kowalski', 'email' => 'jan.kowalski@example.com']))->paid()->create();

@@ -62,5 +62,5 @@ Route::patch('registrations/{registration}/confirm', ConfirmRegistrationControll
 Route::patch('registrations/{registration}/cancel', CancelRegistrationController::class)
     ->name('registrations.cancel');
 Route::resource('registrations', RegistrationController::class)->only(['index', 'create', 'store', 'show']);
-Route::resource('users', UserController::class)->only('index');
+Route::resource('users', UserController::class)->only(['index', 'show']);
 Route::resource('specializations', SpecializationController::class)->except('show');

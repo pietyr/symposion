@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
+import UserController from '@/actions/App/Http/Controllers/Admin/UserController';
 import FilterSelect from '@/components/FilterSelect.vue';
 import Heading from '@/components/Heading.vue';
 import PaginationControls from '@/components/PaginationControls.vue';
@@ -145,7 +146,12 @@ const filterFields = computed(() => [
                     data-test="user-row"
                 >
                     <TableCell>
-                        <div class="font-medium">{{ user.name }}</div>
+                        <Link
+                            :href="UserController.show(user.id)"
+                            class="font-medium hover:underline"
+                        >
+                            {{ user.name }}
+                        </Link>
                         <div class="text-xs text-muted-foreground">
                             {{ user.email }}
                         </div>

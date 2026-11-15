@@ -12,4 +12,9 @@ final class UserPolicy
     {
         return $user->isAdmin();
     }
+
+    public function view(User $user, User $model): bool
+    {
+        return $user->isAdmin();
+    }
 }
