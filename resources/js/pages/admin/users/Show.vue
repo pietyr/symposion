@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import RegistrationController from '@/actions/App/Http/Controllers/Admin/RegistrationController';
+import AccountDetails from '@/components/admin/users/AccountDetails.vue';
 import ProfileDetails from '@/components/admin/users/ProfileDetails.vue';
 import Heading from '@/components/Heading.vue';
 import PaginationControls from '@/components/PaginationControls.vue';
@@ -45,19 +46,11 @@ const props = defineProps<{
 }>();
 
 const { formatPrice } = usePriceFormat();
-const dateTimeFormatter = new Intl.DateTimeFormat('pl', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Europe/Warsaw',
-});
 const dateFormatter = new Intl.DateTimeFormat('pl', {
     dateStyle: 'short',
     timeStyle: 'short',
     timeZone: 'Europe/Warsaw',
 });
-
-const formatDateTime = (iso: string | null): string =>
-    iso ? dateTimeFormatter.format(new Date(iso)) : '—';
 
 const titledName = computed(() =>
     [props.account.academic_title, props.account.name]
@@ -100,24 +93,7 @@ const titledName = computed(() =>
                     <CardTitle>{{ $t('Account') }}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <dl
-                        class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm"
-                    >
-                        <dt class="text-muted-foreground">
-                            {{ $t('Signed up at') }}
-                        </dt>
-                        <dd>{{ formatDateTime(account.created_at) }}</dd>
-                        <dt class="text-muted-foreground">
-                            {{ $t('Email verified at') }}
-                        </dt>
-                        <dd>
-                            {{
-                                account.email_verified_at
-                                    ? formatDateTime(account.email_verified_at)
-                                    : $t('Unverified')
-                            }}
-                        </dd>
-                    </dl>
+                    <AccountDetails :account="account" />
                 </CardContent>
             </Card>
         </div>
