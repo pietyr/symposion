@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import CancelRegistrationController from '@/actions/App/Http/Controllers/Account/CancelRegistrationController';
-import RegistrationActionDialog from '@/components/registrations/RegistrationActionDialog.vue';
+import ActionDialog from '@/components/ActionDialog.vue';
 import RegistrationStatusBadge from '@/components/registrations/RegistrationStatusBadge.vue';
 import Heading from '@/components/Heading.vue';
 import PaginationControls from '@/components/PaginationControls.vue';
@@ -99,7 +99,7 @@ const { formatPrice } = usePriceFormat();
                         />
                     </TableCell>
                     <TableCell class="text-right">
-                        <RegistrationActionDialog
+                        <ActionDialog
                             v-if="registration.status === 'pending'"
                             :action="
                                 CancelRegistrationController.form(

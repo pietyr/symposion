@@ -6,7 +6,7 @@ import CancelRegistrationController from '@/actions/App/Http/Controllers/Admin/C
 import ConfirmRegistrationController from '@/actions/App/Http/Controllers/Admin/ConfirmRegistrationController';
 import UserController from '@/actions/App/Http/Controllers/Admin/UserController';
 import AccountDetails from '@/components/admin/users/AccountDetails.vue';
-import RegistrationActionDialog from '@/components/registrations/RegistrationActionDialog.vue';
+import ActionDialog from '@/components/ActionDialog.vue';
 import ProfileDetails from '@/components/admin/users/ProfileDetails.vue';
 import RegistrationStatusBadge from '@/components/registrations/RegistrationStatusBadge.vue';
 import Heading from '@/components/Heading.vue';
@@ -76,7 +76,7 @@ const titledName = computed(() =>
                 data-test="registration-status"
             />
             <div class="mb-8 flex flex-wrap gap-2 sm:ml-auto">
-                <RegistrationActionDialog
+                <ActionDialog
                     v-if="registration.status === 'pending'"
                     :action="
                         ConfirmRegistrationController.form(registration.id)
@@ -92,7 +92,7 @@ const titledName = computed(() =>
                     "
                     test-id="confirm-payment"
                 />
-                <RegistrationActionDialog
+                <ActionDialog
                     v-if="registration.status !== 'cancelled'"
                     :action="CancelRegistrationController.form(registration.id)"
                     :label="$t('Cancel registration')"

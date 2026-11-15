@@ -5,7 +5,7 @@ import { computed, ref, watch } from 'vue';
 import EventParticipantController from '@/actions/App/Http/Controllers/Admin/EventParticipantController';
 import CancelRegistrationController from '@/actions/App/Http/Controllers/Admin/CancelRegistrationController';
 import RegistrationController from '@/actions/App/Http/Controllers/Admin/RegistrationController';
-import RegistrationActionDialog from '@/components/registrations/RegistrationActionDialog.vue';
+import ActionDialog from '@/components/ActionDialog.vue';
 import RegistrationStatusBadge from '@/components/registrations/RegistrationStatusBadge.vue';
 import FilterSelect from '@/components/FilterSelect.vue';
 import Heading from '@/components/Heading.vue';
@@ -198,7 +198,7 @@ const filterFields = computed(() =>
                         />
                     </TableCell>
                     <TableCell class="text-right">
-                        <RegistrationActionDialog
+                        <ActionDialog
                             v-if="registration.status !== 'cancelled'"
                             :action="
                                 CancelRegistrationController.form(
