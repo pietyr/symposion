@@ -8,6 +8,7 @@ export type AdminUserResource = {
     is_admin: boolean;
     is_verified: boolean;
     is_blocked: boolean;
+    is_deleted: boolean;
     registrations_count: number;
     created_at: string | null;
 };
@@ -16,6 +17,7 @@ export type UserFilters = {
     profession: string;
     state: string;
     search: string;
+    trashed: boolean;
 };
 
 export type UserFilterOptions = {

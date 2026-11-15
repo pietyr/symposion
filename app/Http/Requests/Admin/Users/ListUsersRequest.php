@@ -29,6 +29,11 @@ final class ListUsersRequest extends FormRequest
         return [];
     }
 
+    public function showsDeleted(): bool
+    {
+        return $this->boolean('trashed');
+    }
+
     /**
      * Arguments for the User::filteredBy() scope.
      *
@@ -46,7 +51,7 @@ final class ListUsersRequest extends FormRequest
     /**
      * The applied filters as the page's form fields show them.
      *
-     * @return array{profession: string, state: string, search: string}
+     * @return array{profession: string, state: string, search: string, trashed: bool}
      */
     public function selectedFilters(): array
     {
@@ -56,6 +61,7 @@ final class ListUsersRequest extends FormRequest
             'profession' => $filters['profession']->value ?? '',
             'state' => $filters['state']->value ?? '',
             'search' => $filters['search'],
+            'trashed' => $this->showsDeleted(),
         ];
     }
 

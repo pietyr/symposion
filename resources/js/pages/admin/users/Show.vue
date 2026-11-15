@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import RegistrationController from '@/actions/App/Http/Controllers/Admin/RegistrationController';
 import BlockUserController from '@/actions/App/Http/Controllers/Admin/BlockUserController';
+import RestoreUserController from '@/actions/App/Http/Controllers/Admin/RestoreUserController';
 import UnblockUserController from '@/actions/App/Http/Controllers/Admin/UnblockUserController';
 import UserController from '@/actions/App/Http/Controllers/Admin/UserController';
 import VerifyUserController from '@/actions/App/Http/Controllers/Admin/VerifyUserController';
@@ -156,6 +157,39 @@ const titledName = computed(() =>
                     "
                     variant="destructive"
                     test-id="block-user"
+                />
+                <ActionDialog
+                    :action="UserController.destroy.form(account.id)"
+                    :label="$t('Delete')"
+                    :title="
+                        $t('Delete the account of :name?', {
+                            name: account.name,
+                        })
+                    "
+                    :description="
+                        $t(
+                            'The user will not be able to sign in, and their pending registrations will be cancelled. The account can be restored.',
+                        )
+                    "
+                    variant="destructive"
+                    test-id="delete-user"
+                />
+            </div>
+            <div v-if="account.deleted_at" class="mb-8 sm:ml-auto">
+                <ActionDialog
+                    :action="RestoreUserController.form(account.id)"
+                    :label="$t('Restore')"
+                    :title="
+                        $t('Restore the account of :name?', {
+                            name: account.name,
+                        })
+                    "
+                    :description="
+                        $t(
+                            'The user will be able to sign in again. Cancelled registrations stay cancelled.',
+                        )
+                    "
+                    test-id="restore-user"
                 />
             </div>
         </div>

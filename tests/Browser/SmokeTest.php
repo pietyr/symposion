@@ -595,6 +595,27 @@ test('a participant deletes their account and the administrator still sees the r
         ->assertNoJavaScriptErrors();
 });
 
+test('an administrator deletes a user and restores them from the deleted list', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $user = User::factory()->create(['first_name' => 'Anna', 'last_name' => 'Nowak']);
+
+    visit(route('admin.users.show', $user, absolute: false))
+        ->click('@delete-user')
+        ->assertSee('Konto można przywrócić')
+        ->click('@delete-user-confirm')
+        ->assertPathIs(route('admin.users.index', absolute: false))
+        ->assertSee('Konto użytkownika zostało usunięte')
+        ->assertDontSee('Anna Nowak')
+        ->click('@deleted-users-link')
+        ->click('Anna Nowak')
+        ->click('@restore-user')
+        ->click('@restore-user-confirm')
+        ->assertSee('Konto użytkownika zostało przywrócone')
+        ->assertMissing('@account-deleted')
+        ->assertVisible('@edit-user-link')
+        ->assertNoJavaScriptErrors();
+});
+
 test('an administrator opens the registrations from the sidebar and filters them', function () {
     $this->actingAs(User::factory()->admin()->create());
     Registration::factory()->for(User::factory()->create(['first_name' => 'Jan', 'last_name' => 'Kowalski', 'email' => 'jan.kowalski@example.com']))->paid()->create();

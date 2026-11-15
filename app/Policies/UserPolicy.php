@@ -25,4 +25,14 @@ final class UserPolicy
     {
         return $user->isAdmin() && ! $model->isAdmin();
     }
+
+    public function delete(User $user, User $model): bool
+    {
+        return $user->isAdmin() && ! $model->isAdmin();
+    }
+
+    public function restore(User $user, User $model): bool
+    {
+        return $user->isAdmin() && $model->trashed();
+    }
 }

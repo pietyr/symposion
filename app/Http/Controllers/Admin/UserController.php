@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Users\DeleteAccount;
 use App\Actions\Users\UpdateProfile;
 use App\Enums\Profession;
 use App\Http\Controllers\Controller;
@@ -16,6 +17,7 @@ use App\Http\Resources\RegistrationResource;
 use App\Http\Resources\UserResource;
 use App\Models\Specialization;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -33,6 +35,7 @@ final class UserController extends Controller
         return Inertia::render('admin/users/Index', [
             'users' => AdminUserResource::collection(
                 User::query()
+                    ->when($request->showsDeleted(), fn (Builder $users) => $users->onlyTrashed())
                     ->filteredBy(...$request->userFilters())
                     ->withRegistrationsCount()
                     ->latest()
@@ -91,5 +94,19 @@ final class UserController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('User updated.')]);
 
         return to_route('admin.users.show', $user);
+    }
+
+    /**
+     * Delete an account softly; its registrations stay, the pending ones cancelled (ADR-025).
+     */
+    public function destroy(User $user, DeleteAccount $deleteAccount): RedirectResponse
+    {
+        Gate::authorize('delete', $user);
+
+        $deleteAccount->handle($user);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('User deleted.')]);
+
+        return to_route('admin.users.index');
     }
 }

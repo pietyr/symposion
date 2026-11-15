@@ -54,6 +54,21 @@ describe('as an administrator', function () {
             );
     });
 
+    test('the deleted accounts have their own list, which takes the filters too', function () {
+        $deletedNurse = User::factory()->create(['profession' => 'nurse']);
+        $deletedNurse->delete();
+        User::factory()->create(['profession' => 'doctor'])->delete();
+        User::factory()->create(['profession' => 'nurse']);
+
+        $this->get(route('admin.users.index', ['trashed' => 1, 'profession' => 'nurse']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('users.data', 1)
+                ->where('users.data.0.id', $deletedNurse->id)
+                ->where('users.data.0.is_deleted', true)
+                ->where('filters.trashed', true),
+            );
+    });
+
     test('only pending and paid registrations are counted', function () {
         $user = User::factory()->create();
         Registration::factory()->for($user)->create();
@@ -88,7 +103,7 @@ describe('as an administrator', function () {
     test('the applied filters and their options come with the page', function () {
         $this->get(route('admin.users.index', ['profession' => 'doctor', 'state' => 'unverified', 'search' => ' jan ']))
             ->assertInertia(fn (Assert $page) => $page
-                ->where('filters', ['profession' => 'doctor', 'state' => 'unverified', 'search' => 'jan'])
+                ->where('filters', ['profession' => 'doctor', 'state' => 'unverified', 'search' => 'jan', 'trashed' => false])
                 ->has('filterOptions.professions', 10)
                 ->where('filterOptions.states', [
                     ['value' => 'verified', 'label' => 'Potwierdzone konta'],

@@ -31,6 +31,7 @@ final class AdminUserResource extends JsonResource
             'is_admin' => $this->isAdmin(),
             'is_verified' => $this->email_verified_at !== null,
             'is_blocked' => $this->isBlocked(),
+            'is_deleted' => $this->trashed(),
             'registrations_count' => $this->whenCounted('registrations'),
             'created_at' => $this->created_at?->toIso8601String(),
         ];

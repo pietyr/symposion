@@ -50,8 +50,12 @@ const dateFormatter = new Intl.DateTimeFormat('pl', {
 
 const search = ref(props.filters.search);
 
-const hasFilters = computed(() =>
-    Object.values(props.filters).some((value) => value !== ''),
+// Switching between active and deleted accounts is not a filter to clear.
+const hasFilters = computed(
+    () =>
+        props.filters.profession !== '' ||
+        props.filters.state !== '' ||
+        props.filters.search !== '',
 );
 
 const apply = (changes: Partial<UserFilters>): void => {
@@ -59,9 +63,12 @@ const apply = (changes: Partial<UserFilters>): void => {
 
     router.get(
         index.url(),
-        Object.fromEntries(
-            Object.entries(filters).filter(([, value]) => value !== ''),
-        ),
+        {
+            ...(filters.search && { search: filters.search }),
+            ...(filters.profession && { profession: filters.profession }),
+            ...(filters.state && { state: filters.state }),
+            ...(filters.trashed && { trashed: 1 }),
+        },
         { preserveState: true, preserveScroll: true, replace: true },
     );
 };
@@ -100,6 +107,28 @@ const filterFields = computed(() => [
 
     <div class="flex flex-col gap-6 p-4">
         <Heading :title="$t('Users')" />
+
+        <nav class="flex gap-2" :aria-label="$t('User list')">
+            <Button
+                :variant="filters.trashed ? 'ghost' : 'secondary'"
+                size="sm"
+                as-child
+            >
+                <Link :href="index()">{{ $t('Active') }}</Link>
+            </Button>
+            <Button
+                :variant="filters.trashed ? 'secondary' : 'ghost'"
+                size="sm"
+                as-child
+            >
+                <Link
+                    :href="index({ query: { trashed: 1 } })"
+                    data-test="deleted-users-link"
+                >
+                    {{ $t('Deleted') }}
+                </Link>
+            </Button>
+        </nav>
 
         <div class="flex flex-col gap-3">
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -167,6 +196,9 @@ const filterFields = computed(() => [
                             </Badge>
                             <Badge v-if="user.is_blocked" variant="destructive">
                                 {{ $t('Blocked') }}
+                            </Badge>
+                            <Badge v-if="user.is_deleted" variant="secondary">
+                                {{ $t('Account deleted') }}
                             </Badge>
                         </div>
                     </TableCell>
