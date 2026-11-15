@@ -71,5 +71,7 @@ Route::patch('users/{user}/block', BlockUserController::class)
     ->name('users.block');
 Route::patch('users/{user}/unblock', UnblockUserController::class)
     ->name('users.unblock');
-Route::resource('users', UserController::class)->only(['index', 'show', 'edit', 'update']);
+Route::resource('users', UserController::class)
+    ->only(['index', 'show', 'edit', 'update'])
+    ->withTrashed(['show']);
 Route::resource('specializations', SpecializationController::class)->except('show');

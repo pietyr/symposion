@@ -50,6 +50,17 @@ describe('as an administrator', function () {
             );
     });
 
+    test('registrations of a deleted account stay on the list, marked', function () {
+        $registration = Registration::factory()->create();
+        $registration->user->delete();
+
+        $this->get(route('admin.registrations.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('registrations.data.0.id', $registration->id)
+                ->where('registrations.data.0.user.is_deleted', true),
+            );
+    });
+
     test('the list can be narrowed down', function (Closure $query, Closure $expected) {
         $event = Event::factory()->hybrid()->create();
         $registrations = [

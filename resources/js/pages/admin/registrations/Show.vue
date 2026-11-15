@@ -201,7 +201,9 @@ const titledName = computed(() =>
                             </Link>
                         </Button>
                         <Button
-                            v-if="!participant.is_admin"
+                            v-if="
+                                !participant.is_admin && !participant.deleted_at
+                            "
                             variant="outline"
                             size="sm"
                             as-child

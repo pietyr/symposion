@@ -94,11 +94,13 @@ final class Registration extends Model
     }
 
     /**
+     * Deleted accounts keep their registrations, which the admin still sees.
+     *
      * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     /**

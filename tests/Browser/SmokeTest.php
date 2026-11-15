@@ -570,6 +570,31 @@ test('a blocked user is sent back to the login page', function () {
     $this->assertGuest();
 });
 
+test('a participant deletes their account and the administrator still sees the registration', function () {
+    $user = User::factory()->create(['first_name' => 'Anna', 'last_name' => 'Nowak']);
+    $registration = Registration::factory()->for($user)->paid()->create();
+    $this->actingAs($user);
+
+    visit(route('account.profile.edit', absolute: false))
+        ->click('@delete-user-button')
+        ->assertSee('nieopłacone zapisy zostaną anulowane')
+        ->fill('password', 'password')
+        ->click('@confirm-delete-user-button')
+        ->assertPathIs(route('home', absolute: false))
+        ->assertNoJavaScriptErrors();
+
+    $this->actingAs(User::factory()->admin()->create());
+
+    visit(route('admin.registrations.show', $registration, absolute: false))
+        ->assertSee('Anna Nowak')
+        ->assertSeeIn('@account-details', 'Data usunięcia')
+        ->assertMissing('@participant-edit-link')
+        ->click('@participant-account-link')
+        ->assertVisible('@account-deleted')
+        ->assertMissing('@edit-user-link')
+        ->assertNoJavaScriptErrors();
+});
+
 test('an administrator opens the registrations from the sidebar and filters them', function () {
     $this->actingAs(User::factory()->admin()->create());
     Registration::factory()->for(User::factory()->create(['first_name' => 'Jan', 'last_name' => 'Kowalski', 'email' => 'jan.kowalski@example.com']))->paid()->create();

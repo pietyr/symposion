@@ -83,6 +83,14 @@ const titledName = computed(() =>
                 {{ $t('Unverified') }}
             </Badge>
             <Badge
+                v-if="account.deleted_at"
+                variant="secondary"
+                class="mb-8"
+                data-test="account-deleted"
+            >
+                {{ $t('Account deleted') }}
+            </Badge>
+            <Badge
                 v-if="account.blocked_at"
                 variant="destructive"
                 class="mb-8"
@@ -91,7 +99,7 @@ const titledName = computed(() =>
                 {{ $t('Blocked') }}
             </Badge>
             <div
-                v-if="!account.is_admin"
+                v-if="!account.is_admin && !account.deleted_at"
                 class="mb-8 flex flex-wrap gap-2 sm:ml-auto"
             >
                 <ActionDialog

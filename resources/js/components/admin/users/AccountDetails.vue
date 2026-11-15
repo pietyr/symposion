@@ -4,7 +4,7 @@ import type { ParticipantResource } from '@/types';
 defineProps<{
     account: Pick<
         ParticipantResource,
-        'created_at' | 'email_verified_at' | 'blocked_at'
+        'created_at' | 'email_verified_at' | 'blocked_at' | 'deleted_at'
     >;
 }>();
 
@@ -42,6 +42,12 @@ const formatDateTime = (iso: string | null): string =>
                 {{ $t('Blocked at') }}
             </dt>
             <dd>{{ formatDateTime(account.blocked_at) }}</dd>
+        </template>
+        <template v-if="account.deleted_at">
+            <dt class="text-muted-foreground">
+                {{ $t('Deleted at') }}
+            </dt>
+            <dd>{{ formatDateTime(account.deleted_at) }}</dd>
         </template>
     </dl>
 </template>

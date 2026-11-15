@@ -74,6 +74,17 @@ describe('as an administrator', function () {
             );
     });
 
+    test('a deleted account is still shown', function () {
+        $user = User::factory()->create();
+        $user->delete();
+
+        $this->get(route('admin.users.show', $user))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('account.id', $user->id)
+                ->where('account.deleted_at', fn (?string $deletedAt) => $deletedAt !== null),
+            );
+    });
+
     test('administrators are shown too', function () {
         $admin = User::factory()->admin()->create();
 

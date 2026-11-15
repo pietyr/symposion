@@ -44,6 +44,16 @@ describe('as an administrator', function () {
             );
     });
 
+    test('deleted accounts are left out', function () {
+        User::factory()->create()->delete();
+
+        $this->get(route('admin.users.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('users.data', 1)
+                ->where('users.data.0.id', $this->admin->id),
+            );
+    });
+
     test('only pending and paid registrations are counted', function () {
         $user = User::factory()->create();
         Registration::factory()->for($user)->create();

@@ -47,6 +47,17 @@ describe('as an administrator', function () {
             );
     });
 
+    test('the registration of a deleted account is still shown', function () {
+        $registration = Registration::factory()->create();
+        $registration->user->delete();
+
+        $this->get(route('admin.registrations.show', $registration))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('participant.id', $registration->user_id)
+                ->where('participant.deleted_at', fn (?string $deletedAt) => $deletedAt !== null),
+            );
+    });
+
     test('the registration comes with the chosen benefits and the given consents', function () {
         $registration = Registration::factory()->create();
         RegistrationBenefit::factory()->for($registration)->create(['benefit_name' => 'Nocleg', 'option_name' => '2 noce', 'price' => 55000]);

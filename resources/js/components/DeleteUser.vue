@@ -26,7 +26,7 @@ const passwordInput = useTemplateRef('passwordInput');
         <Heading
             variant="small"
             :title="$t('Delete account')"
-            :description="$t('Delete your account and all of its resources')"
+            :description="$t('Delete your account')"
         />
         <div
             class="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10"
@@ -69,7 +69,7 @@ const passwordInput = useTemplateRef('passwordInput');
                             <DialogDescription>
                                 {{
                                     $t(
-                                        'Once your account is deleted, all of its resources and data will also be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.',
+                                        'You will not be able to sign in, and your unpaid registrations will be cancelled. Please enter your password to confirm you would like to delete your account.',
                                     )
                                 }}
                             </DialogDescription>
