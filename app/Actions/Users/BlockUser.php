@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace App\Actions\Users;
 
-use App\Enums\RegistrationStatus;
+use App\Actions\Registrations\CancelPendingRegistrations;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-final class BlockUser
+final readonly class BlockUser
 {
+    public function __construct(private CancelPendingRegistrations $cancelPendingRegistrations) {}
+
     /**
-     * Block the account; its pending registrations are cancelled, so they stop taking seats (ADR-025).
+     * Block the account; its pending registrations are cancelled.
      *
      * @throws ValidationException when the account is already blocked
      */
@@ -27,9 +29,7 @@ final class BlockUser
         DB::transaction(function () use ($user): void {
             $user->forceFill(['blocked_at' => now()])->save();
 
-            $user->registrations()
-                ->where('status', RegistrationStatus::Pending)
-                ->update(['status' => RegistrationStatus::Cancelled]);
+            $this->cancelPendingRegistrations->handle($user);
         });
     }
 }
