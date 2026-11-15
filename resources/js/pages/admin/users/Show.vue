@@ -2,12 +2,14 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import RegistrationController from '@/actions/App/Http/Controllers/Admin/RegistrationController';
+import UserController from '@/actions/App/Http/Controllers/Admin/UserController';
 import AccountDetails from '@/components/admin/users/AccountDetails.vue';
 import ProfileDetails from '@/components/admin/users/ProfileDetails.vue';
 import Heading from '@/components/Heading.vue';
 import PaginationControls from '@/components/PaginationControls.vue';
 import RegistrationStatusBadge from '@/components/registrations/RegistrationStatusBadge.vue';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Table,
@@ -76,6 +78,16 @@ const titledName = computed(() =>
             >
                 {{ $t('Unverified') }}
             </Badge>
+            <div v-if="!account.is_admin" class="mb-8 sm:ml-auto">
+                <Button variant="outline" as-child>
+                    <Link
+                        :href="UserController.edit(account.id)"
+                        data-test="edit-user-link"
+                    >
+                        {{ $t('Edit') }}
+                    </Link>
+                </Button>
+            </div>
         </div>
 
         <div class="grid gap-6 lg:grid-cols-2">

@@ -498,6 +498,32 @@ test('an administrator goes from a registration to the account of the participan
         ->assertNoJavaScriptErrors();
 });
 
+test('an administrator edits a user', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $user = User::factory()->create(['first_name' => 'Anna', 'last_name' => 'Nowak', 'profession' => 'laboratory_technician']);
+
+    visit(route('admin.users.show', $user, absolute: false))
+        ->click('@edit-user-link')
+        ->assertPathIs(route('admin.users.edit', $user, absolute: false))
+        ->clear('last_name')
+        ->fill('last_name', 'Kowalska')
+        ->fill('academic_title', 'mgr')
+        ->click('@save-user-button')
+        ->assertPathIs(route('admin.users.show', $user, absolute: false))
+        ->assertSee('Dane użytkownika zostały zaktualizowane')
+        ->assertSee('mgr Anna Kowalska')
+        ->assertNoJavaScriptErrors();
+});
+
+test('administrator accounts have no edit link', function () {
+    $admin = User::factory()->admin()->create();
+    $this->actingAs($admin);
+
+    visit(route('admin.users.show', $admin, absolute: false))
+        ->assertMissing('@edit-user-link')
+        ->assertNoJavaScriptErrors();
+});
+
 test('an administrator opens the registrations from the sidebar and filters them', function () {
     $this->actingAs(User::factory()->admin()->create());
     Registration::factory()->for(User::factory()->create(['first_name' => 'Jan', 'last_name' => 'Kowalski', 'email' => 'jan.kowalski@example.com']))->paid()->create();

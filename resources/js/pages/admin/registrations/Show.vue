@@ -191,13 +191,26 @@ const titledName = computed(() =>
             <Card>
                 <CardHeader>
                     <CardTitle>{{ $t('Participant') }}</CardTitle>
-                    <CardAction>
+                    <CardAction class="flex flex-wrap justify-end gap-2">
                         <Button variant="outline" size="sm" as-child>
                             <Link
                                 :href="UserController.show(participant.id)"
                                 data-test="participant-account-link"
                             >
                                 {{ $t('User details') }}
+                            </Link>
+                        </Button>
+                        <Button
+                            v-if="!participant.is_admin"
+                            variant="outline"
+                            size="sm"
+                            as-child
+                        >
+                            <Link
+                                :href="UserController.edit(participant.id)"
+                                data-test="participant-edit-link"
+                            >
+                                {{ $t('Edit') }}
                             </Link>
                         </Button>
                     </CardAction>

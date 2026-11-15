@@ -17,4 +17,12 @@ final class UserPolicy
     {
         return $user->isAdmin();
     }
+
+    /**
+     * Administrators change their own details in the account settings, not here (ADR-025).
+     */
+    public function update(User $user, User $model): bool
+    {
+        return $user->isAdmin() && ! $model->isAdmin();
+    }
 }
